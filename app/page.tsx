@@ -308,6 +308,7 @@ export default function Home() {
               <span className="text-gray-400 text-[11px]">{tr.hello_user} {userLabel}</span>
               <span className="text-white text-xs font-bold">{tr.account}</span>
               <div className="absolute top-full right-0 bg-white shadow-lg rounded-xl py-2 hidden group-hover:block min-w-[150px] z-50 border border-gray-100">
+                <a href="/perfil" className="block px-4 py-2 text-xs text-gray-700 hover:bg-gray-50">👤 Mi perfil</a>
                 <a href="/vendedor" className="block px-4 py-2 text-xs text-gray-700 hover:bg-gray-50">🏪 {tr.vendor_panel}</a>
                 <button onClick={handleSignOut} className="w-full text-left px-4 py-2 text-xs text-gray-700 hover:bg-gray-50">🚪 {tr.sign_out}</button>
               </div>
