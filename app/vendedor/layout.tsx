@@ -10,6 +10,7 @@ const navItems = [
   { href: '/vendedor/mis-productos', label: 'Mis productos',    icon: '📦' },
   { href: '/vendedor/pedidos',      label: 'Pedidos',           icon: '🚚' },
   { href: '/vendedor/mi-tienda',    label: 'Mi tienda',         icon: '🏪' },
+  { href: '/vendedor/datos-pago',   label: 'Datos de pago',     icon: '💳' },
 ]
 
 export default function VendedorLayout({ children }: { children: React.ReactNode }) {
