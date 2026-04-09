@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { calcularPrecios, fmt, ARANCELES } from '@/lib/precios'
 import { useAuth } from '@/lib/useAuth'
 import { T, CAT_NAMES, type Lang } from '@/lib/translations'
+import { TABLA_COMISIONES } from '@/lib/comisiones'
 import { useCarritoStore } from '@/src/store/carritoStore'
 
 /* ─────────────────────────── CONSTANTES ─────────────────────────── */
@@ -602,13 +603,27 @@ export default function Home() {
         </section>
 
         {/* Banner vendedor */}
-        <section className="rounded-2xl p-8 flex flex-col md:flex-row items-center justify-between gap-6" style={{ background: 'linear-gradient(135deg, #131921 0%, #1a2a3a 100%)' }}>
-          <div>
+        <section className="rounded-2xl p-8 flex flex-col md:flex-row items-start justify-between gap-8" style={{ background: 'linear-gradient(135deg, #131921 0%, #1a2a3a 100%)' }}>
+          <div className="flex-1">
             <p className="text-xs font-black tracking-widest mb-2" style={{ color: '#FF9900' }}>{tr.want_to_sell}</p>
             <h3 className="text-2xl font-black text-white mb-2">{tr.start_store}</h3>
-            <p className="text-gray-400 text-sm">{tr.zero_commission}</p>
+            <p className="text-gray-400 text-sm mb-4">{tr.zero_commission}</p>
+
+            {/* Tabla de comisiones por categoría */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {TABLA_COMISIONES.map((c) => (
+                <div key={c.nombre} className="flex items-center gap-2 bg-white/5 rounded-xl px-3 py-2">
+                  <span className="text-base">{c.icono}</span>
+                  <div className="min-w-0">
+                    <p className="text-[11px] text-gray-400 truncate">{c.nombre}</p>
+                    <p className="text-xs font-black" style={{ color: '#FF9900' }}>{c.pct} %</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-          <a href="/vendedor" className="shrink-0 font-bold px-8 py-3 rounded-xl text-sm transition hover:brightness-110 whitespace-nowrap" style={{ backgroundColor: '#FF9900', color: '#131921' }}>
+
+          <a href="/vendedor" className="shrink-0 font-bold px-8 py-3 rounded-xl text-sm transition hover:brightness-110 whitespace-nowrap self-center" style={{ backgroundColor: '#FF9900', color: '#131921' }}>
             {tr.create_store}
           </a>
         </section>

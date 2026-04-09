@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/useAuth'
+import { getPctPorNombre } from '@/lib/comisiones'
 
 const CATEGORIAS_MAP: { nombre: string; id: number }[] = [
   { nombre: 'Ropa y Moda',    id: 1 },
@@ -172,6 +173,19 @@ export default function PublicarProducto() {
                   <option key={cat.id} value={cat.nombre}>{cat.nombre}</option>
                 ))}
               </select>
+              {form.categoria && (() => {
+                const pct = getPctPorNombre(form.categoria)
+                if (pct === null) return null
+                return (
+                  <div className="mt-1.5 flex items-center gap-1.5 text-xs">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-bold">
+                      🎉 0 % los primeros 3 meses
+                    </span>
+                    <span className="text-gray-400">· después</span>
+                    <span className="font-bold text-gray-600">{pct} % por venta</span>
+                  </div>
+                )
+              })()}
             </div>
 
             <div>

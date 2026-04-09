@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { getPct } from '@/lib/comisiones'
 
 type Producto = {
   id: string
@@ -8,6 +9,7 @@ type Producto = {
   precio: number
   precio_oferta: number | null
   categoria: string
+  categoria_id: number | null
   stock: number
   condicion: string
   estado: string
@@ -186,12 +188,17 @@ export default function MisProductos() {
                   </span>
                 </div>
                 <p className="text-xs text-gray-400 mt-0.5">{producto.categoria} · {producto.condicion}</p>
-                <div className="flex items-center gap-3 mt-1.5">
+                <div className="flex items-center gap-3 mt-1.5 flex-wrap">
                   <span className="text-lg font-black text-orange-500">S/ {producto.precio.toFixed(2)}</span>
                   {producto.precio_oferta && (
                     <span className="text-xs text-gray-400 line-through">S/ {producto.precio_oferta.toFixed(2)}</span>
                   )}
                   <span className="text-xs text-gray-500">· Stock: {producto.stock}</span>
+                  {producto.categoria_id && (
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-orange-50 text-orange-600 font-bold">
+                      Comisión: {getPct(producto.categoria_id)} %
+                    </span>
+                  )}
                 </div>
               </div>
 
