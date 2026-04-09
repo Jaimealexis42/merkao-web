@@ -36,7 +36,7 @@ function RegisterForm() {
       setError(authError.message)
       setLoading(false)
     } else {
-      router.push('/')
+      router.push(tipo === 'vendedor' ? '/vendedor' : '/')
     }
   }
 
