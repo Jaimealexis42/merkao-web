@@ -28,6 +28,17 @@ const CATEGORIAS = [
   { id: 8, icono: '📦' },
 ]
 
+const CAT_SLUG: Record<number, string> = {
+  1: 'ropa-y-moda',
+  2: 'electronicos',
+  3: 'alimentos',
+  4: 'artesanias',
+  5: 'hogar',
+  6: 'autos-y-motos',
+  7: 'agricola',
+  8: 'otros',
+}
+
 type BannerLang = Record<Lang, string>
 type Banner = {
   titulo: BannerLang; subtitulo: BannerLang; cta: BannerLang; bg: string
@@ -351,13 +362,13 @@ export default function Home() {
               {tr.daily_deals}
             </button>
             {CATEGORIAS.slice(1).map((cat) => (
-              <button
+              <a
                 key={cat.id}
-                onClick={() => setCategoriaFiltro(cat.id)}
-                className={`text-xs px-3 py-2 rounded hover:bg-white/10 transition shrink-0 whitespace-nowrap ${categoriaFiltro === cat.id ? 'text-white font-bold underline underline-offset-4' : 'text-gray-300'}`}
+                href={`/categorias/${CAT_SLUG[cat.id]}`}
+                className="text-gray-300 text-xs px-3 py-2 rounded hover:bg-white/10 transition shrink-0 whitespace-nowrap"
               >
                 {cat.icono} {catNames[cat.id]}
-              </button>
+              </a>
             ))}
             <a href="/vendedor" className="text-gray-300 text-xs px-3 py-2 rounded hover:bg-white/10 transition shrink-0 whitespace-nowrap ml-auto">
               {tr.sell_on_merkao}
@@ -408,16 +419,16 @@ export default function Home() {
           <h2 className="text-base font-bold text-gray-800 mb-4">{tr.buy_by_category}</h2>
           <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
             {CATEGORIAS.slice(1).map((cat) => (
-              <button
+              <a
                 key={cat.id}
-                onClick={() => setCategoriaFiltro(cat.id === categoriaFiltro ? 0 : cat.id)}
-                className={`flex flex-col items-center gap-2 p-3 rounded-xl transition group ${cat.id === categoriaFiltro ? 'bg-orange-50 ring-2 ring-orange-400' : 'hover:bg-orange-50'}`}
+                href={`/categorias/${CAT_SLUG[cat.id]}`}
+                className="flex flex-col items-center gap-2 p-3 rounded-xl transition group hover:bg-orange-50"
               >
                 <span className="text-3xl">{cat.icono}</span>
-                <span className={`text-xs text-center font-medium leading-tight ${cat.id === categoriaFiltro ? 'text-orange-600' : 'text-gray-600 group-hover:text-orange-600'}`}>
+                <span className="text-xs text-center font-medium leading-tight text-gray-600 group-hover:text-orange-600">
                   {catNames[cat.id]}
                 </span>
-              </button>
+              </a>
             ))}
           </div>
         </section>
