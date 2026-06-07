@@ -680,6 +680,76 @@ export default function Home() {
             {tr.create_store}
           </a>
         </section>
+
+        {/* ══════════════════ NUESTROS PRODUCTOS (banners promocionales) ══════════════════ */}
+        <section>
+          <h2 className="text-lg md:text-xl font-black tracking-tight mb-4 px-1" style={{ color: '#131921' }}>
+            {lang === 'en' ? 'Our products' : lang === 'pt' ? 'Nossos produtos' : 'Nuestros productos'}
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+            {/* PresupIA Web — naranja Merkao */}
+            <a
+              href="https://presupia-web.vercel.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group block rounded-2xl p-6 shadow-sm hover:shadow-xl transition transform hover:-translate-y-0.5"
+              style={{ background: 'linear-gradient(135deg, #FF9900 0%, #FF6F00 100%)' }}
+            >
+              <div className="text-4xl mb-3" aria-hidden>🏗️</div>
+              <h3 className="text-white font-black text-base md:text-[17px] leading-snug mb-2">
+                ¿Construyes en Perú? Genera tu presupuesto con IA
+              </h3>
+              <p className="text-white/90 text-sm mb-4 leading-snug">
+                Sube tu plano y obtén presupuesto en segundos
+              </p>
+              <span className="inline-block bg-white text-[#D35400] font-bold text-sm px-4 py-1.5 rounded-lg group-hover:bg-[#131921] group-hover:text-white transition">
+                Probar gratis →
+              </span>
+            </a>
+
+            {/* PresupIA Mobile — navy tech */}
+            <a
+              href="https://play.google.com/store/search?q=presupia&c=apps"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group block rounded-2xl p-6 shadow-sm hover:shadow-xl transition transform hover:-translate-y-0.5"
+              style={{ background: 'linear-gradient(135deg, #0F2C4D 0%, #1E4670 100%)' }}
+            >
+              <div className="text-4xl mb-3" aria-hidden>🤖</div>
+              <h3 className="text-white font-black text-base md:text-[17px] leading-snug mb-2">
+                PresupIA App — presupuestos desde tu celular
+              </h3>
+              <p className="text-white/80 text-sm mb-4 leading-snug">
+                Disponible en Google Play
+              </p>
+              <span className="inline-block bg-white text-[#0F2C4D] font-bold text-sm px-4 py-1.5 rounded-lg group-hover:bg-[#3DDC84] group-hover:text-[#0F2C4D] transition">
+                Descargar →
+              </span>
+            </a>
+
+            {/* DevNova AI — verde corporativo */}
+            <a
+              href="https://devnovaai.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group block rounded-2xl p-6 shadow-sm hover:shadow-xl transition transform hover:-translate-y-0.5"
+              style={{ background: 'linear-gradient(135deg, #00C896 0%, #00876B 100%)' }}
+            >
+              <div className="text-4xl mb-3" aria-hidden>💡</div>
+              <h3 className="text-white font-black text-base md:text-[17px] leading-snug mb-2">
+                ¿Tienes una idea de app o web? Te la construimos
+              </h3>
+              <p className="text-white/90 text-sm mb-4 leading-snug">
+                Apps móviles, webs y software con IA · devnovaai.com
+              </p>
+              <span className="inline-block bg-white text-[#006B57] font-bold text-sm px-4 py-1.5 rounded-lg group-hover:bg-[#131921] group-hover:text-white transition">
+                Cotizar proyecto →
+              </span>
+            </a>
+
+          </div>
+        </section>
       </div>
 
       {/* ══════════════════ FOOTER ══════════════════ */}
