@@ -1,7 +1,7 @@
 {
   "lastIndex": 2,
   "lastPostedDate": "2026-06-07",
-  "totalPosts": 2,
+  "totalPosts": 3,
   "history": [
     {
       "fecha": "2026-06-07T15:23:06.606Z",
@@ -23,6 +23,26 @@
       "fbPhotoId": null,
       "url": "https://www.facebook.com/1177766395421729/posts/122107080531345830",
       "image": null
+    },
+    {
+      "fecha": "2026-06-07T20:17:32.380Z",
+      "fechaPeru": "2026-06-07",
+      "variantIndex": 2,
+      "variantId": 3,
+      "enfoque": "Artesana / productora regional",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122107086105345830",
+      "fbPhotoId": "122107086027345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122107086105345830",
+      "image": {
+        "query": "weaving peru",
+        "theme": "artesania",
+        "photo_id": "JU04xdXUTV4",
+        "photo_url": "https://images.unsplash.com/photo-1589682449071-d13c27d1c298?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwzfHx3ZWF2aW5nJTIwcGVydXxlbnwxfDB8fHwxNzgwODYzNDQ2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Deb Dowd",
+        "photographer_url": "https://unsplash.com/@fin777",
+        "alt": "woman in blue and red dress wearing red and white hat"
+      }
     }
   ]
 }
