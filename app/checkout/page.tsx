@@ -421,6 +421,10 @@ function CheckoutContent() {
                 <span>Subtotal c/IGV</span>
                 <span>{fmt(p.subtotal)}</span>
               </div>
+              <div className="flex justify-between text-gray-600">
+                <span>Tarifa de servicio Merkao (3%)</span>
+                <span>+{fmt(p.tarifaServicio)}</span>
+              </div>
 
               {p.arancel > 0 && arancelInfo && (
                 <div className="flex justify-between text-amber-600 font-medium">

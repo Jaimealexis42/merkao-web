@@ -4,7 +4,6 @@ import { supabase } from '@/lib/supabase'
 import { calcularPrecios, fmt, ARANCELES } from '@/lib/precios'
 import { useAuth } from '@/lib/useAuth'
 import { T, CAT_NAMES, type Lang } from '@/lib/translations'
-import { TABLA_COMISIONES } from '@/lib/comisiones'
 import { useCarritoStore } from '@/src/store/carritoStore'
 
 /* ─────────────────────────── CONSTANTES ─────────────────────────── */
@@ -659,21 +658,37 @@ export default function Home() {
         <section className="rounded-2xl p-8 flex flex-col md:flex-row items-start justify-between gap-8" style={{ background: 'linear-gradient(135deg, #131921 0%, #1a2a3a 100%)' }}>
           <div className="flex-1">
             <p className="text-xs font-black tracking-widest mb-2" style={{ color: '#FF9900' }}>{tr.want_to_sell}</p>
-            <h3 className="text-2xl font-black text-white mb-2">{tr.start_store}</h3>
-            <p className="text-gray-400 text-sm mb-4">{tr.zero_commission}</p>
+            <h3 className="text-2xl font-black text-white mb-3">{tr.start_store}</h3>
 
-            {/* Tabla de comisiones por categoría */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {TABLA_COMISIONES.map((c) => (
-                <div key={c.nombre} className="flex items-center gap-2 bg-white/5 rounded-xl px-3 py-2">
-                  <span className="text-base">{c.icono}</span>
-                  <div className="min-w-0">
-                    <p className="text-[11px] text-gray-400 truncate">{c.nombre}</p>
-                    <p className="text-xs font-black" style={{ color: '#FF9900' }}>{c.pct} %</p>
-                  </div>
-                </div>
-              ))}
+            {/* Promo de lanzamiento */}
+            <div className="inline-flex items-center gap-2 mb-4 bg-emerald-500/15 border border-emerald-400/40 rounded-full px-3 py-1">
+              <span className="text-emerald-300 text-[11px] font-black tracking-wider">🚀 {lang === 'en' ? 'LAUNCH' : lang === 'pt' ? 'LANÇAMENTO' : 'LANZAMIENTO'}</span>
+              <span className="text-white/90 text-xs">
+                {lang === 'en'
+                  ? 'Launch promo rates — join now'
+                  : lang === 'pt'
+                  ? 'Tarifas promocionais de lançamento — junte-se agora'
+                  : 'Tarifas promocionales de lanzamiento — únete ahora'}
+              </span>
             </div>
+
+            {/* Badge 0% comisión */}
+            <div className="flex flex-wrap items-center gap-3 mb-3">
+              <span className="inline-flex items-center gap-2 bg-emerald-500 text-white text-sm font-black px-4 py-2 rounded-full shadow-md">
+                ✅ {lang === 'en' ? '0% commission for sellers' : lang === 'pt' ? '0% de comissão para vendedores' : '0% comisión para vendedores'}
+              </span>
+            </div>
+
+            {/* Explicación del modelo */}
+            <p className="text-gray-300 text-sm leading-relaxed max-w-xl">
+              {lang === 'en' ? (
+                <>Sellers keep <strong className="text-white">100% of their price</strong>. Merkao charges a small <strong className="text-white">3% service fee</strong> to the buyer.</>
+              ) : lang === 'pt' ? (
+                <>O vendedor recebe <strong className="text-white">100% do seu preço</strong>. Merkao cobra uma pequena <strong className="text-white">taxa de serviço de 3%</strong> ao comprador.</>
+              ) : (
+                <>El vendedor recibe el <strong className="text-white">100% de su precio</strong>. Merkao cobra una pequeña <strong className="text-white">tarifa de servicio del 3%</strong> al comprador.</>
+              )}
+            </p>
           </div>
 
           <a href="/vendedor" className="shrink-0 font-bold px-8 py-3 rounded-xl text-sm transition hover:brightness-110 whitespace-nowrap self-center" style={{ backgroundColor: '#FF9900', color: '#131921' }}>

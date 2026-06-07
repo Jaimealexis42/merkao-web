@@ -147,8 +147,21 @@ function RegisterForm() {
             </div>
 
             {tipo === 'vendedor' && (
-              <div className="bg-orange-50 border border-orange-100 rounded-lg p-3 text-xs text-orange-700">
-                🎉 <strong>¡0% de comisión los primeros 3 meses!</strong> Después aplica una comisión del 5-10% por venta según la categoría.
+              <div className="space-y-2">
+                <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 flex items-start gap-2 text-emerald-800">
+                  <span className="text-lg">✅</span>
+                  <div className="text-xs leading-relaxed">
+                    <p className="font-black mb-0.5">Sin comisiones — recibe el 100% de tu precio</p>
+                    <p className="text-emerald-700">
+                      Merkao cobra una pequeña tarifa de servicio del <strong>3%</strong> al comprador.
+                      El precio que pones es el monto que recibes.
+                    </p>
+                  </div>
+                </div>
+                <div className="bg-orange-50 border border-orange-200 rounded-lg px-3 py-2 flex items-center gap-2 text-xs text-orange-800">
+                  <span>🚀</span>
+                  <span><strong>Tarifas promocionales de lanzamiento</strong> — únete ahora</span>
+                </div>
               </div>
             )}
 

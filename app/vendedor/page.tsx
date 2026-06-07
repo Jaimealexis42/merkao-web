@@ -29,6 +29,20 @@ export default function VendedorDashboard() {
         <p className="text-sm text-gray-500 mt-1">Bienvenido de vuelta. Aquí está el resumen de tu tienda.</p>
       </div>
 
+      {/* Beneficio principal: Sin comisiones */}
+      <div className="rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center gap-4 shadow-sm" style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}>
+        <div className="text-3xl shrink-0">✅</div>
+        <div className="flex-1 min-w-0">
+          <p className="text-white font-black text-base">Sin comisiones — recibes el 100% de tu precio</p>
+          <p className="text-emerald-50 text-xs mt-0.5 leading-relaxed">
+            Merkao cobra una tarifa de servicio del 3% al comprador. El precio que publicas es exactamente lo que ingresas por venta.
+          </p>
+        </div>
+        <span className="shrink-0 text-[10px] font-black tracking-widest bg-white/15 border border-white/30 rounded-full px-2.5 py-1 text-white">
+          🚀 LANZAMIENTO
+        </span>
+      </div>
+
       {/* Tarjetas de estadísticas */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat) => (

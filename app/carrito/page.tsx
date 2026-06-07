@@ -1,6 +1,6 @@
 'use client'
 import { useCarritoStore } from '@/src/store/carritoStore'
-import { fmt } from '@/lib/precios'
+import { fmt, TARIFA_SERVICIO } from '@/lib/precios'
 
 const IGV_TASA = 0.18
 
@@ -13,10 +13,12 @@ export default function CarritoPage() {
   const totalPrecio    = useCarritoStore((s) => s.totalPrecio)
 
   // Los precios ya vienen con IGV incluido desde el detalle de producto.
-  // Descomponemos para el resumen.
-  const totalConIGV  = totalPrecio()
-  const subtotalBase = +(totalConIGV / (1 + IGV_TASA)).toFixed(2)
-  const montoIGV     = +(totalConIGV - subtotalBase).toFixed(2)
+  // Descomponemos para el resumen y agregamos la tarifa de servicio Merkao.
+  const totalConIGV      = totalPrecio()
+  const subtotalBase     = +(totalConIGV / (1 + IGV_TASA)).toFixed(2)
+  const montoIGV         = +(totalConIGV - subtotalBase).toFixed(2)
+  const tarifaServicio   = +(totalConIGV * TARIFA_SERVICIO).toFixed(2)
+  const totalConTarifa   = +(totalConIGV + tarifaServicio).toFixed(2)
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#EAEDED', fontFamily: 'Inter, sans-serif' }}>
@@ -165,6 +167,14 @@ export default function CarritoPage() {
                     <span>IGV (18%)</span>
                     <span>{fmt(montoIGV)}</span>
                   </div>
+                  <div className="flex justify-between font-medium text-gray-700 border-t border-gray-100 pt-2">
+                    <span>Subtotal</span>
+                    <span>{fmt(totalConIGV)}</span>
+                  </div>
+                  <div className="flex justify-between text-gray-600">
+                    <span>Tarifa de servicio Merkao (3%)</span>
+                    <span>+{fmt(tarifaServicio)}</span>
+                  </div>
                   <div className="flex justify-between text-gray-500 text-xs">
                     <span>Envío</span>
                     <span className="text-blue-600 font-medium">A coordinar</span>
@@ -174,12 +184,12 @@ export default function CarritoPage() {
                 <div className="border-t border-gray-100 pt-3 flex justify-between items-baseline">
                   <span className="font-black text-gray-800">Total</span>
                   <span className="text-2xl font-black" style={{ color: '#B12704' }}>
-                    {fmt(totalConIGV)}
+                    {fmt(totalConTarifa)}
                   </span>
                 </div>
 
                 <p className="text-[11px] text-gray-400 text-center">
-                  IGV incluido · Precios en Soles peruanos (S/)
+                  IGV incluido · Tarifa de servicio Merkao 3% · Precios en S/
                 </p>
 
                 {/* Botón pago */}
