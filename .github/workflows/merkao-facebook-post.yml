@@ -1,0 +1,93 @@
+name: Merkao Facebook daily post
+
+# Postea 1 variante por día a la Page de Merkao a las 08:00 hora Perú.
+# Cron en UTC: 13:00 UTC == 08:00 America/Lima (Perú no tiene DST).
+#
+# Estructura esperada en el repo:
+#   meta-api/post-facebook.mjs   ← lee variants.json y postea
+#   posts/variants.json          ← 7 variantes generadas
+#   meta-api/state.json          ← gitignored localmente; gestionado por este workflow
+#
+# Secrets requeridos en Settings → Secrets and variables → Actions:
+#   META_PAGE_ID
+#   META_PAGE_ACCESS_TOKEN
+#   ANTHROPIC_API_KEY    (para futura regeneración de variantes)
+
+on:
+  schedule:
+    - cron: '0 13 * * *'   # 13:00 UTC todos los días = 08:00 Lima
+  workflow_dispatch:        # botón manual desde la pestaña Actions
+    inputs:
+      force:
+        description: 'Forzar post aunque ya se haya posteado hoy'
+        required: false
+        default: 'false'
+      index:
+        description: 'Forzar índice específico (0..6). Vacío = siguiente en rotación.'
+        required: false
+        default: ''
+
+permissions:
+  contents: write   # necesario para commitear state.json de vuelta
+
+concurrency:
+  group: merkao-facebook-post
+  cancel-in-progress: false
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          persist-credentials: true   # mantiene el GITHUB_TOKEN para el push final
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Mostrar contexto temporal
+        run: |
+          echo "UTC now : $(date -u '+%Y-%m-%d %H:%M:%S')"
+          echo "Lima now: $(TZ=America/Lima date '+%Y-%m-%d %H:%M:%S')"
+
+      - name: Postear a Facebook
+        working-directory: meta-api
+        env:
+          META_PAGE_ID: ${{ secrets.META_PAGE_ID }}
+          META_PAGE_ACCESS_TOKEN: ${{ secrets.META_PAGE_ACCESS_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          ARGS=""
+          if [ "${{ github.event.inputs.force }}" = "true" ]; then ARGS="$ARGS --force"; fi
+          if [ -n "${{ github.event.inputs.index }}" ]; then ARGS="$ARGS --index=${{ github.event.inputs.index }}"; fi
+          echo "Args: $ARGS"
+          node post-facebook.mjs $ARGS
+
+      - name: Commitear state.json si cambió
+        # state.json está en .gitignore (porque local también escribe). En CI
+        # usamos `git add -f` para forzarlo dentro del repo y persistir la rotación.
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f meta-api/state.json
+          if git diff --cached --quiet; then
+            echo "state.json sin cambios — nada que commitear (ya posteó hoy?)"
+            exit 0
+          fi
+          git commit -m "chore(meta-api): update FB post state [skip ci]"
+          git push
+
+      - name: Subir fb-posts.log como artefacto
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fb-posts-log-${{ github.run_id }}
+          path: meta-api/fb-posts.log
+          retention-days: 30
+          if-no-files-found: ignore

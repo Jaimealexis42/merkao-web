@@ -1,0 +1,53 @@
+{
+  "generatedAt": "2026-06-06T20:49:16.290Z",
+  "model": "claude-sonnet-4-6",
+  "elapsedMs": 19924,
+  "tokens": {
+    "input": 1310,
+    "output": 947
+  },
+  "variantes": [
+    {
+      "id": 1,
+      "enfoque": "Comparativa con números",
+      "texto": "Una cosa que me hizo pensar: si vendés algo a S/100 en Mercado Libre, después de comisiones te quedan como S/85 o menos. En Merkao.org la comisión es 0%, así que lo que ponés es lo que cobrás, sin descuentos raros al final. No es que ML sea malo, pero pa' márgenes ajustados sí se siente la diferencia. Por si le quieren dar una mirada: Merkao.org",
+      "chars": 347
+    },
+    {
+      "id": 2,
+      "enfoque": "Para la que recién empieza",
+      "texto": "Si recién estás arrancando y Mercado Libre te da susto por lo que se llevan de comisión, hay una opción que no te cobra nada por publicar ni por vender. Se llama Merkao.org, es peruano y sin suscripción. Probar no cuesta nada, y si no funciona, no perdiste un sol. Te dejo el link para que lo veas con calma: Merkao.org ✨",
+      "chars": 321
+    },
+    {
+      "id": 3,
+      "enfoque": "Artesana / productora regional",
+      "texto": "Para las chicas que venden en feria en Cusco, Ayacucho, Cajamarca o Puno y quieren llegar a más gente sin intermediarios: encontré un marketplace peruano que no cobra comisión al vendedor. Así el precio que ponés por tu tejido o tu café es exactamente lo que recibes, sin que nadie se lleve su parte. 🇵🇪 Si les interesa: Merkao.org",
+      "chars": 333
+    },
+    {
+      "id": 4,
+      "enfoque": "Pregunta abierta a la comunidad",
+      "texto": "¿Alguien del grupo ya probó Merkao.org? Es un marketplace peruano que dice cobrar 0% de comisión al vendedor, sin costo de publicación. Yo lo estoy revisando y la propuesta se ve interesante, sobre todo para las que venden por WhatsApp o feria y no quieren perder margen. Curiosa de saber si alguien tiene experiencia, cuéntenme acá 💚",
+      "chars": 335
+    },
+    {
+      "id": 5,
+      "enfoque": "Testimonio en primera persona",
+      "texto": "Llevo dos semanas probando Merkao.org para mis productos y lo que más me gustó es que lo que pongo de precio es lo que me llega, sin sorpresas al cobrar. Todavía es nuevo y le falta más tráfico, pero para empezar sin pagar comisión está bien pe. Si están buscando una alternativa tranquila, le dan una miradita: Merkao.org",
+      "chars": 322
+    },
+    {
+      "id": 6,
+      "enfoque": "Tip de venta + mención natural",
+      "texto": "Tip para vender más en cualquier plataforma: la foto de tu producto con buena luz natural vale más que cualquier descripción larga. Fondo claro, producto bien centrado, una sola toma limpia. Y ya que andan buscando dónde publicar sin perder en comisiones, Merkao.org es una opción peruana que no cobra nada al vendedor. ✨",
+      "chars": 321
+    },
+    {
+      "id": 7,
+      "enfoque": "Invitación corta y cálida",
+      "texto": "Si vendés algo, sea artesanía, alimentos, ropa o lo que sea, y querés tener una vitrina online sin pagar comisión, te dejo esto: Merkao.org. Es peruano, sin costo de publicación y lo que ponés de precio es lo que cobrás. Solo por si les sirve 💚",
+      "chars": 245
+    }
+  ]
+}
