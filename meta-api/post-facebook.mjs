@@ -46,15 +46,16 @@ const VARIANT_THEMES = {
   6: 'cafe',        // Tip de venta + foto (aspiracional)
   7: 'moda',        // Invitación corta y cálida (menciona ropa)
 }
-// Queries en español según tu spec. Unsplash devuelve hasta 20 fotos
-// por query y el script elige una al azar entre esos resultados —> variedad
-// visual aunque la query sea la misma.
+// Cada tema tiene un fallback chain de queries en orden de preferencia.
+// Algunas en español tienen 0 fotos en Unsplash (catálogo en inglés mayoritario),
+// así que después de la spec original viene una variante en inglés que sí
+// devuelve resultados. searchUnsplash() prueba en orden hasta encontrar fotos.
 const THEMES = {
-  alimentos: 'mercado peruano frutas',
-  artesania: 'tejidos cusco peru',
-  moda:      'ropa colorida peru',
-  cafe:      'cafe peru plantacion',
-  general:   'paisaje peru',
+  alimentos: ['mercado peruano frutas', 'peruvian market fruits', 'mercado peru', 'amazon rainforest fruits'],
+  artesania: ['tejidos cusco peru', 'weaving peru', 'cusco textiles', 'peruvian handicrafts'],
+  moda:      ['ropa colorida peru', 'peruvian textiles', 'andean clothing'],
+  cafe:      ['cafe peru plantacion', 'coffee plantation peru', 'cacao plantation'],
+  general:   ['paisaje peru', 'peru landscape', 'machu picchu peru'],
 }
 
 // ── 1. Parse args ─────────────────────────────────────────────
@@ -136,13 +137,13 @@ if (noImage) {
   console.log('[fb] UNSPLASH_ACCESS_KEY no seteada → posteo text-only a /feed')
 } else {
   const theme = VARIANT_THEMES[variante.id] || 'general'
-  const query = THEMES[theme] || THEMES.general
-  console.log(`[fb] Unsplash: tema="${theme}" query="${query}"`)
+  const queries = THEMES[theme] || THEMES.general
+  console.log(`[fb] Unsplash: tema="${theme}" queries=${JSON.stringify(queries)}`)
   try {
-    const photo = await searchUnsplash(query, unsplashKey)
+    const { photo, query } = await searchUnsplash(queries, unsplashKey)
     if (!photo) {
-      console.warn('[fb]   ⚠ sin resultados, fallback a text-only')
-      log(`WARN unsplash_no_results query="${query}"`)
+      console.warn('[fb]   ⚠ sin resultados en ninguna query, fallback a text-only')
+      log(`WARN unsplash_no_results theme="${theme}"`)
     } else {
       imageBuffer = await downloadImage(photo.urls.regular)
       imageMeta = {
@@ -272,25 +273,33 @@ function bail(msg) {
   process.exit(1)
 }
 
-// Busca en Unsplash y devuelve UNA foto al azar entre los primeros resultados.
-// Devuelve null si no hay resultados; throws si la API responde !ok.
-async function searchUnsplash(query, accessKey) {
-  const u = new URL('https://api.unsplash.com/search/photos')
-  u.searchParams.set('query', query)
-  u.searchParams.set('per_page', '20')
-  u.searchParams.set('orientation', 'landscape')
-  u.searchParams.set('content_filter', 'high')
-  const r = await fetch(u, {
-    headers: { Authorization: `Client-ID ${accessKey}`, 'Accept-Version': 'v1' },
-  })
-  if (!r.ok) {
-    const body = await r.text().catch(() => '')
-    throw new Error(`Unsplash ${r.status}: ${body.slice(0, 200)}`)
+// Prueba cada query del array en orden y devuelve la PRIMERA con resultados,
+// eligiendo UNA foto al azar entre los primeros 20. Devuelve { photo, query }
+// donde photo === null si todas las queries quedaron en 0 resultados.
+// throws si la API responde !ok (no quota, rate limit, key inválida).
+async function searchUnsplash(queries, accessKey) {
+  const arr = Array.isArray(queries) ? queries : [queries]
+  for (const query of arr) {
+    const u = new URL('https://api.unsplash.com/search/photos')
+    u.searchParams.set('query', query)
+    u.searchParams.set('per_page', '20')
+    u.searchParams.set('orientation', 'landscape')
+    u.searchParams.set('content_filter', 'high')
+    const r = await fetch(u, {
+      headers: { Authorization: `Client-ID ${accessKey}`, 'Accept-Version': 'v1' },
+    })
+    if (!r.ok) {
+      const body = await r.text().catch(() => '')
+      throw new Error(`Unsplash ${r.status}: ${body.slice(0, 200)}`)
+    }
+    const j = await r.json()
+    const results = Array.isArray(j?.results) ? j.results : []
+    if (results.length > 0) {
+      return { photo: results[Math.floor(Math.random() * results.length)], query }
+    }
+    console.log(`[fb]   query "${query}" → 0 resultados, probando siguiente…`)
   }
-  const j = await r.json()
-  const results = Array.isArray(j?.results) ? j.results : []
-  if (results.length === 0) return null
-  return results[Math.floor(Math.random() * results.length)]
+  return { photo: null, query: null }
 }
 
 // Descarga la imagen al heap como Buffer. FB acepta JPEG/PNG, Unsplash
