@@ -710,7 +710,7 @@ export default function Home() {
 
             {/* PresupIA Mobile — navy tech */}
             <a
-              href="https://play.google.com/store/search?q=presupia&c=apps"
+              href="https://play.google.com/store/apps/details?id=com.presupia.app"
               target="_blank"
               rel="noopener noreferrer"
               className="group block rounded-2xl p-6 shadow-sm hover:shadow-xl transition transform hover:-translate-y-0.5"
