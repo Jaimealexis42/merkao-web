@@ -40,6 +40,9 @@ const CAT_SLUG: Record<number, string> = {
   8: 'otros',
 }
 
+// Slogan de marca peruano — persistente en el hero, no traducible (es identidad).
+const MERKAO_SLOGAN = 'Vende desde tu pueblo, llega a todo el Perú'
+
 type BannerLang = Record<Lang, string>
 type Banner = {
   titulo: BannerLang; subtitulo: BannerLang; cta: BannerLang; bg: string
@@ -432,7 +435,13 @@ export default function Home() {
                 <span className="inline-block text-xs font-black tracking-widest mb-3 px-3 py-1 rounded-full" style={{ backgroundColor: '#FF9900', color: '#131921' }}>
                   {banner.badge[lang]}
                 </span>
-                <h2 className="text-4xl md:text-5xl font-black text-white leading-tight mb-3">{banner.titulo[lang]}</h2>
+                <h2 className="text-4xl md:text-5xl font-black text-white leading-tight mb-2">{banner.titulo[lang]}</h2>
+                <p
+                  className="text-[#FFD699] text-sm md:text-base italic font-semibold tracking-wide mb-4"
+                  style={{ textShadow: '0 1px 4px rgba(0,0,0,0.7)' }}
+                >
+                  {MERKAO_SLOGAN}
+                </p>
                 <p className="text-white/80 text-base mb-6">{banner.subtitulo[lang]}</p>
                 <button
                   onClick={() => { setCategoriaFiltro(i + 1); window.scrollTo({ top: 600, behavior: 'smooth' }) }}
