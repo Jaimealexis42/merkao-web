@@ -44,6 +44,8 @@ type BannerLang = Record<Lang, string>
 type Banner = {
   titulo: BannerLang; subtitulo: BannerLang; cta: BannerLang; bg: string
   badge: BannerLang; emoji: string
+  bgImage: string         // Unsplash CDN URL (paisaje peruano por categoría)
+  categoria_id: number    // categoria_id de DB que matchea este banner
 }
 
 const BANNERS: Banner[] = [
@@ -54,6 +56,8 @@ const BANNERS: Banner[] = [
     bg: 'from-[#131921] via-[#1a2a3a] to-[#0f3460]',
     badge:     { es: '🔥 OFERTA DEL DÍA', en: '🔥 DAILY DEAL',   pt: '🔥 OFERTA DO DIA' },
     emoji: '💻',
+    bgImage: 'https://images.unsplash.com/photo-1597170427571-c47f1503bf46?w=1920&q=80&auto=format&fit=crop',
+    categoria_id: 2,  // Electrónicos → Lima cityscape
   },
   {
     titulo:    { es: 'Moda Peruana para todos',           en: 'Peruvian Fashion for Everyone',     pt: 'Moda Peruana para Todos' },
@@ -62,6 +66,8 @@ const BANNERS: Banner[] = [
     bg: 'from-[#4a0080] via-[#6b0fa0] to-[#8b1cc8]',
     badge:     { es: '✨ NUEVO',         en: '✨ NEW',           pt: '✨ NOVO' },
     emoji: '👗',
+    bgImage: 'https://images.unsplash.com/photo-1660521844005-015733ce411e?w=1920&q=80&auto=format&fit=crop',
+    categoria_id: 1,  // Moda → Lima Miraflores
   },
   {
     titulo:    { es: 'Alimentos Orgánicos del Perú',      en: 'Organic Foods from Peru',           pt: 'Alimentos Orgânicos do Peru' },
@@ -70,6 +76,8 @@ const BANNERS: Banner[] = [
     bg: 'from-[#1a4a1a] via-[#2d6a2d] to-[#3d8b3d]',
     badge:     { es: '🌱 ORGÁNICO',     en: '🌱 ORGANIC',      pt: '🌱 ORGÂNICO' },
     emoji: '🥭',
+    bgImage: 'https://images.unsplash.com/photo-1701091490268-2ae3de5f5f2f?w=1920&q=80&auto=format&fit=crop',
+    categoria_id: 3,  // Alimentos → selva Amazonas
   },
   {
     titulo:    { es: 'Artesanías Únicas del Perú',        en: 'Unique Peruvian Crafts',            pt: 'Artesanato Único do Peru' },
@@ -78,6 +86,8 @@ const BANNERS: Banner[] = [
     bg: 'from-[#7a2500] via-[#a33500] to-[#c94a00]',
     badge:     { es: '🇵🇪 HECHO EN PERÚ', en: '🇵🇪 MADE IN PERU', pt: '🇵🇪 FEITO NO PERU' },
     emoji: '🎨',
+    bgImage: 'https://images.unsplash.com/photo-1587595431973-160d0d94add1?w=1920&q=80&auto=format&fit=crop',
+    categoria_id: 4,  // Artesanías → Machu Picchu / Cusco
   },
   {
     titulo:    { es: 'Equipos Agrícolas al Mejor Precio', en: 'Farm Equipment at Best Price',      pt: 'Equipamentos Agrícolas no Melhor Preço' },
@@ -86,6 +96,8 @@ const BANNERS: Banner[] = [
     bg: 'from-[#004d40] via-[#00695c] to-[#00897b]',
     badge:     { es: '🚜 PARA EL CAMPO', en: '🚜 FOR THE FARM',  pt: '🚜 PARA O CAMPO' },
     emoji: '🌾',
+    bgImage: 'https://images.unsplash.com/photo-1586095516671-d085ff58cdd4?w=1920&q=80&auto=format&fit=crop',
+    categoria_id: 7,  // Agrícola → plantación café/cacao selva alta
   },
 ]
 
@@ -150,6 +162,7 @@ function SkeletonCard() {
 
 export default function Home() {
   const [bannerActual, setBannerActual]       = useState(0)
+  const [bannerLocked, setBannerLocked]       = useState(false)
   const [busqueda, setBusqueda]               = useState('')
   const [categoriaSearch, setCategoriaSearch] = useState(0)
   const [categoriaFiltro, setCategoriaFiltro] = useState(0)
@@ -189,9 +202,34 @@ export default function Home() {
   const siguiente = useCallback(() => setBannerActual((p) => (p + 1) % BANNERS.length), [])
   const anterior  = useCallback(() => setBannerActual((p) => (p - 1 + BANNERS.length) % BANNERS.length), [])
   useEffect(() => {
-    const t = setInterval(siguiente, 4500)
+    if (bannerLocked) return            // lock activo → no auto-rota
+    const t = setInterval(siguiente, 5000)
     return () => clearInterval(t)
-  }, [siguiente])
+  }, [siguiente, bannerLocked])
+
+  // ── Detectar categoría dominante y lockear el hero en ese banner ──
+  useEffect(() => {
+    let cancel = false
+    async function detectar() {
+      const { data, error } = await supabase
+        .from('productos')
+        .select('categoria_id')
+        .eq('estado', 'activo')
+        .gt('stock', 0)
+      if (cancel || error || !data || data.length === 0) return
+      const counts = new Map<number, number>()
+      for (const row of data) counts.set(row.categoria_id, (counts.get(row.categoria_id) || 0) + 1)
+      let topCat = 0, topCount = 0
+      for (const [cat, n] of counts) if (n > topCount) { topCount = n; topCat = cat }
+      const idx = BANNERS.findIndex((b) => b.categoria_id === topCat)
+      if (idx >= 0) {
+        setBannerActual(idx)
+        setBannerLocked(true)
+      }
+    }
+    detectar()
+    return () => { cancel = true }
+  }, [])
 
   // ── Cargar productos ──
   useEffect(() => {
@@ -382,8 +420,14 @@ export default function Home() {
       {/* ══════════════════ HERO CAROUSEL ══════════════════ */}
       <div className="relative overflow-hidden" style={{ height: '400px' }}>
         {BANNERS.map((banner, i) => (
-          <div key={i} className={`absolute inset-0 bg-gradient-to-r ${banner.bg} transition-opacity duration-700 ${i === bannerActual ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>
-            <div className="max-w-screen-xl mx-auto px-8 h-full flex items-center justify-between">
+          <div key={i} className={`absolute inset-0 transition-opacity duration-700 ${i === bannerActual ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>
+            {/* 1) Fallback de gradiente sólido (visible mientras carga la imagen) */}
+            <div className={`absolute inset-0 bg-gradient-to-r ${banner.bg}`} />
+            {/* 2) Imagen de Unsplash (paisaje peruano por categoría) */}
+            <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url('${banner.bgImage}')` }} />
+            {/* 3) Overlay oscuro lateral para legibilidad del texto */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-black/20" />
+            <div className="relative max-w-screen-xl mx-auto px-8 h-full flex items-center justify-between">
               <div className="max-w-xl">
                 <span className="inline-block text-xs font-black tracking-widest mb-3 px-3 py-1 rounded-full" style={{ backgroundColor: '#FF9900', color: '#131921' }}>
                   {banner.badge[lang]}
