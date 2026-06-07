@@ -1,7 +1,7 @@
 {
-  "lastIndex": 1,
+  "lastIndex": 2,
   "lastPostedDate": "2026-06-07",
-  "totalPosts": 1,
+  "totalPosts": 2,
   "history": [
     {
       "fecha": "2026-06-07T15:23:06.606Z",
@@ -11,6 +11,18 @@
       "enfoque": "Para la que recién empieza",
       "fbPostId": "1177766395421729_122106717621345830",
       "url": "https://www.facebook.com/1177766395421729/posts/122106717621345830"
+    },
+    {
+      "fecha": "2026-06-07T20:13:20.328Z",
+      "fechaPeru": "2026-06-07",
+      "variantIndex": 2,
+      "variantId": 3,
+      "enfoque": "Artesana / productora regional",
+      "endpoint": "feed",
+      "fbPostId": "1177766395421729_122107080531345830",
+      "fbPhotoId": null,
+      "url": "https://www.facebook.com/1177766395421729/posts/122107080531345830",
+      "image": null
     }
   ]
 }
