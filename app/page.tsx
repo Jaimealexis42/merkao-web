@@ -636,16 +636,43 @@ export default function Home() {
         </button>
         <div style={{ backgroundColor: '#232f3e' }} className="py-10 px-4">
           <div className="max-w-screen-xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
-            {[
-              { titulo: 'Conócenos',    links: ['Sobre Merkao', 'Trabaja con nosotros', 'Prensa', 'Responsabilidad social'] },
-              { titulo: 'Monetiza',     links: ['Vende en Merkao', 'Programa de afiliados', 'Publica con nosotros', 'Anúnciate'] },
-              { titulo: 'Pago y envío', links: ['Yape y Plin', 'Tarjetas de crédito', 'Contra entrega', 'Envíos a provincias', 'Devoluciones'] },
-              { titulo: 'Ayuda',        links: ['Centro de ayuda', 'Mis pedidos', 'Reportar un problema', 'Términos y condiciones', 'Privacidad'] },
-            ].map((col) => (
+            {([
+              { titulo: 'Conócenos',    links: [
+                { label: 'Sobre Merkao', href: '#' },
+                { label: 'Trabaja con nosotros', href: '#' },
+                { label: 'Prensa', href: '#' },
+                { label: 'Responsabilidad social', href: '#' },
+              ] },
+              { titulo: 'Monetiza',     links: [
+                { label: 'Vende en Merkao', href: '/vendedor' },
+                { label: 'Programa de afiliados', href: '#' },
+                { label: 'Publica con nosotros', href: '#' },
+                { label: 'Anúnciate', href: '#' },
+              ] },
+              { titulo: 'Pago y envío', links: [
+                { label: 'Yape y Plin', href: '#' },
+                { label: 'Tarjetas de crédito', href: '#' },
+                { label: 'Contra entrega', href: '#' },
+                { label: 'Envíos a provincias', href: '#' },
+                { label: 'Devoluciones', href: '#' },
+              ] },
+              { titulo: 'Ayuda',        links: [
+                { label: 'Centro de ayuda', href: '#' },
+                { label: 'Mis pedidos', href: '#' },
+                { label: 'Contacto', href: '/contacto' },
+                { label: 'Reportar un problema', href: '/contacto' },
+                { label: 'Términos y condiciones', href: '#' },
+                { label: 'Privacidad', href: '#' },
+              ] },
+            ] as const).map((col) => (
               <div key={col.titulo}>
                 <h4 className="text-white font-bold mb-4 text-sm">{col.titulo}</h4>
                 <ul className="space-y-2">
-                  {col.links.map((l) => <li key={l}><a href="#" className="text-gray-400 text-xs hover:text-white transition">{l}</a></li>)}
+                  {col.links.map((l) => (
+                    <li key={l.label}>
+                      <a href={l.href} className="text-gray-400 text-xs hover:text-white transition">{l.label}</a>
+                    </li>
+                  ))}
                 </ul>
               </div>
             ))}
