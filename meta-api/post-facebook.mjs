@@ -13,6 +13,12 @@
 //   --dry-run     muestra qué publicaría pero no llama a la API
 //   --force       ignora la guarda de "ya posteó hoy"
 //   --index=N     fuerza una variante específica (0-based)
+//   --no-image    saltar Unsplash, postear text-only a /feed
+//
+// Imagen: si UNSPLASH_ACCESS_KEY está seteada (.env o GitHub secret), busca
+// una foto landscape en Unsplash según el tema de la variante (VARIANT_THEMES
+// abajo) y la sube como /photos con caption. Si Unsplash falla o no hay
+// access key, hace fallback a /feed text-only sin romper el cron.
 
 import { readFileSync, writeFileSync, existsSync, appendFileSync } from 'node:fs'
 import { resolve, dirname } from 'node:path'
@@ -27,10 +33,35 @@ const VARIANTS_PATH = resolve(__dirname, '..', 'posts', 'variants.json')
 const API_VERSION = 'v21.0'
 const TIMEZONE = 'America/Lima'
 
+// ── Mapeo de variante → tema visual ──────────────────────────
+// Diversifica los paisajes: las "general" usan amplios paisajes peruanos,
+// las temáticas son más específicas. Para cada tema hay varias queries y
+// el script elige una al azar para no repetir foto en runs consecutivos.
+const VARIANT_THEMES = {
+  1: 'general',     // Comparativa con números
+  2: 'general',     // Para la que recién empieza
+  3: 'artesania',   // Artesana / productora regional (explícito)
+  4: 'general',     // Pregunta abierta a la comunidad
+  5: 'alimentos',   // Testimonio (diversifica visualmente)
+  6: 'cafe',        // Tip de venta + foto (aspiracional)
+  7: 'moda',        // Invitación corta y cálida (menciona ropa)
+}
+// Queries en español según tu spec. Unsplash devuelve hasta 20 fotos
+// por query y el script elige una al azar entre esos resultados —> variedad
+// visual aunque la query sea la misma.
+const THEMES = {
+  alimentos: 'mercado peruano frutas',
+  artesania: 'tejidos cusco peru',
+  moda:      'ropa colorida peru',
+  cafe:      'cafe peru plantacion',
+  general:   'paisaje peru',
+}
+
 // ── 1. Parse args ─────────────────────────────────────────────
 const args = process.argv.slice(2)
 const dryRun = args.includes('--dry-run')
 const force = args.includes('--force')
+const noImage = args.includes('--no-image')
 const forcedIndexArg = args.find((a) => a.startsWith('--index='))
 const forcedIndex = forcedIndexArg ? parseInt(forcedIndexArg.split('=')[1], 10) : null
 
@@ -95,49 +126,102 @@ if (dryRun) {
   process.exit(0)
 }
 
-// ── 6. POST to Graph API ──────────────────────────────────────
-const url = new URL(`https://graph.facebook.com/${API_VERSION}/${PAGE_ID}/feed`)
-url.searchParams.set('message', variante.texto)
-url.searchParams.set('access_token', PAGE_TOKEN)
+// ── 6. Buscar y descargar imagen en Unsplash (opcional) ──────
+let imageBuffer = null
+let imageMeta = null
+const unsplashKey = process.env.UNSPLASH_ACCESS_KEY?.trim()
+if (noImage) {
+  console.log('[fb] --no-image activo → posteo text-only a /feed')
+} else if (!unsplashKey) {
+  console.log('[fb] UNSPLASH_ACCESS_KEY no seteada → posteo text-only a /feed')
+} else {
+  const theme = VARIANT_THEMES[variante.id] || 'general'
+  const query = THEMES[theme] || THEMES.general
+  console.log(`[fb] Unsplash: tema="${theme}" query="${query}"`)
+  try {
+    const photo = await searchUnsplash(query, unsplashKey)
+    if (!photo) {
+      console.warn('[fb]   ⚠ sin resultados, fallback a text-only')
+      log(`WARN unsplash_no_results query="${query}"`)
+    } else {
+      imageBuffer = await downloadImage(photo.urls.regular)
+      imageMeta = {
+        query,
+        theme,
+        photo_id: photo.id,
+        photo_url: photo.urls.regular,
+        photographer: photo.user?.name || null,
+        photographer_url: photo.user?.links?.html || null,
+        alt: photo.alt_description || null,
+      }
+      console.log(`[fb]   ✓ "${photo.alt_description || photo.id}" by ${photo.user?.name} (${imageBuffer.length} bytes)`)
+    }
+  } catch (e) {
+    console.warn(`[fb]   ⚠ Unsplash falló: ${e.message}. Fallback a text-only.`)
+    log(`WARN unsplash_failed msg="${e.message}"`)
+    imageBuffer = null
+    imageMeta = null
+  }
+}
+
+// ── 7. POST to Graph API (/photos si hay imagen, /feed si no) ──
+const endpoint = imageBuffer ? 'photos' : 'feed'
+const fbUrl = `https://graph.facebook.com/${API_VERSION}/${PAGE_ID}/${endpoint}`
 
 const t0 = Date.now()
 let res
 try {
-  res = await fetch(url, { method: 'POST' })
+  if (imageBuffer) {
+    const fd = new FormData()
+    fd.append('caption', variante.texto)
+    fd.append('access_token', PAGE_TOKEN)
+    fd.append('source', new Blob([imageBuffer], { type: 'image/jpeg' }), 'merkao.jpg')
+    res = await fetch(fbUrl, { method: 'POST', body: fd })
+  } else {
+    const u = new URL(fbUrl)
+    u.searchParams.set('message', variante.texto)
+    u.searchParams.set('access_token', PAGE_TOKEN)
+    res = await fetch(u, { method: 'POST' })
+  }
 } catch (e) {
-  log(`ERROR network index=${nextIndex} msg="${e.message}"`)
-  bail(`Network error a Graph API: ${e.message}`)
+  log(`ERROR network endpoint=${endpoint} index=${nextIndex} msg="${e.message}"`)
+  bail(`Network error a Graph API (${endpoint}): ${e.message}`)
 }
 const elapsed = Date.now() - t0
 const data = await res.json().catch(() => ({}))
 
-if (!res.ok || !data.id) {
+// /photos devuelve { id (photoId), post_id (feed post) }. /feed devuelve { id (feed post) }.
+const photoId = endpoint === 'photos' ? data.id : null
+const postIdRaw = data.post_id || data.id
+if (!res.ok || !postIdRaw) {
   const errMsg = data?.error?.message || JSON.stringify(data).slice(0, 300)
-  log(`ERROR api status=${res.status} index=${nextIndex} msg="${errMsg}"`)
-  console.error(`[fb] ✗ Graph API ${res.status}:`, errMsg)
+  log(`ERROR api endpoint=${endpoint} status=${res.status} index=${nextIndex} msg="${errMsg}"`)
+  console.error(`[fb] ✗ Graph API ${res.status} (${endpoint}):`, errMsg)
   if (data?.error?.code === 190) {
     console.error('   → Code 190 = token expirado o inválido. Volvé a correr get-token.mjs')
   }
   process.exit(1)
 }
 
-const fbPostId = data.id // formato: "pageId_postId"
-const postIdOnly = fbPostId.includes('_') ? fbPostId.split('_')[1] : fbPostId
+const postIdOnly = postIdRaw.includes('_') ? postIdRaw.split('_')[1] : postIdRaw
 const postUrl = `https://www.facebook.com/${PAGE_ID}/posts/${postIdOnly}`
 
-console.log(`[fb] ✓ publicado en ${elapsed}ms`)
-console.log(`[fb]   id: ${fbPostId}`)
+console.log(`[fb] ✓ publicado (${endpoint}) en ${elapsed}ms`)
+console.log(`[fb]   id: ${postIdRaw}${photoId ? ` (photo: ${photoId})` : ''}`)
 console.log(`[fb]   url: ${postUrl}`)
 
-// ── 7. Persist state + log ────────────────────────────────────
+// ── 8. Persist state + log ────────────────────────────────────
 const histEntry = {
   fecha: new Date().toISOString(),
   fechaPeru: todayPeru,
   variantIndex: nextIndex,
   variantId: variante.id,
   enfoque: variante.enfoque,
-  fbPostId,
+  endpoint,
+  fbPostId: postIdRaw,
+  fbPhotoId: photoId,
   url: postUrl,
+  image: imageMeta, // null si fue text-only
 }
 const newState = {
   lastIndex: nextIndex,
@@ -147,7 +231,8 @@ const newState = {
 }
 writeFileSync(STATE_PATH, JSON.stringify(newState, null, 2), 'utf8')
 log(
-  `OK index=${nextIndex} enfoque="${variante.enfoque}" fb_id=${fbPostId} url=${postUrl} ms=${elapsed}`,
+  `OK endpoint=${endpoint} index=${nextIndex} enfoque="${variante.enfoque}" ` +
+  `fb_id=${postIdRaw} image=${imageMeta?.photo_id || 'none'} url=${postUrl} ms=${elapsed}`,
 )
 console.log(`[fb] state.json actualizado. Total publicaciones: ${newState.totalPosts}`)
 
@@ -185,4 +270,34 @@ function bail(msg) {
   console.error('ERROR:', msg)
   log(`ERROR_BAIL msg="${msg}"`)
   process.exit(1)
+}
+
+// Busca en Unsplash y devuelve UNA foto al azar entre los primeros resultados.
+// Devuelve null si no hay resultados; throws si la API responde !ok.
+async function searchUnsplash(query, accessKey) {
+  const u = new URL('https://api.unsplash.com/search/photos')
+  u.searchParams.set('query', query)
+  u.searchParams.set('per_page', '20')
+  u.searchParams.set('orientation', 'landscape')
+  u.searchParams.set('content_filter', 'high')
+  const r = await fetch(u, {
+    headers: { Authorization: `Client-ID ${accessKey}`, 'Accept-Version': 'v1' },
+  })
+  if (!r.ok) {
+    const body = await r.text().catch(() => '')
+    throw new Error(`Unsplash ${r.status}: ${body.slice(0, 200)}`)
+  }
+  const j = await r.json()
+  const results = Array.isArray(j?.results) ? j.results : []
+  if (results.length === 0) return null
+  return results[Math.floor(Math.random() * results.length)]
+}
+
+// Descarga la imagen al heap como Buffer. FB acepta JPEG/PNG, Unsplash
+// devuelve JPEG cuando pedís ?auto=format con `urls.regular`.
+async function downloadImage(url) {
+  const r = await fetch(url)
+  if (!r.ok) throw new Error(`download ${r.status} url=${url}`)
+  const ab = await r.arrayBuffer()
+  return Buffer.from(ab)
 }
