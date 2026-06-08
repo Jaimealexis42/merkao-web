@@ -45,23 +45,64 @@ export default function VendedorPedidosPage() {
     ;(async () => {
       setLoading(true)
       setError(null)
-      const { data, error: e } = await supabase
+
+      // 1) Pedidos del vendedor (sin embed — no hay FK declarado entre
+      //    pedidos.producto_id y productos.id, así PostgREST no puede inferir
+      //    el join automático).
+      const { data: pedidosData, error: ePed } = await supabase
         .from('pedidos')
-        .select('id, nombre_comprador, monto_total, estado, created_at, producto:productos(id, nombre)')
+        .select('id, producto_id, nombre_comprador, monto_total, estado, created_at')
         .eq('vendedor_id', user.id)
         .order('created_at', { ascending: false })
         .limit(200)
       if (cancel) return
-      if (e) {
-        setError(e.message)
-      } else {
-        // Supabase tipa el join como array — lo normalizamos a objeto/null.
-        const norm = (data ?? []).map((p: Record<string, unknown>) => ({
-          ...p,
-          producto: Array.isArray(p.producto) ? (p.producto[0] ?? null) : (p.producto ?? null),
-        })) as Pedido[]
-        setPedidos(norm)
+      if (ePed) {
+        setError(ePed.message)
+        setLoading(false)
+        return
       }
+
+      // 2) Si no hay pedidos, terminar.
+      if (!pedidosData || pedidosData.length === 0) {
+        setPedidos([])
+        setLoading(false)
+        return
+      }
+
+      // 3) Batch-fetch de productos por ID único (1 query extra).
+      const idsUnicos = Array.from(
+        new Set(
+          pedidosData
+            .map((p) => p.producto_id)
+            .filter((id): id is string => typeof id === 'string' && id.length > 0),
+        ),
+      )
+
+      const productosMap = new Map<string, { id: string; nombre: string }>()
+      if (idsUnicos.length > 0) {
+        const { data: prods, error: eProd } = await supabase
+          .from('productos')
+          .select('id, nombre')
+          .in('id', idsUnicos)
+        if (cancel) return
+        if (eProd) {
+          // No es fatal: mostramos los pedidos pero sin nombre de producto.
+          console.warn('[pedidos] no se pudieron cargar productos:', eProd.message)
+        } else {
+          for (const p of prods ?? []) productosMap.set(p.id, p)
+        }
+      }
+
+      // 4) Merge en JS.
+      const merged: Pedido[] = pedidosData.map((p) => ({
+        id: p.id,
+        nombre_comprador: p.nombre_comprador,
+        monto_total: p.monto_total,
+        estado: p.estado,
+        created_at: p.created_at,
+        producto: p.producto_id ? productosMap.get(p.producto_id) ?? null : null,
+      }))
+      setPedidos(merged)
       setLoading(false)
     })()
     return () => { cancel = true }
