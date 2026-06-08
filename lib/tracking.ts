@@ -42,6 +42,8 @@ export interface TrackingEvento {
   tracking_code: string
   estado: EstadoTracking
   notas: string | null
+  numero_guia: string | null
+  transportista: string | null   // 'olva' | 'shalom' | 'motorizado' | 'manual'
   created_at: string
   updated_at: string
 }

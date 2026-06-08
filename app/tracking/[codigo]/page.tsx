@@ -8,6 +8,13 @@ import {
   type EstadoTracking,
   type TrackingEvento,
 } from '@/lib/tracking'
+import {
+  TRANSPORTISTA_META,
+  type Transportista,
+  linkTrackingExterno,
+  transportistaLabel,
+  transportistaIcono,
+} from '@/lib/transportistas'
 
 interface PedidoMini {
   id: string
@@ -28,7 +35,7 @@ export default function TrackingPage() {
       // Buscar todos los eventos con este tracking_code (uno o más)
       const { data: ev, error } = await supabase
         .from('order_tracking')
-        .select('id, pedido_id, tracking_code, estado, notas, created_at, updated_at')
+        .select('id, pedido_id, tracking_code, estado, notas, numero_guia, transportista, created_at, updated_at')
         .eq('tracking_code', codigo)
         .order('created_at', { ascending: true })
 
@@ -55,6 +62,14 @@ export default function TrackingPage() {
   const estadoActual: EstadoTracking | null =
     eventos.length > 0 ? (eventos[eventos.length - 1].estado as EstadoTracking) : null
   const estadoIdx = estadoActual ? ESTADOS.indexOf(estadoActual) : -1
+
+  // Envío: tomamos el evento MÁS RECIENTE que tenga número de guía, ya que el
+  // vendedor puede haber empezado sin guía y agregarla cuando despachó.
+  const envio = [...eventos].reverse().find((e) => e.numero_guia) ?? null
+  const numeroGuia = envio?.numero_guia ?? null
+  const transportista = (envio?.transportista as Transportista | null) ?? null
+  const trackingLink = linkTrackingExterno(transportista, numeroGuia)
+  const transportistaTieneLink = !!(transportista && TRANSPORTISTA_META[transportista as Transportista]?.tieneTrackingExterno)
 
   if (loading) {
     return (
@@ -123,6 +138,42 @@ export default function TrackingPage() {
             <p className="text-xs uppercase tracking-widest text-gray-400">Estado actual</p>
             <p className="text-xl font-black text-gray-800 mt-1">{ESTADO_META[estadoActual].label}</p>
             <p className="text-sm text-gray-600 mt-2">{ESTADO_META[estadoActual].desc}</p>
+          </div>
+        )}
+
+        {/* Datos del envío (transportista + guía + tracking oficial) */}
+        {(numeroGuia || transportista) && (
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+            <div className="flex items-start gap-4">
+              <div className="text-3xl shrink-0">{transportistaIcono(transportista)}</div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] uppercase tracking-widest text-gray-400">Datos del envío</p>
+                <p className="text-base font-black text-gray-800 mt-0.5">{transportistaLabel(transportista)}</p>
+                {numeroGuia && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Guía:{' '}
+                    <code className="bg-gray-100 px-1.5 py-0.5 rounded font-mono font-bold text-gray-800">
+                      {numeroGuia}
+                    </code>
+                  </p>
+                )}
+              </div>
+            </div>
+            {trackingLink ? (
+              <a
+                href={trackingLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 w-full inline-flex items-center justify-center gap-2 font-bold px-5 py-3 rounded-xl text-sm transition hover:brightness-110"
+                style={{ backgroundColor: '#FF9900', color: '#131921' }}
+              >
+                Ver tracking oficial en {transportistaLabel(transportista)} ↗
+              </a>
+            ) : transportistaTieneLink && !numeroGuia ? (
+              <p className="mt-3 text-xs text-gray-400">
+                El vendedor aún no registró el número de guía.
+              </p>
+            ) : null}
           </div>
         )}
 

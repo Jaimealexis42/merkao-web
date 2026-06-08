@@ -12,6 +12,12 @@ import {
   whatsappLink,
   normalizarTelefonoPeru,
 } from '@/lib/tracking'
+import {
+  TRANSPORTISTAS,
+  TRANSPORTISTA_META,
+  type Transportista,
+  linkTrackingExterno,
+} from '@/lib/transportistas'
 
 interface Pedido {
   id: string
@@ -38,6 +44,8 @@ export default function VendedorTrackingPage() {
   // Form de nuevo evento
   const [nuevoEstado, setNuevoEstado] = useState<EstadoTracking>('preparando')
   const [notas, setNotas] = useState('')
+  const [transportista, setTransportista] = useState<Transportista>('manual')
+  const [numeroGuia, setNumeroGuia] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [lastInserted, setLastInserted] = useState<TrackingEvento | null>(null)
@@ -70,11 +78,20 @@ export default function VendedorTrackingPage() {
 
       const { data: ev } = await supabase
         .from('order_tracking')
-        .select('id, pedido_id, tracking_code, estado, notas, created_at, updated_at')
+        .select('id, pedido_id, tracking_code, estado, notas, numero_guia, transportista, created_at, updated_at')
         .eq('pedido_id', pedidoId)
         .order('created_at', { ascending: true })
 
-      if (ev) setEventos(ev as TrackingEvento[])
+      if (ev) {
+        setEventos(ev as TrackingEvento[])
+        // Pre-cargar la guía y transportista del último evento (si ya hay)
+        // para que el vendedor no los reingrese.
+        const ultimo = ev[ev.length - 1] as TrackingEvento | undefined
+        if (ultimo?.numero_guia) setNumeroGuia(ultimo.numero_guia)
+        if (ultimo?.transportista && (TRANSPORTISTAS as string[]).includes(ultimo.transportista)) {
+          setTransportista(ultimo.transportista as Transportista)
+        }
+      }
       setLoading(false)
     })()
   }, [pedidoId, authLoading, user])
@@ -91,6 +108,8 @@ export default function VendedorTrackingPage() {
         pedido_id: pedido.id,
         estado: nuevoEstado,
         notas: notas.trim() || null,
+        numero_guia: numeroGuia.trim() || null,
+        transportista,
       }
       if (eventos.length > 0) {
         insertPayload.tracking_code = eventos[0].tracking_code
@@ -99,7 +118,7 @@ export default function VendedorTrackingPage() {
       const { data, error: e } = await supabase
         .from('order_tracking')
         .insert(insertPayload)
-        .select('id, pedido_id, tracking_code, estado, notas, created_at, updated_at')
+        .select('id, pedido_id, tracking_code, estado, notas, numero_guia, transportista, created_at, updated_at')
         .single()
 
       if (e) throw new Error(e.message)
@@ -260,6 +279,61 @@ export default function VendedorTrackingPage() {
                   </button>
                 )
               })}
+            </div>
+          </div>
+
+          {/* Transportista + número de guía */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label htmlFor="transportista" className="block text-xs font-bold text-gray-700 mb-1.5">
+                Transportista
+              </label>
+              <select
+                id="transportista"
+                value={transportista}
+                onChange={(e) => setTransportista(e.target.value as Transportista)}
+                disabled={saving}
+                className="w-full px-3 py-2.5 text-sm rounded-xl border border-gray-300 bg-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none disabled:opacity-60"
+              >
+                {TRANSPORTISTAS.map((t) => {
+                  const m = TRANSPORTISTA_META[t]
+                  return (
+                    <option key={t} value={t}>
+                      {m.icono} {m.label}
+                    </option>
+                  )
+                })}
+              </select>
+              <p className="text-[11px] text-gray-400 mt-1">{TRANSPORTISTA_META[transportista].descripcion}</p>
+            </div>
+            <div>
+              <label htmlFor="numero_guia" className="block text-xs font-bold text-gray-700 mb-1.5">
+                Número de guía
+                {!TRANSPORTISTA_META[transportista].tieneTrackingExterno && (
+                  <span className="text-gray-400 font-normal"> (opcional)</span>
+                )}
+              </label>
+              <input
+                id="numero_guia"
+                type="text"
+                value={numeroGuia}
+                onChange={(e) => setNumeroGuia(e.target.value)}
+                placeholder="Ej: 0011235813"
+                disabled={saving}
+                maxLength={50}
+                className="w-full px-3 py-2.5 text-sm rounded-xl border border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none disabled:opacity-60"
+              />
+              {numeroGuia && linkTrackingExterno(transportista, numeroGuia) && (
+                <a
+                  href={linkTrackingExterno(transportista, numeroGuia)!}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block mt-1 text-[11px] underline"
+                  style={{ color: '#007185' }}
+                >
+                  Probar tracking oficial ↗
+                </a>
+              )}
             </div>
           </div>
 
