@@ -44,7 +44,6 @@ export default function TiendaPublicaPage() {
   const [tienda, setTienda]       = useState<Tienda | null>(null)
   const [productos, setProductos] = useState<Producto[]>([])
   const [loading, setLoading]     = useState(true)
-  const [notFound, setNotFound]   = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -53,6 +52,9 @@ export default function TiendaPublicaPage() {
     const cargar = async () => {
       setLoading(true)
 
+      // Tabla `tiendas` puede estar vacía (no se crea automáticamente al
+      // registrarse el vendedor). Siempre renderizamos la storefront y
+      // dejamos que la sección de productos muestre su propio estado vacío.
       const [tiendaRes, productosRes] = await Promise.all([
         supabase
           .from('tiendas')
@@ -69,14 +71,6 @@ export default function TiendaPublicaPage() {
 
       if (cancel) return
 
-      // Si no hay perfil de tienda Y no hay productos, mostramos 404.
-      // Si hay productos, mostramos la tienda aunque el perfil esté vacío.
-      if (!tiendaRes.data && (productosRes.data?.length ?? 0) === 0) {
-        setNotFound(true)
-        setLoading(false)
-        return
-      }
-
       setTienda(tiendaRes.data ?? { id, nombre: null, descripcion: null, logo_url: null })
       setProductos(productosRes.data ?? [])
       setLoading(false)
@@ -90,19 +84,6 @@ export default function TiendaPublicaPage() {
     return (
       <div className="min-h-screen bg-[#EAEDED] flex items-center justify-center">
         <p className="text-gray-400 text-sm animate-pulse">Cargando tienda...</p>
-      </div>
-    )
-  }
-
-  if (notFound) {
-    return (
-      <div className="min-h-screen bg-[#EAEDED] flex flex-col items-center justify-center gap-4 px-4">
-        <p className="text-5xl">🏪</p>
-        <p className="text-xl font-black text-gray-800">Tienda no encontrada</p>
-        <p className="text-sm text-gray-500">Esta tienda no existe o aún no publicó productos.</p>
-        <a href="/" className="mt-2 bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-3 rounded-xl text-sm transition">
-          Volver al inicio
-        </a>
       </div>
     )
   }
