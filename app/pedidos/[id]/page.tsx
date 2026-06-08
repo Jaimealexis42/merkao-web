@@ -11,7 +11,6 @@ type Pedido = {
   id: string
   comprador_id: string | null
   vendedor_id: string | null
-  producto_id: string | null
   total: number
   comision: number | null
   estado: string

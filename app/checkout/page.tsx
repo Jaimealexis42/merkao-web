@@ -135,6 +135,8 @@ function CheckoutContent() {
           monto:            montoCentimos,
           email:            form.email,
           producto_id:      producto.id,
+          cantidad,
+          precio_unitario:  precioUnitario,
           nombre_comprador: form.nombre,
           telefono:         form.telefono,
           direccion:        form.direccion,

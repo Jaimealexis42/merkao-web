@@ -25,7 +25,7 @@ interface Pedido {
   nombre_comprador: string
   email_comprador: string
   telefono: string | null
-  direccion: string | null
+  direccion_entrega: string | null
   estado: string
   created_at: string
 }
@@ -59,7 +59,7 @@ export default function VendedorTrackingPage() {
     ;(async () => {
       const { data: p, error: eP } = await supabase
         .from('pedidos')
-        .select('id, vendedor_id, nombre_comprador, email_comprador, telefono, direccion, estado, created_at')
+        .select('id, vendedor_id, nombre_comprador, email_comprador, telefono, direccion_entrega, estado, created_at')
         .eq('id', pedidoId)
         .single()
 
@@ -232,7 +232,7 @@ export default function VendedorTrackingPage() {
           </div>
           <div>
             <p className="text-gray-400">Dirección</p>
-            <p className="font-bold text-gray-800">{pedido.direccion || '—'}</p>
+            <p className="font-bold text-gray-800">{pedido.direccion_entrega || '—'}</p>
           </div>
           {trackingCode && (
             <div className="sm:col-span-2 pt-2 border-t border-gray-100 flex items-center justify-between gap-3">

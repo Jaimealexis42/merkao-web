@@ -13,7 +13,9 @@ export async function POST(req: NextRequest) {
     token,
     monto,
     email,
-    producto_id,
+    producto_id,        // se usa para lookup del producto → vendedor_id + snapshot
+    cantidad,           // opcional, default 1
+    precio_unitario,    // opcional, snapshot del precio en el momento de la compra
     nombre_comprador,
     telefono,
     direccion,
@@ -68,25 +70,42 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: mensaje }, { status: 402 })
   }
 
-  // ── 3. Insertar pedido en Supabase ────────────────────────────────
+  // ── 3a. Lookup producto: necesitamos vendedor_id (pedidos.vendedor_id es
+  //       columna real) + snapshot de nombre/imagen para pedido_items.
+  //       Schema real de pedidos NO tiene producto_id — los items van en
+  //       la tabla pedido_items.
+  const { data: producto, error: eProducto } = await supabase
+    .from('productos')
+    .select('id, nombre, vendedor_id, imagenes, precio')
+    .eq('id', producto_id)
+    .single()
+
+  if (eProducto || !producto) {
+    console.error('[culqi-charge] Producto no encontrado:', producto_id, eProducto?.message)
+    return NextResponse.json(
+      { error: 'Pago aceptado pero el producto ya no existe. Contacta soporte con ID: ' + culqiData.id },
+      { status: 500 },
+    )
+  }
+
+  // ── 3b. Insertar pedido (schema real: total, igv, arancel, direccion_entrega) ──
   const { data: pedido, error: sbError } = await supabase
     .from('pedidos')
     .insert([{
-      producto_id,
-      nombre_comprador: nombre_comprador ?? '',
-      email_comprador:  email,
-      telefono:         telefono ?? null,
-      direccion:        direccion ?? null,
-      notas:            notas ?? null,
-      pais_comprador:   pais_comprador ?? 'PE',
-      monto_base:       +(monto / 100 / 1.18).toFixed(2),
-      monto_igv:        +(igv ?? 0),
-      monto_arancel:    +(arancel ?? 0),
-      monto_total:      +(monto / 100).toFixed(2),
-      metodo_pago:      metodo_pago ?? 'tarjeta',
-      estado:           'pagado',
-      escrow_liberado:  false,
-      culqi_charge_id:  culqiData.id as string,
+      vendedor_id:       producto.vendedor_id,
+      nombre_comprador:  nombre_comprador ?? '',
+      email_comprador:   email,
+      telefono:          telefono ?? null,
+      direccion_entrega: direccion ?? null,
+      notas:             notas ?? null,
+      pais_comprador:    pais_comprador ?? 'PE',
+      igv:               +(igv ?? 0),
+      arancel:           +(arancel ?? 0),
+      total:             +(monto / 100).toFixed(2),
+      metodo_pago:       metodo_pago ?? 'tarjeta',
+      estado:            'pagado',
+      escrow_liberado:   false,
+      culqi_charge_id:   culqiData.id as string,
     }])
     .select('id')
     .single()
@@ -98,6 +117,25 @@ export async function POST(req: NextRequest) {
       { error: 'Pago aceptado pero no se pudo registrar el pedido. Contacta soporte con el ID: ' + culqiData.id },
       { status: 500 },
     )
+  }
+
+  // ── 3c. Insertar snapshot del item en pedido_items.
+  //       Si falla, no rompe al cliente: el pedido principal ya quedó.
+  const qty = Math.max(1, Number(cantidad) || 1)
+  const precioSnap = precio_unitario != null
+    ? +precio_unitario
+    : +producto.precio || 0
+  const { error: eItem } = await supabase
+    .from('pedido_items')
+    .insert([{
+      pedido_id:       pedido.id,
+      nombre_producto: producto.nombre,
+      cantidad:        qty,
+      precio_unitario: precioSnap,
+      imagen_url:      Array.isArray(producto.imagenes) ? (producto.imagenes[0] ?? null) : null,
+    }])
+  if (eItem) {
+    console.error('[culqi-charge] Pedido OK pero pedido_items falló:', eItem.message)
   }
 
   return NextResponse.json({ success: true, pedido_id: pedido.id })
