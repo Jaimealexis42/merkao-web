@@ -9,10 +9,12 @@ type FiltroEstado = 'todos' | 'pendiente' | 'enviado' | 'entregado'
 interface Pedido {
   id: string
   nombre_comprador: string | null
-  monto_total: number | null
+  comprador_id: string | null
+  total: number | null
   estado: string | null
   created_at: string
-  producto: { id: string; nombre: string } | null
+  productoLabel: string         // armado a partir de pedido_items[]
+  totalItems: number             // cantidad total de items (suma de cantidades)
 }
 
 const ESTADO_PILL: Record<string, string> = {
@@ -46,12 +48,13 @@ export default function VendedorPedidosPage() {
       setLoading(true)
       setError(null)
 
-      // 1) Pedidos del vendedor (sin embed — no hay FK declarado entre
-      //    pedidos.producto_id y productos.id, así PostgREST no puede inferir
-      //    el join automático).
+      // 1) Pedidos del vendedor. Schema real (confirmado):
+      //    id, comprador_id, vendedor_id, total, comision, estado,
+      //    direccion_entrega, metodo_pago, culqi_charge_id, created_at,
+      //    nombre_comprador (entre otras 7 hidden). NO existe producto_id.
       const { data: pedidosData, error: ePed } = await supabase
         .from('pedidos')
-        .select('id, producto_id, nombre_comprador, monto_total, estado, created_at')
+        .select('id, comprador_id, nombre_comprador, total, estado, created_at')
         .eq('vendedor_id', user.id)
         .order('created_at', { ascending: false })
         .limit(200)
@@ -62,46 +65,55 @@ export default function VendedorPedidosPage() {
         return
       }
 
-      // 2) Si no hay pedidos, terminar.
       if (!pedidosData || pedidosData.length === 0) {
         setPedidos([])
         setLoading(false)
         return
       }
 
-      // 3) Batch-fetch de productos por ID único (1 query extra).
-      const idsUnicos = Array.from(
-        new Set(
-          pedidosData
-            .map((p) => p.producto_id)
-            .filter((id): id is string => typeof id === 'string' && id.length > 0),
-        ),
-      )
-
-      const productosMap = new Map<string, { id: string; nombre: string }>()
-      if (idsUnicos.length > 0) {
-        const { data: prods, error: eProd } = await supabase
-          .from('productos')
-          .select('id, nombre')
-          .in('id', idsUnicos)
-        if (cancel) return
-        if (eProd) {
-          // No es fatal: mostramos los pedidos pero sin nombre de producto.
-          console.warn('[pedidos] no se pudieron cargar productos:', eProd.message)
-        } else {
-          for (const p of prods ?? []) productosMap.set(p.id, p)
+      // 2) Batch-fetch de items por pedido_id IN (...). pedido_items tiene
+      //    snapshot del producto al momento de la compra (nombre_producto,
+      //    cantidad, precio_unitario), así no necesitamos joinear productos.
+      const pedidoIds = pedidosData.map((p) => p.id)
+      const itemsPorPedido = new Map<string, { nombre_producto: string; cantidad: number }[]>()
+      const { data: items, error: eItems } = await supabase
+        .from('pedido_items')
+        .select('pedido_id, nombre_producto, cantidad')
+        .in('pedido_id', pedidoIds)
+      if (cancel) return
+      if (eItems) {
+        // No es fatal: mostramos pedidos sin label de producto.
+        console.warn('[pedidos] no se pudieron cargar items:', eItems.message)
+      } else {
+        for (const it of items ?? []) {
+          const list = itemsPorPedido.get(it.pedido_id) ?? []
+          list.push({ nombre_producto: it.nombre_producto, cantidad: it.cantidad })
+          itemsPorPedido.set(it.pedido_id, list)
         }
       }
 
-      // 4) Merge en JS.
-      const merged: Pedido[] = pedidosData.map((p) => ({
-        id: p.id,
-        nombre_comprador: p.nombre_comprador,
-        monto_total: p.monto_total,
-        estado: p.estado,
-        created_at: p.created_at,
-        producto: p.producto_id ? productosMap.get(p.producto_id) ?? null : null,
-      }))
+      // 3) Merge: cada pedido obtiene su productoLabel ("nombre del primer
+      //    item" + "y N más" si hay varios) y totalItems.
+      const merged: Pedido[] = pedidosData.map((p) => {
+        const its = itemsPorPedido.get(p.id) ?? []
+        const totalItems = its.reduce((s, i) => s + (i.cantidad ?? 0), 0)
+        let productoLabel = '—'
+        if (its.length === 1) {
+          productoLabel = its[0].nombre_producto
+        } else if (its.length > 1) {
+          productoLabel = `${its[0].nombre_producto} y ${its.length - 1} más`
+        }
+        return {
+          id: p.id,
+          nombre_comprador: p.nombre_comprador,
+          comprador_id: p.comprador_id,
+          total: p.total,
+          estado: p.estado,
+          created_at: p.created_at,
+          productoLabel,
+          totalItems,
+        }
+      })
       setPedidos(merged)
       setLoading(false)
     })()
@@ -227,13 +239,24 @@ export default function VendedorPedidosPage() {
                           <code className="text-xs font-mono text-gray-500">#{p.id.slice(0, 8)}</code>
                         </td>
                         <td className="px-4 py-3 max-w-xs">
-                          <p className="text-gray-800 truncate" title={p.producto?.nombre ?? '—'}>
-                            {p.producto?.nombre ?? <span className="text-gray-400 italic">producto eliminado</span>}
+                          <p className="text-gray-800 truncate" title={p.productoLabel}>
+                            {p.productoLabel === '—'
+                              ? <span className="text-gray-400 italic">sin items</span>
+                              : p.productoLabel}
                           </p>
+                          {p.totalItems > 1 && (
+                            <p className="text-[10px] text-gray-400 mt-0.5">{p.totalItems} unidades</p>
+                          )}
                         </td>
-                        <td className="px-4 py-3 text-gray-700">{p.nombre_comprador ?? '—'}</td>
+                        <td className="px-4 py-3 text-gray-700">
+                          {p.nombre_comprador?.trim()
+                            ? p.nombre_comprador
+                            : p.comprador_id
+                              ? <span className="text-xs text-gray-500">Cliente #{p.comprador_id.slice(0, 8)}</span>
+                              : <span className="text-gray-400">—</span>}
+                        </td>
                         <td className="px-4 py-3 text-right font-bold text-gray-800">
-                          {p.monto_total != null ? fmt(p.monto_total) : '—'}
+                          {p.total != null ? fmt(p.total) : '—'}
                         </td>
                         <td className="px-4 py-3">
                           <span className={`inline-block text-[11px] font-bold px-2 py-0.5 rounded-full ${pill}`}>
@@ -274,12 +297,24 @@ export default function VendedorPedidosPage() {
                     </span>
                   </div>
                   <p className="text-sm font-bold text-gray-800 line-clamp-2">
-                    {p.producto?.nombre ?? <span className="text-gray-400 italic">producto eliminado</span>}
+                    {p.productoLabel === '—'
+                      ? <span className="text-gray-400 italic">sin items</span>
+                      : p.productoLabel}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">para {p.nombre_comprador ?? '—'}</p>
+                  {p.totalItems > 1 && (
+                    <p className="text-[10px] text-gray-400 mt-0.5">{p.totalItems} unidades</p>
+                  )}
+                  <p className="text-xs text-gray-500 mt-1">
+                    para{' '}
+                    {p.nombre_comprador?.trim()
+                      ? p.nombre_comprador
+                      : p.comprador_id
+                        ? `Cliente #${p.comprador_id.slice(0, 8)}`
+                        : '—'}
+                  </p>
                   <div className="flex items-end justify-between mt-3 pt-3 border-t border-gray-50">
                     <div>
-                      <p className="text-base font-black text-gray-800">{p.monto_total != null ? fmt(p.monto_total) : '—'}</p>
+                      <p className="text-base font-black text-gray-800">{p.total != null ? fmt(p.total) : '—'}</p>
                       <p className="text-[10px] text-gray-400 mt-0.5">{fecha}</p>
                     </div>
                     <a
