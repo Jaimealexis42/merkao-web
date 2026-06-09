@@ -1,244 +1,469 @@
 'use client'
-import { useState, useEffect } from 'react'
+
+import { useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { calcularPrecios, fmt } from '@/lib/precios'
-import { T, CAT_NAMES, type Lang } from '@/lib/translations'
-import { useCarritoStore } from '@/src/store/carritoStore'
+import { Icon, type IconName } from '@/lib/icons'
+import { SiteTopnav, SiteFootnav } from '@/components/SiteShell'
 
-const CATEGORIAS: Record<string, { id: number; icono: string }> = {
-  'ropa-y-moda':     { id: 1, icono: '👗' },
-  'electronicos':    { id: 2, icono: '📱' },
-  'alimentos':       { id: 3, icono: '🥗' },
-  'artesanias':      { id: 4, icono: '🎨' },
-  'hogar':           { id: 5, icono: '🛋️' },
-  'autos-y-motos':   { id: 6, icono: '🚗' },
-  'agricola':        { id: 7, icono: '🌾' },
-  'otros':           { id: 8, icono: '📦' },
-}
+type CatDef = { id: number; slug: string; nombre: string; icon: IconName; descripcion: string }
+
+const CATEGORIAS: CatDef[] = [
+  { id: 1, slug: 'ropa-y-moda',   nombre: 'Ropa y moda',    icon: 'shirt',      descripcion: 'Lo mejor de la moda peruana: alpaca, algodón pima y diseños únicos.' },
+  { id: 2, slug: 'electronicos',  nombre: 'Electrónicos',   icon: 'smartphone', descripcion: 'Smartphones, accesorios y tecnología con garantía y Pago Escrow.' },
+  { id: 3, slug: 'alimentos',     nombre: 'Alimentos',      icon: 'food',       descripcion: 'Café, cacao, granos andinos y productos artesanales del Perú.' },
+  { id: 4, slug: 'artesanias',    nombre: 'Artesanías',     icon: 'palette',    descripcion: 'Retablos, textiles y cerámica directo de los maestros artesanos.' },
+  { id: 5, slug: 'hogar',         nombre: 'Hogar',          icon: 'home',       descripcion: 'Muebles, decoración y todo lo que tu casa necesita.' },
+  { id: 6, slug: 'autos-y-motos', nombre: 'Autos y motos',  icon: 'car',        descripcion: 'Repuestos, accesorios y vehículos seminuevos en todo el Perú.' },
+  { id: 7, slug: 'agricola',      nombre: 'Agrícola',       icon: 'sprout',     descripcion: 'Insumos, semillas y herramientas para el campo peruano.' },
+  { id: 8, slug: 'otros',         nombre: 'Otros',          icon: 'box',        descripcion: 'Todo lo demás que vale la pena descubrir en Merkao.' },
+]
+
+const CAT_BY_SLUG = Object.fromEntries(CATEGORIAS.map((c) => [c.slug, c]))
 
 type Producto = {
   id: string
   nombre: string
   descripcion: string
   precio: number
-  precio_mayoreo?: number
-  cantidad_minima_mayoreo?: number
-  costo_envio?: number
+  precio_mayoreo: number | null
+  cantidad_minima_mayoreo: number | null
+  costo_envio: number | null
   stock: number
   categoria_id: number
-  imagenes: string[]
+  imagenes: string[] | null
   estado: string
-  ciudad: string
-  vistas: number
+  ciudad: string | null
+  condicion: string | null
+  vistas: number | null
 }
 
-function getRating(id: string) {
+type SortKey = 'relevancia' | 'precio_asc' | 'precio_desc' | 'recientes'
+
+const SORT_LABELS: Record<SortKey, string> = {
+  relevancia: 'Más relevantes',
+  precio_asc: 'Precio: menor a mayor',
+  precio_desc: 'Precio: mayor a menor',
+  recientes: 'Más recientes',
+}
+
+const CONDICIONES = [
+  { id: 'nuevo', label: 'Nuevo' },
+  { id: 'usado', label: 'Usado' },
+  { id: 'reacondicionado', label: 'Reacondicionado' },
+] as const
+
+function ratingFromId(id: string) {
   const n = id.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
   return Math.round((4.0 + (n % 11) / 10) * 10) / 10
 }
-function getReviews(id: string) {
+function reviewsFromId(id: string) {
   const n = id.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
   return 50 + (n % 950)
 }
 
-function Estrellas({ rating }: { rating: number }) {
+function Stars({ value, count }: { value: number; count?: number }) {
+  const full = Math.round(value)
   return (
-    <div className="flex items-center gap-0.5">
-      {[1,2,3,4,5].map((i) => (
-        <svg key={i} className={`w-3.5 h-3.5 ${i <= Math.round(rating) ? 'text-[#FFA41C]' : 'text-gray-300'}`} fill="currentColor" viewBox="0 0 20 20">
-          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-        </svg>
-      ))}
+    <div className="mk-stars" aria-label={`${value} de 5`}>
+      <div className="mk-stars-track">
+        {[0, 1, 2, 3, 4].map((i) => (
+          <Icon
+            key={i}
+            name="star"
+            size={14}
+            stroke={1.5}
+            className={i < full ? 'mk-star on' : 'mk-star off'}
+          />
+        ))}
+      </div>
+      {count != null && <span className="mk-stars-count">({count})</span>}
+    </div>
+  )
+}
+
+function SkeletonCard() {
+  return (
+    <div className="mk-skel">
+      <div className="mk-skel-img" />
+      <div className="mk-skel-body">
+        <div className="mk-skel-line w50" />
+        <div className="mk-skel-line w90" />
+        <div className="mk-skel-line w70" />
+      </div>
     </div>
   )
 }
 
 export default function CategoriaPage() {
-  const params = useParams()
-  const slug = params.slug as string
-  const cat = CATEGORIAS[slug]
+  const params = useParams<{ slug: string }>()
+  const slug = params.slug
+  const cat = CAT_BY_SLUG[slug]
 
   const [productos, setProductos] = useState<Producto[]>([])
   const [loading, setLoading] = useState(true)
   const [busqueda, setBusqueda] = useState('')
-  const [agregarAnim, setAgregarAnim] = useState<string | null>(null)
-  const [lang, setLang] = useState<Lang>('es')
-  const totalItems = useCarritoStore((s) => s.totalItems)
-
-  const tr = T[lang]
-  const catNames = CAT_NAMES[lang]
-
-  useEffect(() => {
-    const saved = localStorage.getItem('merkao_lang') as Lang | null
-    if (saved && ['es', 'en', 'pt'].includes(saved)) setLang(saved)
-  }, [])
+  const [precioMin, setPrecioMin] = useState<string>('')
+  const [precioMax, setPrecioMax] = useState<string>('')
+  const [ciudades, setCiudades] = useState<string[]>([])
+  const [condiciones, setCondiciones] = useState<string[]>([])
+  const [sort, setSort] = useState<SortKey>('relevancia')
+  const [showFilters, setShowFilters] = useState(false)
 
   useEffect(() => {
     if (!cat) return
-    async function cargar() {
-      setLoading(true)
-      const { data } = await supabase
-        .from('productos')
-        .select('id, nombre, descripcion, precio, precio_mayoreo, cantidad_minima_mayoreo, costo_envio, stock, categoria_id, imagenes, estado, ciudad, vistas')
-        .eq('estado', 'activo')
-        .eq('categoria_id', cat.id)
-        .order('vistas', { ascending: false })
-      setProductos(data || [])
-      setLoading(false)
-    }
-    cargar()
-  }, [slug])
+    let cancelled = false
+    setLoading(true)
+    supabase
+      .from('productos')
+      .select(
+        'id, nombre, descripcion, precio, precio_mayoreo, cantidad_minima_mayoreo, costo_envio, stock, categoria_id, imagenes, estado, ciudad, condicion, vistas',
+      )
+      .eq('estado', 'activo')
+      .eq('categoria_id', cat.id)
+      .order('vistas', { ascending: false })
+      .then(({ data }) => {
+        if (cancelled) return
+        setProductos((data ?? []) as Producto[])
+        setLoading(false)
+      })
+    return () => { cancelled = true }
+  }, [cat])
 
-  const filtrados = busqueda.trim()
-    ? productos.filter((p) => p.nombre.toLowerCase().includes(busqueda.toLowerCase()))
-    : productos
+  // Ciudades únicas desde los productos cargados, ordenadas por frecuencia desc
+  const ciudadesDisponibles = useMemo(() => {
+    const counts = new Map<string, number>()
+    productos.forEach((p) => {
+      if (p.ciudad) counts.set(p.ciudad, (counts.get(p.ciudad) ?? 0) + 1)
+    })
+    return Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([ciudad, n]) => ({ ciudad, n }))
+  }, [productos])
 
-  const agregarAlCarrito = (id: string) => {
-    setAgregarAnim(id)
-    setTimeout(() => setAgregarAnim(null), 700)
+  const toggleArr = (arr: string[], v: string) =>
+    arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]
+
+  const filtrados = useMemo(() => {
+    const min = precioMin ? Number(precioMin) : -Infinity
+    const max = precioMax ? Number(precioMax) : Infinity
+    const q = busqueda.trim().toLowerCase()
+
+    const items = productos.filter((p) => {
+      if (q && !p.nombre.toLowerCase().includes(q)) return false
+      if (p.precio < min || p.precio > max) return false
+      if (ciudades.length > 0 && (!p.ciudad || !ciudades.includes(p.ciudad))) return false
+      if (condiciones.length > 0) {
+        const cond = (p.condicion ?? 'nuevo').toLowerCase()
+        if (!condiciones.includes(cond)) return false
+      }
+      return true
+    })
+
+    if (sort === 'precio_asc') items.sort((a, b) => a.precio - b.precio)
+    else if (sort === 'precio_desc') items.sort((a, b) => b.precio - a.precio)
+    else if (sort === 'recientes') items.reverse() // ya vienen por vistas desc; recientes ~ inverso
+    return items
+  }, [productos, busqueda, precioMin, precioMax, ciudades, condiciones, sort])
+
+  const activeChips = useMemo(() => {
+    const chips: { key: string; label: string; clear: () => void }[] = []
+    if (precioMin || precioMax)
+      chips.push({
+        key: 'precio',
+        label: `${precioMin || '0'}–${precioMax || '∞'} S/`,
+        clear: () => { setPrecioMin(''); setPrecioMax('') },
+      })
+    ciudades.forEach((c) =>
+      chips.push({ key: 'ciu-' + c, label: c, clear: () => setCiudades((arr) => arr.filter((x) => x !== c)) }),
+    )
+    condiciones.forEach((c) => {
+      const label = CONDICIONES.find((x) => x.id === c)?.label ?? c
+      chips.push({ key: 'cond-' + c, label, clear: () => setCondiciones((arr) => arr.filter((x) => x !== c)) })
+    })
+    return chips
+  }, [precioMin, precioMax, ciudades, condiciones])
+
+  const clearAll = () => {
+    setBusqueda('')
+    setPrecioMin('')
+    setPrecioMax('')
+    setCiudades([])
+    setCondiciones([])
   }
 
   if (!cat) {
     return (
-      <div className="min-h-screen bg-[#EAEDED] flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-5xl mb-4">😕</p>
-          <h1 className="text-xl font-bold text-gray-700 mb-2">Categoría no encontrada</h1>
-          <a href="/" className="text-sm underline text-blue-600">Volver al inicio</a>
+      <>
+        <SiteTopnav />
+        <div className="mk-empty-page">
+          <Icon name="search" size={56} stroke={1.3} />
+          <h2>Categoría no encontrada</h2>
+          <p>El enlace que abriste no corresponde a ninguna categoría de Merkao.</p>
+          <Link href="/" className="mk-btn mk-btn-primary">
+            Volver al inicio <Icon name="arrowRight" size={16} />
+          </Link>
         </div>
-      </div>
+        <SiteFootnav />
+      </>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#EAEDED]" style={{ fontFamily: 'Inter, sans-serif' }}>
+    <>
+      <SiteTopnav active={null} />
 
-      {/* HEADER */}
-      <header className="sticky top-0 z-50" style={{ backgroundColor: '#131921' }}>
-        <div className="px-4 py-2.5 flex items-center gap-3">
-          <a href="/" className="shrink-0 flex items-center gap-0.5 border-2 border-transparent hover:border-white rounded px-1 py-1 transition">
-            <span className="text-white text-2xl font-black tracking-tight">merkao</span>
-            <span className="text-2xl font-black" style={{ color: '#FF9900' }}>.pe</span>
-          </a>
-          <div className="flex-1 flex rounded-lg overflow-hidden h-10 max-w-3xl">
-            <input
-              type="text"
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-              placeholder={`Buscar en ${catNames[cat.id]}...`}
-              className="flex-1 px-4 text-sm text-gray-800 outline-none"
-            />
-            <button className="px-4 flex items-center justify-center hover:brightness-110 transition shrink-0" style={{ backgroundColor: '#FF9900' }}>
-              <svg className="w-5 h-5 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </button>
+      <main className="mk-cat">
+        {/* Breadcrumb */}
+        <nav className="mk-crumb-row" aria-label="Migas">
+          <Link href="/">Inicio</Link>
+          <Icon name="chevronRight" size={12} stroke={2} />
+          <span>Categorías</span>
+          <Icon name="chevronRight" size={12} stroke={2} />
+          <span className="on">{cat.nombre}</span>
+        </nav>
+
+        {/* Hero categoría */}
+        <section className="mk-cat-hero">
+          <div className="mk-cat-hero-ico">
+            <Icon name={cat.icon} size={28} stroke={1.8} />
           </div>
-          <a href="/carrito" className="relative flex items-end gap-1 border-2 border-transparent hover:border-white rounded px-2 py-1 transition shrink-0">
-            <div className="relative">
-              <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M2.25 2.25a.75.75 0 000 1.5h1.386c.17 0 .318.114.362.278l2.558 9.592a3.752 3.752 0 00-2.806 3.63c0 .414.336.75.75.75h15.75a.75.75 0 000-1.5H5.378A2.25 2.25 0 017.5 15h11.218a.75.75 0 00.674-.421 60.358 60.358 0 002.96-7.228.75.75 0 00-.525-.965A60.864 60.864 0 005.68 4.509l-.232-.867A1.875 1.875 0 003.636 2.25H2.25zM3.75 20.25a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zM16.5 20.25a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0z" />
-              </svg>
-              {totalItems() > 0 && (
-                <span className="absolute -top-1 -right-1 text-xs font-black w-5 h-5 rounded-full flex items-center justify-center bg-red-500 text-white">
-                  {totalItems() > 99 ? '99+' : totalItems()}
-                </span>
+          <div style={{ flex: 1, minWidth: 220 }}>
+            <h1>{cat.nombre}</h1>
+            <p>{cat.descripcion}</p>
+          </div>
+          <div className="mk-cat-hero-cnt">
+            <div className="v">{loading ? '…' : filtrados.length}</div>
+            <div className="l">productos</div>
+          </div>
+        </section>
+
+        <div className="mk-cat-layout">
+          {/* Sidebar filtros */}
+          <aside className={'mk-filters' + (showFilters ? '' : ' collapsed')}>
+            <div className="mk-filters-h">
+              <strong><Icon name="filter" size={15} stroke={2} /> Filtros</strong>
+              <button type="button" onClick={clearAll}>Limpiar</button>
+            </div>
+
+            <div className="mk-filter-grp">
+              <span className="mk-filter-grp-title">Rango de precio (S/)</span>
+              <div className="mk-price-range">
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  placeholder="Min"
+                  min={0}
+                  value={precioMin}
+                  onChange={(e) => setPrecioMin(e.target.value)}
+                />
+                <span>—</span>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  placeholder="Max"
+                  min={0}
+                  value={precioMax}
+                  onChange={(e) => setPrecioMax(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="mk-filter-grp">
+              <span className="mk-filter-grp-title">Ciudad</span>
+              {ciudadesDisponibles.length === 0 ? (
+                <p style={{ fontSize: 12, color: 'var(--muted-2)', margin: 0 }}>Sin datos.</p>
+              ) : (
+                <div className="mk-filter-chips">
+                  {ciudadesDisponibles.map(({ ciudad, n }) => (
+                    <label key={ciudad} className="mk-filter-chip">
+                      <input
+                        type="checkbox"
+                        checked={ciudades.includes(ciudad)}
+                        onChange={() => setCiudades((arr) => toggleArr(arr, ciudad))}
+                      />
+                      <span>{ciudad}</span>
+                      <span className="n">{n}</span>
+                    </label>
+                  ))}
+                </div>
               )}
             </div>
-          </a>
-        </div>
-        <div style={{ backgroundColor: '#232f3e' }}>
-          <div className="px-4 py-2 flex items-center gap-2">
-            <a href="/" className="text-gray-400 text-xs hover:text-white transition">← Inicio</a>
-            <span className="text-gray-600 text-xs">/</span>
-            <span className="text-white text-xs font-bold">{cat.icono} {catNames[cat.id]}</span>
-          </div>
-        </div>
-      </header>
 
-      {/* CONTENIDO */}
-      <div className="max-w-screen-xl mx-auto px-4 py-6">
-
-        {/* Título */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-black text-gray-800 flex items-center gap-2">
-            {cat.icono} {catNames[cat.id]}
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            {loading ? 'Cargando...' : `${filtrados.length} productos encontrados`}
-          </p>
-        </div>
-
-        {/* Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-          {loading && Array.from({ length: 12 }).map((_, i) => (
-            <div key={i} className="bg-white rounded-xl border border-gray-100 overflow-hidden animate-pulse">
-              <div className="bg-gray-200 h-44 w-full" />
-              <div className="p-3 space-y-2">
-                <div className="bg-gray-200 h-3 rounded w-full" />
-                <div className="bg-gray-200 h-4 rounded w-1/2" />
-                <div className="bg-gray-200 h-8 rounded w-full mt-1" />
+            <div className="mk-filter-grp">
+              <span className="mk-filter-grp-title">Condición</span>
+              <div className="mk-filter-chips">
+                {CONDICIONES.map((c) => (
+                  <label key={c.id} className="mk-filter-chip">
+                    <input
+                      type="checkbox"
+                      checked={condiciones.includes(c.id)}
+                      onChange={() => setCondiciones((arr) => toggleArr(arr, c.id))}
+                    />
+                    <span>{c.label}</span>
+                  </label>
+                ))}
               </div>
             </div>
-          ))}
 
-          {!loading && filtrados.map((prod) => {
-            const rating = getRating(prod.id)
-            const reviews = getReviews(prod.id)
-            const imagen = prod.imagenes?.[0] ?? `https://picsum.photos/seed/${prod.id}/400/400`
-            const enCarrito = agregarAnim === prod.id
-            const p = calcularPrecios(prod.precio, 'PE')
+            <div className="mk-filter-grp">
+              <span className="mk-filter-grp-title">Ordenar por</span>
+              <div className="mk-filter-radios">
+                {(Object.keys(SORT_LABELS) as SortKey[]).map((k) => (
+                  <label key={k} className="mk-filter-radio">
+                    <input
+                      type="radio"
+                      name="sort"
+                      value={k}
+                      checked={sort === k}
+                      onChange={() => setSort(k)}
+                    />
+                    <span>{SORT_LABELS[k]}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </aside>
 
-            return (
-              <div key={prod.id} className="bg-white rounded-xl shadow-sm hover:shadow-lg transition border border-gray-100 overflow-hidden group flex flex-col">
-                <a href={`/productos/${prod.id}`} className="relative overflow-hidden bg-gray-50 h-40 block">
-                  <img src={imagen} alt={prod.nombre} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
-                  {prod.stock <= 5 && prod.stock > 0 && (
-                    <span className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">¡Últimas {prod.stock}!</span>
-                  )}
-                  {prod.ciudad && (
-                    <span className="absolute bottom-0 left-0 right-0 text-center text-[10px] text-white bg-black/40 py-0.5">📍 {prod.ciudad}</span>
-                  )}
-                </a>
-                <div className="p-3 flex flex-col flex-1">
-                  <a href={`/productos/${prod.id}`} className="text-xs text-gray-700 line-clamp-2 leading-snug mb-2 flex-1 hover:text-orange-600 transition">{prod.nombre}</a>
-                  <div className="flex items-center gap-1 mb-2">
-                    <Estrellas rating={rating} />
-                    <span className="text-[11px] text-[#007185]">({reviews})</span>
-                  </div>
-                  <span className="text-lg font-black mb-2 block" style={{ color: '#B12704' }}>{fmt(p.total)}</span>
-                  <div className="text-[10px] mb-2">
-                    {!prod.costo_envio
-                      ? <span className="text-blue-500">🚚 {tr.agree_shipping}</span>
-                      : <span className="text-gray-500">🚚 {tr.shipping_prefix}{fmt(prod.costo_envio)}</span>
-                    }
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <a href={`/checkout?id=${prod.id}`} className="w-full text-xs font-bold py-2 rounded-lg text-center transition hover:brightness-95 text-gray-900" style={{ backgroundColor: '#FF9900' }}>
-                      {tr.buy_now}
-                    </a>
-                    <button
-                      onClick={() => agregarAlCarrito(prod.id)}
-                      className={`w-full text-xs font-bold py-1.5 rounded-lg border transition-all ${enCarrito ? 'bg-green-500 text-white border-green-500 scale-95' : 'border-gray-300 text-gray-700 hover:border-gray-400 bg-white'}`}
-                    >
-                      {enCarrito ? tr.added : tr.add_to_cart}
-                    </button>
-                  </div>
+          {/* Listado */}
+          <section>
+            {/* Toolbar */}
+            <div className="mk-cat-toolbar">
+              <button
+                type="button"
+                className="mk-filter-toggle"
+                onClick={() => setShowFilters((s) => !s)}
+                aria-expanded={showFilters}
+              >
+                <Icon name="filter" size={16} stroke={2} />
+                {showFilters ? 'Ocultar filtros' : 'Mostrar filtros'}
+              </button>
+              <div className="mk-cat-search">
+                <Icon name="search" size={16} stroke={2} />
+                <input
+                  type="search"
+                  value={busqueda}
+                  onChange={(e) => setBusqueda(e.target.value)}
+                  placeholder={`Buscar en ${cat.nombre}…`}
+                />
+              </div>
+              <div className="mk-cat-sort">
+                <span>Ordenar:</span>
+                <select value={sort} onChange={(e) => setSort(e.target.value as SortKey)}>
+                  {(Object.keys(SORT_LABELS) as SortKey[]).map((k) => (
+                    <option key={k} value={k}>{SORT_LABELS[k]}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {activeChips.length > 0 && (
+              <div className="mk-active-chips">
+                {activeChips.map((ch) => (
+                  <button key={ch.key} type="button" className="mk-active-chip" onClick={ch.clear}>
+                    {ch.label}
+                    <Icon name="plus" size={12} stroke={2.5} style={{ transform: 'rotate(45deg)' }} />
+                  </button>
+                ))}
+                <button type="button" className="mk-active-chip" onClick={clearAll} style={{ background: 'var(--bg)', color: 'var(--muted)' }}>
+                  Limpiar todo
+                </button>
+              </div>
+            )}
+
+            {/* Grid */}
+            <div className="mk-prod-grid">
+              {loading && Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
+
+              {!loading && filtrados.map((prod) => {
+                const rating = ratingFromId(prod.id)
+                const reviews = reviewsFromId(prod.id)
+                const imagen = prod.imagenes?.[0] ?? `https://picsum.photos/seed/${prod.id}/600/600`
+                const p = calcularPrecios(prod.precio, 'PE')
+                const tieneMayoreo = !!(prod.precio_mayoreo && prod.cantidad_minima_mayoreo)
+
+                return (
+                  <article key={prod.id} className="mk-card">
+                    <Link href={`/productos/${prod.id}`} className="mk-card-media">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={imagen} alt={prod.nombre} loading="lazy" />
+                      {prod.stock > 0 && prod.stock <= 5 && (
+                        <span className="mk-card-stock">¡Últimas {prod.stock}!</span>
+                      )}
+                      {prod.ciudad && (
+                        <span className="mk-card-loc">
+                          <Icon name="mapPin" size={12} stroke={2} /> {prod.ciudad}
+                        </span>
+                      )}
+                    </Link>
+
+                    <div className="mk-card-body">
+                      <span className="mk-card-cat">{cat.nombre}</span>
+                      <Link href={`/productos/${prod.id}`} className="mk-card-title-link">
+                        <h3 className="mk-card-title">{prod.nombre}</h3>
+                      </Link>
+                      <Stars value={rating} count={reviews} />
+                      <div className="mk-card-price">{fmt(p.total)}</div>
+                      <div className="mk-card-breakdown">
+                        <div className="mk-bd-row"><span>Base</span><span>{fmt(p.base)}</span></div>
+                        <div className="mk-bd-row"><span>+ IGV 18%</span><span>{fmt(p.igv)}</span></div>
+                        <div className="mk-bd-row"><span>+ Tarifa Merkao 3%</span><span>{fmt(p.tarifaServicio)}</span></div>
+                      </div>
+                      <div className="mk-card-ship">
+                        <Icon name="truck" size={14} stroke={1.8} />
+                        {prod.costo_envio == null || prod.costo_envio === 0
+                          ? 'Envío a acordar con vendedor'
+                          : `Envío: ${fmt(prod.costo_envio)}`}
+                      </div>
+                      {tieneMayoreo && (
+                        <div style={{ fontSize: 11.5, color: 'var(--green)', background: 'var(--green-tint)', borderRadius: 8, padding: '6px 10px', fontWeight: 700 }}>
+                          Desde {prod.cantidad_minima_mayoreo} uds: {fmt(prod.precio_mayoreo!)}
+                        </div>
+                      )}
+                      <div className="mk-card-actions">
+                        <Link href={`/checkout?id=${prod.id}`} className="mk-btn mk-btn-primary">
+                          Comprar ahora
+                        </Link>
+                        <Link href={`/productos/${prod.id}`} className="mk-btn mk-btn-ghost">
+                          <Icon name="eye" size={16} /> Ver detalle
+                        </Link>
+                      </div>
+                    </div>
+                  </article>
+                )
+              })}
+
+              {!loading && filtrados.length === 0 && (
+                <div
+                  style={{
+                    gridColumn: '1/-1',
+                    padding: '52px 16px',
+                    textAlign: 'center',
+                    background: 'var(--surface)',
+                    border: '1px solid var(--line)',
+                    borderRadius: 14,
+                  }}
+                >
+                  <Icon name="search" size={40} stroke={1.5} style={{ color: 'var(--muted-2)', margin: '0 auto 12px' }} />
+                  <p style={{ fontSize: 16, fontWeight: 700, color: 'var(--ink)' }}>
+                    No encontramos productos con esos filtros.
+                  </p>
+                  <p style={{ fontSize: 13, color: 'var(--muted)', marginTop: 4 }}>
+                    Prueba quitar filtros o usar otra búsqueda.
+                  </p>
+                  <button type="button" onClick={clearAll} className="mk-btn mk-btn-ghost" style={{ marginTop: 16 }}>
+                    Limpiar filtros
+                  </button>
                 </div>
-              </div>
-            )
-          })}
-
-          {!loading && filtrados.length === 0 && (
-            <div className="col-span-full py-16 text-center">
-              <p className="text-4xl mb-3">🔍</p>
-              <p className="text-gray-600 font-bold">No hay productos en esta categoría todavía</p>
-              <a href="/" className="mt-3 inline-block text-sm underline" style={{ color: '#007185' }}>Volver al inicio</a>
+              )}
             </div>
-          )}
+          </section>
         </div>
-      </div>
-    </div>
+      </main>
+
+      <SiteFootnav />
+    </>
   )
 }

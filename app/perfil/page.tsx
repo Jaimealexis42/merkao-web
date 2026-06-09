@@ -1,65 +1,87 @@
 'use client'
-import { useState, useEffect } from 'react'
+
+import { useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { fmt } from '@/lib/precios'
 import { useAuth } from '@/lib/useAuth'
+import { Icon, type IconName } from '@/lib/icons'
+import { SiteTopnav, SiteFootnav } from '@/components/SiteShell'
+
+type EstadoPedido =
+  | 'pagado' | 'enviado' | 'entregado' | 'liberado' | 'disputado' | 'cancelado'
 
 type Pedido = {
   id: string
   total: number
-  estado: string
+  estado: EstadoPedido
   created_at: string
-  direccion_entrega: string
-  metodo_pago: string
+  direccion_entrega: string | null
+  metodo_pago: string | null
 }
 
-const ESTADO_BADGE: Record<string, { label: string; icono: string; clases: string }> = {
-  pagado:    { label: 'Pagado',    icono: '💳', clases: 'bg-blue-100 text-blue-700' },
-  enviado:   { label: 'Enviado',   icono: '📦', clases: 'bg-amber-100 text-amber-700' },
-  entregado: { label: 'Entregado', icono: '🚚', clases: 'bg-green-100 text-green-700' },
-  liberado:  { label: 'Completado', icono: '✅', clases: 'bg-green-100 text-green-800' },
-  disputado: { label: 'En disputa', icono: '⚠️', clases: 'bg-red-100 text-red-700' },
-  cancelado: { label: 'Cancelado', icono: '✕',  clases: 'bg-gray-100 text-gray-500' },
+const ESTADO_META: Record<EstadoPedido, { label: string; tone: 'amber' | 'navy' | 'green' | 'red'; icon: IconName }> = {
+  pagado:    { label: 'Pago retenido', tone: 'amber', icon: 'lock' },
+  enviado:   { label: 'En camino',     tone: 'navy',  icon: 'truck' },
+  entregado: { label: 'Por confirmar', tone: 'amber', icon: 'home' },
+  liberado:  { label: 'Completado',    tone: 'green', icon: 'checkCircle' },
+  disputado: { label: 'En disputa',    tone: 'red',   icon: 'bell' },
+  cancelado: { label: 'Cancelado',     tone: 'red',   icon: 'trash' },
 }
 
-function EstadoBadge({ estado }: { estado: string }) {
-  const b = ESTADO_BADGE[estado] ?? { label: estado, icono: '•', clases: 'bg-gray-100 text-gray-500' }
-  return (
-    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${b.clases}`}>
-      {b.icono} {b.label}
-    </span>
-  )
+const METODOS: { id: string; label: string; hint: string; icon: IconName }[] = [
+  { id: 'yape', label: 'Yape', hint: 'Billetera móvil', icon: 'zap' },
+  { id: 'plin', label: 'Plin', hint: 'Billetera móvil', icon: 'zap' },
+  { id: 'tarjeta', label: 'Visa / Mastercard', hint: 'Tokenizado por Culqi', icon: 'card' },
+  { id: 'transferencia', label: 'Transferencia bancaria', hint: 'BCP · BBVA · Interbank', icon: 'wallet' },
+]
+
+function shortId(id: string) {
+  return '#MK-' + id.slice(0, 8).toUpperCase()
+}
+
+function fmtFecha(iso: string, opts: Intl.DateTimeFormatOptions = { day: '2-digit', month: 'short', year: 'numeric' }) {
+  return new Date(iso).toLocaleDateString('es-PE', opts)
 }
 
 export default function PerfilPage() {
   const router = useRouter()
   const { user, loading: authLoading } = useAuth()
 
-  const [pedidos, setPedidos]         = useState<Pedido[]>([])
+  const [pedidos, setPedidos] = useState<Pedido[]>([])
   const [loadingPedidos, setLoadingPedidos] = useState(true)
-  const [signingOut, setSigningOut]   = useState(false)
+  const [signingOut, setSigningOut] = useState(false)
 
-  // Redirigir si no está autenticado
   useEffect(() => {
-    if (!authLoading && !user) {
-      router.replace('/login')
-    }
+    if (!authLoading && !user) router.replace('/login?redirect=/perfil')
   }, [authLoading, user, router])
 
-  // Cargar pedidos del usuario
   useEffect(() => {
     if (!user) return
+    const safeEmail = (user.email ?? '').replace(/[(),]/g, '')
+    const orFilter = safeEmail
+      ? `comprador_id.eq.${user.id},email_comprador.eq.${safeEmail}`
+      : `comprador_id.eq.${user.id}`
+
     supabase
       .from('pedidos')
       .select('id, total, estado, created_at, direccion_entrega, metodo_pago')
-      .eq('comprador_id', user.id)
+      .or(orFilter)
       .order('created_at', { ascending: false })
       .then(({ data }) => {
-        setPedidos(data ?? [])
+        setPedidos((data ?? []) as Pedido[])
         setLoadingPedidos(false)
       })
   }, [user])
+
+  const stats = useMemo(() => {
+    const completados = pedidos.filter((p) => p.estado === 'liberado').length
+    const gastado = pedidos
+      .filter((p) => p.estado !== 'cancelado' && p.estado !== 'disputado')
+      .reduce((s, p) => s + Number(p.total ?? 0), 0)
+    return { total: pedidos.length, completados, gastado: +gastado.toFixed(2) }
+  }, [pedidos])
 
   const handleSignOut = async () => {
     setSigningOut(true)
@@ -69,215 +91,224 @@ export default function PerfilPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-[#EAEDED] flex items-center justify-center">
-        <p className="text-gray-400 text-sm animate-pulse">Cargando...</p>
+      <div style={{ minHeight: '70vh', display: 'grid', placeItems: 'center' }}>
+        <p style={{ color: 'var(--muted)' }}>Cargando…</p>
       </div>
     )
   }
-
   if (!user) return null
 
-  const nombre    = user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'Usuario'
-  const avatarUrl = user.user_metadata?.avatar_url as string | undefined
-  const inicial   = nombre[0]?.toUpperCase() ?? 'U'
-  const miembro   = new Date(user.created_at).toLocaleDateString('es-PE', { month: 'long', year: 'numeric' })
+  const meta = user.user_metadata ?? {}
+  const nombre =
+    (meta.nombre as string | undefined) ??
+    (meta.full_name as string | undefined) ??
+    (user.email?.split('@')[0] ?? 'Usuario')
+  const avatarUrl = meta.avatar_url as string | undefined
+  const telefono = meta.telefono as string | undefined
+  const tipo = ((meta.tipo as string | undefined) ?? 'comprador').toLowerCase()
+  const iniciales = nombre
+    .split(/\s+/)
+    .map((w) => w[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join('')
+    .toUpperCase() || 'U'
+  const miembroDesde = fmtFecha(user.created_at, { month: 'long', year: 'numeric' })
+  const ultimoAcceso = fmtFecha(user.last_sign_in_at ?? user.created_at, {
+    day: '2-digit', month: 'long', year: 'numeric',
+  })
+  const ultimos = pedidos.slice(0, 5)
 
   return (
-    <div className="min-h-screen bg-[#EAEDED]" style={{ fontFamily: 'Inter, sans-serif' }}>
+    <>
+      <SiteTopnav active={null} showTrust />
 
-      {/* ── Header ── */}
-      <header className="sticky top-0 z-50 px-4 py-2.5 flex items-center gap-3" style={{ backgroundColor: '#131921' }}>
-        <a href="/" className="flex items-center gap-0.5 border-2 border-transparent hover:border-white rounded px-1 py-1 transition shrink-0">
-          <span className="text-white text-2xl font-black tracking-tight">merkao</span>
-          <span className="text-2xl font-black" style={{ color: '#FF9900' }}>.pe</span>
-        </a>
+      <main className="mk-prof">
+        <nav className="mk-crumb-row" aria-label="Migas">
+          <Link href="/">Inicio</Link>
+          <Icon name="chevronRight" size={12} stroke={2} />
+          <span className="on">Mi perfil</span>
+        </nav>
 
-        <div className="flex-1" />
+        {/* ── Hero / identidad ── */}
+        <section className="mk-prof-hero">
+          <div className="mk-prof-avatar" aria-hidden>
+            {avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={avatarUrl} alt={nombre} />
+            ) : (
+              <span>{iniciales}</span>
+            )}
+          </div>
 
-        <a href="/pedidos" className="hidden sm:flex flex-col shrink-0 border-2 border-transparent hover:border-white rounded px-2 py-1 transition">
-          <span className="text-gray-400 text-[11px]">Mis</span>
-          <span className="text-white text-xs font-bold">pedidos</span>
-        </a>
+          <div className="mk-prof-id">
+            <h1>{nombre}</h1>
+            <div className="mk-prof-email">{user.email}</div>
+            <div className="mk-prof-since">Miembro desde {miembroDesde}</div>
 
-        <a href="/carrito" className="relative flex items-end gap-1 border-2 border-transparent hover:border-white rounded px-2 py-1 transition shrink-0">
-          <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M2.25 2.25a.75.75 0 000 1.5h1.386c.17 0 .318.114.362.278l2.558 9.592a3.752 3.752 0 00-2.806 3.63c0 .414.336.75.75.75h15.75a.75.75 0 000-1.5H5.378A2.25 2.25 0 017.5 15h11.218a.75.75 0 00.674-.421 60.358 60.358 0 002.96-7.228.75.75 0 00-.525-.965A60.864 60.864 0 005.68 4.509l-.232-.867A1.875 1.875 0 003.636 2.25H2.25zM3.75 20.25a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zM16.5 20.25a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0z" />
-          </svg>
-          <span className="text-white text-xs font-bold hidden sm:inline pb-0.5">Carrito</span>
-        </a>
-      </header>
-
-      {/* ── Barra nav secundaria ── */}
-      <div style={{ backgroundColor: '#232f3e' }}>
-        <div className="max-w-4xl mx-auto px-4 py-2 flex items-center gap-2 text-xs text-gray-400">
-          <a href="/" className="hover:text-white transition">Inicio</a>
-          <span>/</span>
-          <span className="text-white">Mi perfil</span>
-        </div>
-      </div>
-
-      <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
-
-        {/* ── Tarjeta de perfil ── */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <div className="flex items-start gap-5 flex-wrap">
-
-            {/* Avatar */}
-            <div className="shrink-0">
-              {avatarUrl ? (
-                <img
-                  src={avatarUrl}
-                  alt={nombre}
-                  className="w-20 h-20 rounded-full object-cover border-4 border-orange-100"
-                />
+            <div className="mk-prof-chips">
+              {tipo === 'vendedor' ? (
+                <Link href="/vendedor" className="mk-btn mk-btn-ghost" style={{ padding: '8px 14px', fontSize: 13 }}>
+                  <Icon name="store" size={15} stroke={2} /> Panel de vendedor
+                </Link>
               ) : (
-                <div
-                  className="w-20 h-20 rounded-full flex items-center justify-center text-3xl font-black text-white border-4 border-orange-200"
-                  style={{ backgroundColor: '#FF9900' }}
-                >
-                  {inicial}
-                </div>
+                <Link href="/vende" className="mk-btn mk-btn-ghost" style={{ padding: '8px 14px', fontSize: 13 }}>
+                  <Icon name="store" size={15} stroke={2} /> Abrir mi tienda
+                </Link>
               )}
-            </div>
-
-            {/* Datos */}
-            <div className="flex-1 min-w-0">
-              <h1 className="text-2xl font-black text-gray-900 leading-tight truncate">{nombre}</h1>
-              <p className="text-sm text-gray-500 mt-0.5">{user.email}</p>
-              <p className="text-xs text-gray-400 mt-1">Miembro desde {miembro}</p>
-
-              <div className="flex flex-wrap gap-2 mt-4">
-                <a
-                  href="/vendedor"
-                  className="text-xs font-bold px-4 py-2 rounded-lg border-2 border-orange-400 text-orange-600 hover:bg-orange-50 transition"
-                >
-                  🏪 Panel vendedor
-                </a>
-                <button
-                  onClick={handleSignOut}
-                  disabled={signingOut}
-                  className="text-xs font-bold px-4 py-2 rounded-lg border-2 border-gray-200 text-gray-600 hover:bg-gray-50 transition disabled:opacity-50"
-                >
-                  {signingOut ? 'Cerrando...' : '🚪 Cerrar sesión'}
-                </button>
-              </div>
-            </div>
-
-            {/* Stats rápidas */}
-            <div className="flex gap-4 text-center shrink-0">
-              <div className="bg-orange-50 rounded-xl px-5 py-3">
-                <p className="text-2xl font-black text-orange-500">{pedidos.length}</p>
-                <p className="text-xs text-gray-500 mt-0.5">Pedidos</p>
-              </div>
-              <div className="bg-green-50 rounded-xl px-5 py-3">
-                <p className="text-2xl font-black text-green-600">
-                  {pedidos.filter((p) => p.estado === 'entregado' || p.estado === 'liberado').length}
-                </p>
-                <p className="text-xs text-gray-500 mt-0.5">Completados</p>
-              </div>
+              <Link href="/mis-pedidos" className="mk-btn mk-btn-ghost" style={{ padding: '8px 14px', fontSize: 13 }}>
+                <Icon name="box" size={15} stroke={2} /> Mis pedidos
+              </Link>
             </div>
           </div>
+
+          <div className="mk-prof-stats">
+            <div className="mk-prof-stat brand">
+              <div className="v">{stats.total}</div>
+              <div className="l">Pedidos</div>
+            </div>
+            <div className="mk-prof-stat green">
+              <div className="v">{stats.completados}</div>
+              <div className="l">Completados</div>
+            </div>
+            <div className="mk-prof-stat">
+              <div className="v">{fmt(stats.gastado).replace('S/ ', 'S/')}</div>
+              <div className="l">Gastado</div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Grid 2 col: Datos + Pago ── */}
+        <div className="mk-prof-grid">
+          {/* Datos personales */}
+          <section className="mk-prof-card">
+            <div className="mk-prof-card-h">
+              <h2><Icon name="user" size={16} stroke={2} /> Datos personales</h2>
+            </div>
+            <div className="mk-prof-rows">
+              <div className="mk-prof-row">
+                <span>Nombre</span>
+                <span>{nombre}</span>
+              </div>
+              <div className="mk-prof-row">
+                <span>Correo electrónico</span>
+                <span>{user.email}</span>
+              </div>
+              <div className="mk-prof-row">
+                <span>Teléfono</span>
+                <span>{telefono ? telefono : <small style={{ color: 'var(--muted-2)', fontWeight: 600 }}>Sin registrar</small>}</span>
+              </div>
+              <div className="mk-prof-row">
+                <span>Tipo de cuenta</span>
+                <span style={{ textTransform: 'capitalize' }}>{tipo}</span>
+              </div>
+              <div className="mk-prof-row">
+                <span>Verificación de email</span>
+                <span className={user.email_confirmed_at ? 'green' : 'amber'}>
+                  {user.email_confirmed_at ? '✓ Verificado' : '⚠ Pendiente'}
+                </span>
+              </div>
+              <div className="mk-prof-row">
+                <span>Último acceso</span>
+                <span>{ultimoAcceso}</span>
+              </div>
+              <div className="mk-prof-row">
+                <span>ID de usuario</span>
+                <span><code>{user.id.slice(0, 8)}…</code></span>
+              </div>
+            </div>
+          </section>
+
+          {/* Métodos de pago */}
+          <section className="mk-prof-card">
+            <div className="mk-prof-card-h">
+              <h2><Icon name="card" size={16} stroke={2} /> Métodos de pago</h2>
+              <span className="mk-prof-pay-chip">Próximamente</span>
+            </div>
+            <p style={{ fontSize: 12.5, color: 'var(--muted)', margin: '0 0 14px', lineHeight: 1.5 }}>
+              Pronto podrás guardar tus tarjetas en una bóveda cifrada por Culqi. Hoy, todos los pagos en Merkao pasan por Pago Escrow protegido.
+            </p>
+            {METODOS.map((m) => (
+              <div key={m.id} className="mk-prof-pay-row">
+                <span className="mk-prof-pay-ico">
+                  <Icon name={m.icon} size={18} stroke={1.9} />
+                </span>
+                <div className="mk-prof-pay-info">
+                  <strong>{m.label}</strong>
+                  <small>{m.hint}</small>
+                </div>
+                <span className="mk-prof-pay-chip" style={{ background: 'var(--green-tint)', color: 'var(--green)' }}>
+                  Aceptado
+                </span>
+              </div>
+            ))}
+          </section>
         </div>
 
-        {/* ── Historial de pedidos ── */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-50 flex items-center justify-between">
-            <h2 className="text-base font-black text-gray-800">Historial de pedidos</h2>
-            <a href="/pedidos" className="text-xs font-bold hover:underline" style={{ color: '#007185' }}>
-              Ver todos →
-            </a>
+        {/* ── Historial reciente ── */}
+        <section className="mk-prof-card">
+          <div className="mk-prof-card-h">
+            <h2><Icon name="box" size={16} stroke={2} /> Pedidos recientes</h2>
+            <Link href="/mis-pedidos">Ver todos <Icon name="arrowRight" size={12} stroke={2} /></Link>
           </div>
 
           {loadingPedidos ? (
-            <div className="px-6 py-10 text-center">
-              <p className="text-gray-400 text-sm animate-pulse">Cargando pedidos...</p>
+            <div className="mk-prof-empty">
+              <p>Cargando historial…</p>
             </div>
-          ) : pedidos.length === 0 ? (
-            <div className="px-6 py-12 text-center">
-              <p className="text-4xl mb-3">📦</p>
-              <p className="text-gray-600 font-medium">Todavía no tienes pedidos</p>
-              <p className="text-sm text-gray-400 mt-1">Cuando compres algo aparecerá aquí.</p>
-              <a
-                href="/"
-                className="inline-block mt-5 px-6 py-2.5 rounded-xl text-sm font-bold text-white transition hover:brightness-110"
-                style={{ backgroundColor: '#FF9900', color: '#131921' }}
-              >
-                Explorar productos
-              </a>
+          ) : ultimos.length === 0 ? (
+            <div className="mk-prof-empty">
+              <h3>Todavía no tienes pedidos</h3>
+              <p>Cuando compres en Merkao aparecerá aquí tu historial.</p>
+              <Link href="/" className="mk-btn mk-btn-primary" style={{ padding: '10px 18px', fontSize: 13 }}>
+                Explorar marketplace <Icon name="arrowRight" size={14} />
+              </Link>
             </div>
           ) : (
-            <ul className="divide-y divide-gray-50">
-              {pedidos.map((pedido) => {
-                const fecha = new Date(pedido.created_at).toLocaleDateString('es-PE', {
-                  day: '2-digit', month: 'short', year: 'numeric',
-                })
+            <div className="mk-prof-orders">
+              {ultimos.map((p) => {
+                const e = ESTADO_META[p.estado] ?? ESTADO_META.pagado
                 return (
-                  <li key={pedido.id}>
-                    <a
-                      href={`/pedidos/${pedido.id}`}
-                      className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50 transition group"
-                    >
-                      {/* Icono estado */}
-                      <div className="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center text-lg shrink-0">
-                        {ESTADO_BADGE[pedido.estado]?.icono ?? '📦'}
-                      </div>
-
-                      {/* Info */}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs text-gray-400 mb-0.5">{fecha}</p>
-                        <p className="text-sm font-bold text-gray-800 truncate">
-                          Pedido <code className="font-mono text-xs bg-gray-100 px-1 rounded">{pedido.id.slice(0, 8)}…</code>
-                        </p>
-                        <p className="text-xs text-gray-500 mt-0.5 truncate">{pedido.direccion_entrega || 'Sin dirección registrada'}</p>
-                      </div>
-
-                      {/* Estado + total */}
-                      <div className="text-right shrink-0 space-y-1.5">
-                        <EstadoBadge estado={pedido.estado} />
-                        <p className="text-sm font-black text-gray-900">{fmt(pedido.total)}</p>
-                      </div>
-
-                      <svg className="w-4 h-4 text-gray-300 group-hover:text-gray-400 shrink-0 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </a>
-                  </li>
+                  <Link key={p.id} href={`/pedidos/${p.id}`} className="mk-prof-order">
+                    <span className="mk-prof-order-ico">
+                      <Icon name={e.icon} size={18} stroke={1.9} />
+                    </span>
+                    <div className="mk-prof-order-info">
+                      <strong>{shortId(p.id)}</strong>
+                      <small>{fmtFecha(p.created_at)} · {p.direccion_entrega ? p.direccion_entrega.slice(0, 60) : 'Sin dirección'}</small>
+                    </div>
+                    <div className="mk-prof-order-right">
+                      <span className="price">{fmt(p.total)}</span>
+                      <span className={'mk-prof-badge ' + e.tone}>{e.label}</span>
+                    </div>
+                    <Icon name="chevronRight" size={14} stroke={2} style={{ color: 'var(--muted-2)', flexShrink: 0 }} />
+                  </Link>
                 )
               })}
-            </ul>
+            </div>
           )}
-        </div>
+        </section>
 
-        {/* ── Info de cuenta ── */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <h2 className="text-base font-black text-gray-800 mb-4">Información de cuenta</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-            <div>
-              <p className="text-xs text-gray-400 mb-0.5">Correo electrónico</p>
-              <p className="font-medium text-gray-800">{user.email}</p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-400 mb-0.5">ID de usuario</p>
-              <p className="font-mono text-xs text-gray-500 truncate">{user.id}</p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-400 mb-0.5">Verificación de email</p>
-              <p className={`font-medium ${user.email_confirmed_at ? 'text-green-600' : 'text-amber-600'}`}>
-                {user.email_confirmed_at ? '✅ Verificado' : '⚠️ Pendiente'}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-400 mb-0.5">Último acceso</p>
-              <p className="font-medium text-gray-800">
-                {new Date(user.last_sign_in_at ?? user.created_at).toLocaleDateString('es-PE', {
-                  day: '2-digit', month: 'long', year: 'numeric',
-                })}
-              </p>
-            </div>
+        {/* ── Sign out ── */}
+        <section className="mk-prof-danger">
+          <div>
+            <strong>Cerrar sesión</strong>
+            <small>Cerrarás tu cuenta en este navegador. Podrás volver a entrar cuando quieras.</small>
           </div>
-        </div>
+          <button
+            type="button"
+            onClick={handleSignOut}
+            disabled={signingOut}
+            className="mk-btn mk-btn-danger"
+            style={signingOut ? { opacity: 0.6, cursor: 'wait' } : undefined}
+          >
+            <Icon name="logout" size={15} stroke={2} />
+            {signingOut ? 'Cerrando…' : 'Cerrar sesión'}
+          </button>
+        </section>
+      </main>
 
-      </div>
-    </div>
+      <SiteFootnav />
+    </>
   )
 }
