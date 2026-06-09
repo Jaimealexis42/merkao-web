@@ -17,27 +17,9 @@ export const COMISIONES: Record<number, number> = {
   8: 0.05, // Otros
 }
 
-/** Tasa por nombre de categoría (para páginas que solo tienen el string). */
-const COMISIONES_POR_NOMBRE: Record<string, number> = {
-  'Ropa y Moda':   0.05,
-  'Electrónicos':  0.07,
-  'Alimentos':     0.03,
-  'Artesanías':    0.03,
-  'Hogar':         0.05,
-  'Autos y Motos': 0.07,
-  'Agrícola':      0.03,
-  'Otros':         0.05,
-}
-
 /** Porcentaje entero por categoria_id. Devuelve 5 si el id no está registrado. */
 export function getPct(categoriaId: number): number {
   return Math.round((COMISIONES[categoriaId] ?? 0.05) * 100)
-}
-
-/** Porcentaje entero por nombre de categoría. Devuelve null si no se reconoce. */
-export function getPctPorNombre(categoria: string): number | null {
-  const tasa = COMISIONES_POR_NOMBRE[categoria]
-  return tasa !== undefined ? Math.round(tasa * 100) : null
 }
 
 /**

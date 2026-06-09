@@ -9,13 +9,17 @@ type Producto = {
   id: string
   nombre: string
   precio: number
-  precio_oferta: number | null
-  categoria: string
   categoria_id: number | null
   stock: number
   estado: string
   created_at: string
-  imagen_url?: string | null
+  imagenes: string[] | null
+}
+
+const CAT_NAMES: Record<number, string> = {
+  1: 'Ropa y Moda',    2: 'Electrónicos', 3: 'Alimentos',     4: 'Artesanías',
+  5: 'Hogar',          6: 'Autos y Motos', 7: 'Agrícola',     8: 'Otros',
+  9: 'Salud y Belleza', 10: 'Deportes',   11: 'Juguetes',    12: 'Libros',
 }
 
 type Tab = 'todos' | 'activo' | 'inactivo' | 'sinstock'
@@ -186,24 +190,23 @@ export default function MisProductos() {
                       <td>
                         <div style={{ display: 'flex', gap: 12, alignItems: 'center', minWidth: 0 }}>
                           <div style={{ width: 52, height: 52, borderRadius: 10, background: 'var(--line-2)', flexShrink: 0, overflow: 'hidden', display: 'grid', placeItems: 'center' }}>
-                            {p.imagen_url ? (
+                            {p.imagenes?.[0] ? (
                               /* eslint-disable-next-line @next/next/no-img-element */
-                              <img src={p.imagen_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              <img src={p.imagenes[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             ) : (
                               <Icon name="box" size={20} stroke={1.5} className="mk-ph-ico" style={{ color: 'var(--muted-2)' }} />
                             )}
                           </div>
                           <div style={{ minWidth: 0 }}>
                             <div className="mk-vorder-prod">{p.nombre}</div>
-                            <div className="mk-vorder-date" style={{ fontSize: 11.5 }}>{p.categoria}</div>
+                            <div className="mk-vorder-date" style={{ fontSize: 11.5 }}>
+                              {p.categoria_id != null ? (CAT_NAMES[p.categoria_id] ?? 'Sin categoría') : 'Sin categoría'}
+                            </div>
                           </div>
                         </div>
                       </td>
                       <td>
                         <strong>{fmt(p.precio)}</strong>
-                        {p.precio_oferta && (
-                          <div style={{ fontSize: 11, color: 'var(--muted-2)', textDecoration: 'line-through' }}>{fmt(p.precio_oferta)}</div>
-                        )}
                       </td>
                       <td>
                         <span className={'mk-vbadge ' + stockTone}>

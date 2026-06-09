@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/useAuth'
-import { getPctPorNombre } from '@/lib/comisiones'
+import { getPct } from '@/lib/comisiones'
 import { Icon } from '@/lib/icons'
 
 const CATEGORIAS_MAP: { nombre: string; id: number }[] = [
@@ -35,12 +35,11 @@ export default function PublicarProducto() {
     nombre: '',
     descripcion: '',
     precio: '',
-    precio_oferta: '',
     precio_mayoreo: '',
     cantidad_minima_mayoreo: '',
     costo_envio: '0',
     ciudad: '',
-    categoria: '',
+    categoria_id: '',
     stock: '1',
   })
   const [loading, setLoading] = useState(false)
@@ -57,19 +56,17 @@ export default function PublicarProducto() {
     setError('')
     setExito(false)
 
-    const catObj = CATEGORIAS_MAP.find((c) => c.nombre === form.categoria)
+    const catId = form.categoria_id ? parseInt(form.categoria_id, 10) : null
 
     const { error: sbError } = await supabase.from('productos').insert([{
       nombre:                    form.nombre,
       descripcion:               form.descripcion,
       precio:                    parseFloat(form.precio),
-      precio_oferta:             form.precio_oferta ? parseFloat(form.precio_oferta) : null,
       precio_mayoreo:            form.precio_mayoreo ? parseFloat(form.precio_mayoreo) : null,
       cantidad_minima_mayoreo:   form.cantidad_minima_mayoreo ? parseInt(form.cantidad_minima_mayoreo) : null,
       costo_envio:               parseFloat(form.costo_envio || '0'),
       ciudad:                    form.ciudad || null,
-      categoria:                 form.categoria,
-      categoria_id:              catObj?.id ?? null,
+      categoria_id:              catId,
       stock:                     parseInt(form.stock),
       estado:                    'activo',
       vendedor_id:               user?.id ?? null,
@@ -78,13 +75,14 @@ export default function PublicarProducto() {
     setLoading(false)
 
     if (sbError) {
-      setError('Ocurrió un error al publicar el producto. Intenta de nuevo.')
+      console.error('[vendedor/publicar] insert error:', sbError)
+      setError(`No se pudo publicar: [${sbError.code ?? '?'}] ${sbError.message}`)
     } else {
       setExito(true)
       setForm({
-        nombre: '', descripcion: '', precio: '', precio_oferta: '',
+        nombre: '', descripcion: '', precio: '',
         precio_mayoreo: '', cantidad_minima_mayoreo: '', costo_envio: '0',
-        ciudad: '', categoria: '', stock: '1',
+        ciudad: '', categoria_id: '', stock: '1',
       })
     }
   }
@@ -164,15 +162,14 @@ export default function PublicarProducto() {
             <div className="mk-vfield-row three">
               <div className="mk-vfield">
                 <label>Categoría <span className="req">*</span></label>
-                <select name="categoria" value={form.categoria} onChange={handleChange} required>
+                <select name="categoria_id" value={form.categoria_id} onChange={handleChange} required>
                   <option value="">Selecciona una categoría</option>
                   {CATEGORIAS_MAP.map((c) => (
-                    <option key={c.id} value={c.nombre}>{c.nombre}</option>
+                    <option key={c.id} value={c.id}>{c.nombre}</option>
                   ))}
                 </select>
-                {form.categoria && (() => {
-                  const pct = getPctPorNombre(form.categoria)
-                  if (pct === null) return null
+                {form.categoria_id && (() => {
+                  const pct = getPct(parseInt(form.categoria_id, 10))
                   return (
                     <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 4 }}>
                       <span className="mk-vbadge green">0% los primeros 3 meses</span>
@@ -201,19 +198,12 @@ export default function PublicarProducto() {
           <div className="mk-vpanel-head"><div><h3>Precio y stock</h3></div></div>
 
           <div className="mk-vform">
-            <div className="mk-vfield-row three">
+            <div className="mk-vfield-row">
               <div className="mk-vfield">
                 <label>Precio unitario <span className="req">*</span></label>
                 <div className="mk-vfield-money">
                   <span className="mk-vfield-cur">S/</span>
                   <input type="number" name="precio" value={form.precio} onChange={handleChange} placeholder="0.00" required min="0.01" step="0.01" />
-                </div>
-              </div>
-              <div className="mk-vfield">
-                <label>Precio de oferta <span style={{ color: 'var(--muted-2)', fontWeight: 500 }}>opcional</span></label>
-                <div className="mk-vfield-money">
-                  <span className="mk-vfield-cur">S/</span>
-                  <input type="number" name="precio_oferta" value={form.precio_oferta} onChange={handleChange} placeholder="0.00" min="0.01" step="0.01" />
                 </div>
               </div>
               <div className="mk-vfield">
