@@ -2,6 +2,8 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { getPct } from '@/lib/comisiones'
+import { fmt } from '@/lib/precios'
+import { Icon } from '@/lib/icons'
 
 type Producto = {
   id: string
@@ -14,28 +16,24 @@ type Producto = {
   condicion: string
   estado: string
   created_at: string
+  imagen_url?: string | null
 }
 
-const iconoCategoria: Record<string, string> = {
-  'Ropa y Moda': '👗',
-  'Electrónicos': '📱',
-  'Alimentos': '🥗',
-  'Artesanías': '🎨',
-  'Hogar': '🛋️',
-  'Autos y Motos': '🚗',
-  'Agrícola': '🌾',
-  'Salud y Belleza': '💄',
-  'Deportes': '⚽',
-  'Juguetes': '🧸',
-  'Libros': '📚',
-  'Otros': '📦',
-}
+type Tab = 'todos' | 'activo' | 'inactivo' | 'sinstock'
+
+const TABS: { id: Tab; label: string }[] = [
+  { id: 'todos',    label: 'Todos' },
+  { id: 'activo',   label: 'Activos' },
+  { id: 'sinstock', label: 'Sin stock' },
+  { id: 'inactivo', label: 'Pausados' },
+]
 
 export default function MisProductos() {
-  const [productos, setProductos] = useState<Producto[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [filtro, setFiltro] = useState<'todos' | 'activo' | 'inactivo'>('todos')
+  const [productos, setProductos]   = useState<Producto[]>([])
+  const [loading, setLoading]       = useState(true)
+  const [error, setError]           = useState('')
+  const [tab, setTab]               = useState<Tab>('todos')
+  const [busqueda, setBusqueda]     = useState('')
   const [eliminando, setEliminando] = useState<string | null>(null)
 
   const cargarProductos = async () => {
@@ -73,7 +71,7 @@ export default function MisProductos() {
   }
 
   const eliminarProducto = async (id: string) => {
-    if (!confirm('¿Estás seguro de eliminar este producto? Esta acción no se puede deshacer.')) return
+    if (!confirm('¿Eliminar este producto? No se puede deshacer.')) return
     setEliminando(id)
     const { error: sbError } = await supabase.from('productos').delete().eq('id', id)
     if (!sbError) {
@@ -82,156 +80,184 @@ export default function MisProductos() {
     setEliminando(null)
   }
 
-  const productosFiltrados = productos.filter((p) =>
-    filtro === 'todos' ? true : p.estado === filtro
-  )
+  const counts = {
+    todos:    productos.length,
+    activo:   productos.filter((p) => p.estado === 'activo').length,
+    sinstock: productos.filter((p) => p.stock === 0).length,
+    inactivo: productos.filter((p) => p.estado === 'inactivo').length,
+  }
+
+  const productosFiltrados = productos.filter((p) => {
+    if (tab === 'activo'   && p.estado !== 'activo') return false
+    if (tab === 'sinstock' && p.stock !== 0)         return false
+    if (tab === 'inactivo' && p.estado !== 'inactivo') return false
+    if (busqueda && !p.nombre.toLowerCase().includes(busqueda.toLowerCase())) return false
+    return true
+  })
 
   return (
-    <div className="space-y-6">
-
-      {/* Cabecera */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
+    <>
+      <div className="mk-vmain-head">
         <div>
-          <h1 className="text-2xl font-black text-gray-800">Mis productos</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            {productos.length} producto{productos.length !== 1 ? 's' : ''} en tu tienda
-          </p>
+          <h1>Mis productos</h1>
+          <p>Gestiona tu catálogo, stock y precios.</p>
         </div>
-        <a
-          href="/vendedor/publicar"
-          className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition"
-        >
-          ➕ Publicar producto
+        <a href="/vendedor/publicar" className="mk-btn mk-btn-primary">
+          <Icon name="plus" size={17} /> Publicar producto
         </a>
       </div>
 
-      {/* Filtros */}
-      <div className="flex gap-2">
-        {(['todos', 'activo', 'inactivo'] as const).map((f) => (
-          <button
-            key={f}
-            onClick={() => setFiltro(f)}
-            className={`px-4 py-2 rounded-xl text-sm font-bold border-2 transition capitalize ${
-              filtro === f
-                ? 'border-orange-500 bg-orange-50 text-orange-600'
-                : 'border-gray-100 text-gray-500 hover:border-gray-200 bg-white'
-            }`}
-          >
-            {f === 'todos' ? 'Todos' : f === 'activo' ? '✅ Activos' : '⏸️ Inactivos'}
-            {f !== 'todos' && (
-              <span className="ml-1.5 text-xs">
-                ({productos.filter((p) => p.estado === f).length})
-              </span>
-            )}
-          </button>
-        ))}
+      {/* Toolbar */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+        <div className="mk-cat-tabs">
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={'mk-cat-tab' + (tab === t.id ? ' on' : '')}
+            >
+              {t.label} <span className="mk-cat-tab-n">{counts[t.id]}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="mk-vhdr-search" style={{ flex: 1, maxWidth: 360, height: 42 }}>
+          <Icon name="search" size={16} />
+          <input
+            placeholder="Buscar en mi catálogo…"
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+          />
+        </div>
       </div>
 
-      {/* Estado de carga */}
+      {error && (
+        <div className="mk-vempty" style={{ color: '#B91C1C', borderColor: '#FECACA', background: '#FEF2F2' }}>
+          <Icon name="lock" size={24} />
+          <p>{error}</p>
+          <button onClick={cargarProductos} className="mk-btn mk-btn-ghost">Reintentar</button>
+        </div>
+      )}
+
       {loading && (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
-          <p className="text-gray-400 text-sm animate-pulse">Cargando productos...</p>
+        <div className="mk-vempty">
+          <p style={{ color: 'var(--muted-2)' }}>Cargando productos…</p>
         </div>
       )}
 
-      {/* Error */}
-      {!loading && error && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-600 flex items-center gap-2">
-          <span>⚠️</span> {error}
-          <button onClick={cargarProductos} className="ml-auto underline hover:no-underline text-xs">Reintentar</button>
-        </div>
-      )}
-
-      {/* Lista vacía */}
       {!loading && !error && productosFiltrados.length === 0 && (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
-          <p className="text-4xl mb-3">📦</p>
-          <p className="text-gray-700 font-bold">
-            {filtro === 'todos' ? 'Aún no tienes productos' : `No hay productos ${filtro}s`}
-          </p>
-          {filtro === 'todos' && (
-            <a
-              href="/vendedor/publicar"
-              className="mt-4 inline-block bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-2.5 rounded-xl text-sm transition"
-            >
-              Publica tu primer producto
+        <div className="mk-vempty">
+          <Icon name="box" size={36} stroke={1.5} />
+          <p>{busqueda ? 'No encontramos productos con esa búsqueda.' : 'No hay productos en esta categoría.'}</p>
+          {!busqueda && tab === 'todos' && (
+            <a href="/vendedor/publicar" className="mk-btn mk-btn-primary">
+              <Icon name="plus" size={16} /> Publica tu primer producto
             </a>
           )}
         </div>
       )}
 
-      {/* Grid de productos */}
+      {/* Tabla */}
       {!loading && !error && productosFiltrados.length > 0 && (
-        <div className="grid grid-cols-1 gap-3">
-          {productosFiltrados.map((producto) => (
-            <div
-              key={producto.id}
-              className={`bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex items-center gap-4 transition ${
-                producto.estado === 'inactivo' ? 'opacity-60' : ''
-              }`}
-            >
-              {/* Ícono de categoría */}
-              <div className="w-14 h-14 bg-gray-50 rounded-xl flex items-center justify-center text-3xl shrink-0">
-                {iconoCategoria[producto.categoria] || '📦'}
-              </div>
+        <div className="mk-vpanel" style={{ padding: 0 }}>
+          <div className="mk-vtable-wrap">
+            <table className="mk-vtable">
+              <thead>
+                <tr>
+                  <th>Producto</th>
+                  <th>Precio</th>
+                  <th>Stock</th>
+                  <th>Comisión</th>
+                  <th>Estado</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {productosFiltrados.map((p) => {
+                  const stockTone =
+                    p.stock === 0 ? 'red' : p.stock < 10 ? 'amber' : 'green'
+                  const estadoMeta =
+                    p.estado === 'activo'   ? { label: 'Activo',  tone: 'green' as const } :
+                    p.estado === 'inactivo' ? { label: 'Pausado', tone: 'amber' as const } :
+                                              { label: p.estado,  tone: 'gray'  as const }
+                  const pct = p.categoria_id ? getPct(p.categoria_id) : null
 
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start gap-2 flex-wrap">
-                  <p className="font-bold text-gray-800 text-sm truncate">{producto.nombre}</p>
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-bold shrink-0 ${
-                    producto.estado === 'activo'
-                      ? 'bg-green-100 text-green-700'
-                      : 'bg-gray-100 text-gray-500'
-                  }`}>
-                    {producto.estado === 'activo' ? '✅ Activo' : '⏸️ Inactivo'}
-                  </span>
-                </div>
-                <p className="text-xs text-gray-400 mt-0.5">{producto.categoria} · {producto.condicion}</p>
-                <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-                  <span className="text-lg font-black text-orange-500">S/ {producto.precio.toFixed(2)}</span>
-                  {producto.precio_oferta && (
-                    <span className="text-xs text-gray-400 line-through">S/ {producto.precio_oferta.toFixed(2)}</span>
-                  )}
-                  <span className="text-xs text-gray-500">· Stock: {producto.stock}</span>
-                  {producto.categoria_id && (
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-orange-50 text-orange-600 font-bold">
-                      Comisión: {getPct(producto.categoria_id)} %
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Acciones */}
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  onClick={() => toggleEstado(producto.id, producto.estado)}
-                  title={producto.estado === 'activo' ? 'Desactivar' : 'Activar'}
-                  className="w-9 h-9 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-base transition"
-                >
-                  {producto.estado === 'activo' ? '⏸️' : '▶️'}
-                </button>
-                <a
-                  href={`/vendedor/editar/${producto.id}`}
-                  title="Editar"
-                  className="w-9 h-9 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-base transition"
-                >
-                  ✏️
-                </a>
-                <button
-                  onClick={() => eliminarProducto(producto.id)}
-                  disabled={eliminando === producto.id}
-                  title="Eliminar"
-                  className="w-9 h-9 rounded-xl bg-red-50 hover:bg-red-100 flex items-center justify-center text-base transition disabled:opacity-50"
-                >
-                  {eliminando === producto.id ? '⏳' : '🗑️'}
-                </button>
-              </div>
-            </div>
-          ))}
+                  return (
+                    <tr key={p.id}>
+                      <td>
+                        <div style={{ display: 'flex', gap: 12, alignItems: 'center', minWidth: 0 }}>
+                          <div style={{ width: 52, height: 52, borderRadius: 10, background: 'var(--line-2)', flexShrink: 0, overflow: 'hidden', display: 'grid', placeItems: 'center' }}>
+                            {p.imagen_url ? (
+                              /* eslint-disable-next-line @next/next/no-img-element */
+                              <img src={p.imagen_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ) : (
+                              <Icon name="box" size={20} stroke={1.5} className="mk-ph-ico" style={{ color: 'var(--muted-2)' }} />
+                            )}
+                          </div>
+                          <div style={{ minWidth: 0 }}>
+                            <div className="mk-vorder-prod">{p.nombre}</div>
+                            <div className="mk-vorder-date" style={{ fontSize: 11.5 }}>{p.categoria} · {p.condicion}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <strong>{fmt(p.precio)}</strong>
+                        {p.precio_oferta && (
+                          <div style={{ fontSize: 11, color: 'var(--muted-2)', textDecoration: 'line-through' }}>{fmt(p.precio_oferta)}</div>
+                        )}
+                      </td>
+                      <td>
+                        <span className={'mk-vbadge ' + stockTone}>
+                          {p.stock === 0 ? 'Sin stock' : `${p.stock} uds.`}
+                        </span>
+                      </td>
+                      <td>
+                        {pct !== null ? (
+                          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--brand-700)' }}>{pct}%</span>
+                        ) : (
+                          <span style={{ fontSize: 11, color: 'var(--muted-2)' }}>—</span>
+                        )}
+                      </td>
+                      <td>
+                        <span className={'mk-vbadge ' + estadoMeta.tone}>{estadoMeta.label}</span>
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', gap: 4 }}>
+                          <button
+                            onClick={() => toggleEstado(p.id, p.estado)}
+                            className="mk-vorder-more"
+                            title={p.estado === 'activo' ? 'Pausar' : 'Activar'}
+                          >
+                            <Icon name={p.estado === 'activo' ? 'pause' : 'play'} size={16} stroke={1.9} />
+                          </button>
+                          <a
+                            href={`/productos/${p.id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mk-vorder-more"
+                            title="Ver en marketplace"
+                          >
+                            <Icon name="eye" size={16} stroke={1.9} />
+                          </a>
+                          <button
+                            onClick={() => eliminarProducto(p.id)}
+                            disabled={eliminando === p.id}
+                            className="mk-vorder-more"
+                            title="Eliminar"
+                            style={eliminando === p.id ? { opacity: 0.4 } : undefined}
+                          >
+                            <Icon name="trash" size={16} stroke={1.9} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
-
-    </div>
+    </>
   )
 }

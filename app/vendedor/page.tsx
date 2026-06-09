@@ -1,136 +1,247 @@
+'use client'
+import { useEffect, useState } from 'react'
+import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/lib/useAuth'
+import { fmt } from '@/lib/precios'
+import { Icon, type IconName } from '@/lib/icons'
+
+type Stat = {
+  label: string
+  value: string
+  sub: string
+  icon: IconName
+  tone: 'brand' | 'amber' | 'navy' | 'green'
+}
+
+type PedidoMini = {
+  id: string
+  nombre_comprador: string
+  total: number
+  estado: string
+  created_at: string
+}
+
+const ESTADO_BADGE: Record<string, { label: string; tone: 'green' | 'amber' | 'navy' | 'gray' }> = {
+  pagado:    { label: 'Pago recibido', tone: 'amber' },
+  enviado:   { label: 'En camino',     tone: 'navy' },
+  entregado: { label: 'Entregado',     tone: 'green' },
+  liberado:  { label: 'Liberado',      tone: 'green' },
+  cancelado: { label: 'Cancelado',     tone: 'gray' },
+}
+
 export default function VendedorDashboard() {
-  const stats = [
-    { label: 'Productos activos', valor: '12', icono: '📦', color: 'bg-blue-50 text-blue-600' },
-    { label: 'Ventas este mes', valor: '34', icono: '🛒', color: 'bg-green-50 text-green-600' },
-    { label: 'Visitas hoy', valor: '128', icono: '👁️', color: 'bg-purple-50 text-purple-600' },
-    { label: 'Ingresos del mes', valor: 'S/ 1,240', icono: '💰', color: 'bg-orange-50 text-orange-600' },
-  ]
+  const { user } = useAuth()
+  const [stats, setStats]         = useState<Stat[]>([])
+  const [pedidosRec, setPedidos]  = useState<PedidoMini[]>([])
+  const [loading, setLoading]     = useState(true)
 
-  const pedidosRecientes = [
-    { id: '#4521', producto: 'Chompa de alpaca', comprador: 'María G.', monto: 'S/ 85.00', estado: 'Pendiente', fecha: 'Hoy, 10:32' },
-    { id: '#4520', producto: 'Vestido casual', comprador: 'Ana R.', monto: 'S/ 55.00', estado: 'Enviado', fecha: 'Ayer, 15:10' },
-    { id: '#4519', producto: 'Manta andina', comprador: 'Luis M.', monto: 'S/ 110.00', estado: 'Entregado', fecha: '29 mar' },
-    { id: '#4518', producto: 'Chompa de alpaca', comprador: 'Carlos T.', monto: 'S/ 85.00', estado: 'Entregado', fecha: '28 mar' },
-  ]
+  useEffect(() => {
+    if (!user) return
+    let cancel = false
 
-  const estadoColor: Record<string, string> = {
-    Pendiente: 'bg-yellow-100 text-yellow-700',
-    Enviado: 'bg-blue-100 text-blue-700',
-    Entregado: 'bg-green-100 text-green-700',
-    Cancelado: 'bg-red-100 text-red-700',
-  }
+    const cargar = async () => {
+      const [productosRes, pedidosRes] = await Promise.all([
+        supabase
+          .from('productos')
+          .select('id, stock, estado')
+          .eq('vendedor_id', user.id),
+        supabase
+          .from('pedidos')
+          .select('id, nombre_comprador, total, estado, created_at')
+          .eq('vendedor_id', user.id)
+          .order('created_at', { ascending: false }),
+      ])
+
+      if (cancel) return
+
+      const productos = productosRes.data ?? []
+      const pedidos   = pedidosRes.data ?? []
+
+      const activos       = productos.filter((p) => p.estado === 'activo').length
+      const sinStock      = productos.filter((p) => p.stock === 0).length
+      const porEnviar     = pedidos.filter((p) => p.estado === 'pagado').length
+      const completados   = pedidos.filter((p) => p.estado === 'entregado' || p.estado === 'liberado')
+      const ingresos      = completados.reduce((a, p) => a + (Number(p.total) || 0), 0)
+      const enEscrow      = pedidos
+        .filter((p) => ['pagado', 'enviado', 'entregado'].includes(p.estado))
+        .reduce((a, p) => a + (Number(p.total) || 0), 0)
+
+      setStats([
+        {
+          label: 'Ingresos completados',
+          value: fmt(ingresos),
+          sub: `${completados.length} venta${completados.length !== 1 ? 's' : ''}`,
+          icon: 'trending',
+          tone: 'brand',
+        },
+        {
+          label: 'Pedidos por enviar',
+          value: String(porEnviar),
+          sub: porEnviar === 0 ? 'todo al día' : 'requieren acción',
+          icon: 'clock',
+          tone: 'amber',
+        },
+        {
+          label: 'Productos activos',
+          value: String(activos),
+          sub: sinStock > 0 ? `${sinStock} sin stock` : `de ${productos.length} publicados`,
+          icon: 'box',
+          tone: 'navy',
+        },
+        {
+          label: 'Saldo en Escrow',
+          value: fmt(enEscrow),
+          sub: 'protegido hasta entrega',
+          icon: 'shield',
+          tone: 'green',
+        },
+      ])
+
+      setPedidos(pedidos.slice(0, 6) as PedidoMini[])
+      setLoading(false)
+    }
+
+    cargar()
+    return () => { cancel = true }
+  }, [user])
+
+  const nombre = user?.user_metadata?.full_name ?? user?.email?.split('@')[0] ?? 'vendedor'
 
   return (
-    <div className="space-y-6">
-
-      {/* Cabecera */}
-      <div>
-        <h1 className="text-2xl font-black text-gray-800">Panel de vendedor</h1>
-        <p className="text-sm text-gray-500 mt-1">Bienvenido de vuelta. Aquí está el resumen de tu tienda.</p>
-      </div>
-
-      {/* Beneficio principal: Sin comisiones */}
-      <div className="rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center gap-4 shadow-sm" style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}>
-        <div className="text-3xl shrink-0">✅</div>
-        <div className="flex-1 min-w-0">
-          <p className="text-white font-black text-base">Sin comisiones — recibes el 100% de tu precio</p>
-          <p className="text-emerald-50 text-xs mt-0.5 leading-relaxed">
-            Merkao cobra una tarifa de servicio del 3% al comprador. El precio que publicas es exactamente lo que ingresas por venta.
-          </p>
+    <>
+      <div className="mk-vmain-head">
+        <div>
+          <h1>Hola, {nombre}</h1>
+          <p>Aquí tienes el resumen de tu tienda en Merkao.</p>
         </div>
-        <span className="shrink-0 text-[10px] font-black tracking-widest bg-white/15 border border-white/30 rounded-full px-2.5 py-1 text-white">
-          🚀 LANZAMIENTO
-        </span>
+        <a href="/vendedor/publicar" className="mk-btn mk-btn-primary">
+          <Icon name="plus" size={17} /> Publicar producto
+        </a>
       </div>
 
-      {/* Tarjetas de estadísticas */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => (
-          <div key={stat.label} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl mb-3 ${stat.color}`}>
-              {stat.icono}
-            </div>
-            <p className="text-2xl font-black text-gray-800">{stat.valor}</p>
-            <p className="text-xs text-gray-500 mt-1">{stat.label}</p>
+      {/* Stats cards */}
+      <div className="mk-vstats">
+        {loading
+          ? Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="mk-vstat" style={{ minHeight: 130 }}>
+                <div className="mk-vstat-top">
+                  <span className="mk-vstat-label" style={{ background: 'var(--line-2)', width: 80, height: 14, borderRadius: 4, color: 'transparent' }}>—</span>
+                </div>
+                <div className="mk-vstat-value" style={{ color: 'var(--line)' }}>—</div>
+              </div>
+            ))
+          : stats.map((s) => (
+              <div key={s.label} className="mk-vstat">
+                <div className="mk-vstat-top">
+                  <span className="mk-vstat-label">{s.label}</span>
+                  <span className={'mk-vstat-ico ' + s.tone}>
+                    <Icon name={s.icon} size={18} stroke={1.9} />
+                  </span>
+                </div>
+                <div className="mk-vstat-value">{s.value}</div>
+                <div className="mk-vstat-foot">
+                  <span className="mk-vstat-sub">{s.sub}</span>
+                </div>
+              </div>
+            ))}
+      </div>
+
+      {/* Quick actions */}
+      <div className="mk-vactions">
+        <a href="/vendedor/publicar" className="mk-vaction primary">
+          <span className="mk-vaction-ico"><Icon name="plus" size={20} stroke={1.9} /></span>
+          <span className="mk-vaction-txt">
+            <strong>Publicar producto</strong>
+            <small>Agrega un nuevo artículo</small>
+          </span>
+        </a>
+        <a href="/vendedor/pedidos" className="mk-vaction">
+          <span className="mk-vaction-ico"><Icon name="truck" size={20} stroke={1.9} /></span>
+          <span className="mk-vaction-txt">
+            <strong>Ver pedidos</strong>
+            <small>Gestiona los envíos</small>
+          </span>
+        </a>
+        <a href="/vendedor/datos-pago" className="mk-vaction">
+          <span className="mk-vaction-ico"><Icon name="wallet" size={20} stroke={1.9} /></span>
+          <span className="mk-vaction-txt">
+            <strong>Datos de pago</strong>
+            <small>Cuenta para retiros</small>
+          </span>
+        </a>
+        <a href="/vendedor/mi-tienda" className="mk-vaction">
+          <span className="mk-vaction-ico"><Icon name="store" size={20} stroke={1.9} /></span>
+          <span className="mk-vaction-txt">
+            <strong>Mi tienda</strong>
+            <small>Perfil público</small>
+          </span>
+        </a>
+      </div>
+
+      {/* Promo lanzamiento */}
+      <div className="mk-vpanel" style={{ background: 'linear-gradient(135deg, var(--green) 0%, #0E5F3A 100%)', color: '#fff', borderColor: 'transparent' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+          <Icon name="checkCircle" size={32} stroke={1.7} />
+          <div style={{ flex: 1, minWidth: 240 }}>
+            <h3 style={{ color: '#fff', fontSize: 16, fontWeight: 800 }}>Sin comisiones — recibes el 100% de tu precio</h3>
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,.85)', margin: '4px 0 0' }}>
+              Merkao cobra una tarifa de servicio del 3% al comprador. El precio que publicas es exactamente lo que ingresas por venta.
+            </p>
           </div>
-        ))}
-      </div>
-
-      {/* Acciones rápidas */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-        <h2 className="text-sm font-bold text-gray-700 mb-4">Acciones rápidas</h2>
-        <div className="flex flex-wrap gap-3">
-          <a
-            href="/vendedor/publicar"
-            className="bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition"
-          >
-            ➕ Publicar producto
-          </a>
-          <a
-            href="/vendedor/mis-productos"
-            className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-bold px-5 py-2.5 rounded-xl transition"
-          >
-            📦 Ver mis productos
-          </a>
-          <a
-            href="/vendedor/pedidos"
-            className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-bold px-5 py-2.5 rounded-xl transition"
-          >
-            🚚 Ver pedidos
-          </a>
+          <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '.12em', background: 'rgba(255,255,255,.18)', border: '1px solid rgba(255,255,255,.3)', borderRadius: 20, padding: '5px 11px' }}>
+            LANZAMIENTO
+          </span>
         </div>
       </div>
 
       {/* Pedidos recientes */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="text-sm font-bold text-gray-700">Pedidos recientes</h2>
-          <a href="/vendedor/pedidos" className="text-xs text-orange-500 hover:underline font-medium">
-            Ver todos →
+      <div className="mk-vpanel">
+        <div className="mk-vpanel-head">
+          <div>
+            <h3>Pedidos recientes</h3>
+            <span className="mk-vpanel-sub">Últimos 6 pedidos</span>
+          </div>
+          <a href="/vendedor/pedidos" className="mk-block-link">
+            Ver todos <Icon name="arrowRight" size={14} />
           </a>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="text-left px-5 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Pedido</th>
-                <th className="text-left px-5 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Producto</th>
-                <th className="text-left px-5 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider hidden md:table-cell">Comprador</th>
-                <th className="text-left px-5 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Monto</th>
-                <th className="text-left px-5 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Estado</th>
-                <th className="text-left px-5 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider hidden md:table-cell">Fecha</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {pedidosRecientes.map((pedido) => (
-                <tr key={pedido.id} className="hover:bg-gray-50 transition">
-                  <td className="px-5 py-3.5 font-medium text-gray-800">{pedido.id}</td>
-                  <td className="px-5 py-3.5 text-gray-600">{pedido.producto}</td>
-                  <td className="px-5 py-3.5 text-gray-500 hidden md:table-cell">{pedido.comprador}</td>
-                  <td className="px-5 py-3.5 font-bold text-gray-800">{pedido.monto}</td>
-                  <td className="px-5 py-3.5">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${estadoColor[pedido.estado]}`}>
-                      {pedido.estado}
-                    </span>
-                  </td>
-                  <td className="px-5 py-3.5 text-gray-400 hidden md:table-cell">{pedido.fecha}</td>
+
+        {pedidosRec.length === 0 ? (
+          <div className="mk-vempty">
+            <Icon name="truck" size={32} stroke={1.5} />
+            <p>Todavía no tienes pedidos. Cuando un comprador compre un producto tuyo, aparecerá aquí.</p>
+          </div>
+        ) : (
+          <div className="mk-vtable-wrap">
+            <table className="mk-vtable">
+              <thead>
+                <tr>
+                  <th>Pedido</th>
+                  <th>Cliente</th>
+                  <th>Total</th>
+                  <th>Fecha</th>
+                  <th>Estado</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {pedidosRec.map((p) => {
+                  const fecha = new Date(p.created_at).toLocaleDateString('es-PE', { day: '2-digit', month: 'short' })
+                  const badge = ESTADO_BADGE[p.estado] ?? { label: p.estado, tone: 'gray' as const }
+                  return (
+                    <tr key={p.id}>
+                      <td><span className="mk-vorder-id">{p.id.slice(0, 8)}</span></td>
+                      <td className="mk-vorder-prod">{p.nombre_comprador || 'Comprador'}</td>
+                      <td><strong>{fmt(Number(p.total) || 0)}</strong></td>
+                      <td className="mk-vorder-date">{fecha}</td>
+                      <td><span className={'mk-vbadge ' + badge.tone}>{badge.label}</span></td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
-
-      {/* Consejos */}
-      <div className="bg-orange-50 border border-orange-100 rounded-2xl p-5">
-        <h2 className="text-sm font-bold text-orange-800 mb-3">💡 Consejos para vender más</h2>
-        <ul className="space-y-2 text-xs text-orange-700">
-          <li>• Sube fotos de calidad — los productos con fotos reales reciben 3x más visitas.</li>
-          <li>• Responde mensajes en menos de 1 hora para mejorar tu reputación.</li>
-          <li>• Ofrece envío por Olva Courier o Shalom para llegar a todo el Perú.</li>
-        </ul>
-      </div>
-
-    </div>
+    </>
   )
 }

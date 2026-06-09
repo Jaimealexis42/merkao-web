@@ -18,6 +18,7 @@ import {
   type Transportista,
   linkTrackingExterno,
 } from '@/lib/transportistas'
+import { Icon } from '@/lib/icons'
 
 interface Pedido {
   id: string
@@ -84,8 +85,6 @@ export default function VendedorTrackingPage() {
 
       if (ev) {
         setEventos(ev as TrackingEvento[])
-        // Pre-cargar la guía y transportista del último evento (si ya hay)
-        // para que el vendedor no los reingrese.
         const ultimo = ev[ev.length - 1] as TrackingEvento | undefined
         if (ultimo?.numero_guia) setNumeroGuia(ultimo.numero_guia)
         if (ultimo?.transportista && (TRANSPORTISTAS as string[]).includes(ultimo.transportista)) {
@@ -101,9 +100,6 @@ export default function VendedorTrackingPage() {
     setError(null)
     setSaving(true)
     try {
-      // Si ya hay un evento previo reutilizamos su tracking_code para
-      // que el comprador siga viendo el mismo link. Si es el primero,
-      // dejamos que el default lo genere (devuelve el code en `select`).
       const insertPayload: Record<string, unknown> = {
         pedido_id: pedido.id,
         estado: nuevoEstado,
@@ -134,38 +130,26 @@ export default function VendedorTrackingPage() {
   }
 
   if (authLoading || loading) {
-    return (
-      <div className="min-h-screen bg-[#EAEDED] flex items-center justify-center">
-        <p className="text-gray-400 text-sm animate-pulse">Cargando panel…</p>
-      </div>
-    )
+    return <div className="mk-vempty"><p style={{ color: 'var(--muted-2)' }}>Cargando panel…</p></div>
   }
 
   if (notFound) {
     return (
-      <div className="min-h-screen bg-[#EAEDED] flex items-center justify-center">
-        <div className="text-center px-4">
-          <p className="text-5xl mb-3">⚠️</p>
-          <p className="text-gray-700 font-bold">Pedido no encontrado</p>
-          <a href="/vendedor" className="mt-4 inline-block text-sm underline" style={{ color: '#007185' }}>
-            Volver al panel
-          </a>
-        </div>
+      <div className="mk-vempty">
+        <Icon name="box" size={36} stroke={1.5} />
+        <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--ink)' }}>Pedido no encontrado</p>
+        <a href="/vendedor/pedidos" className="mk-btn mk-btn-ghost">Volver a pedidos</a>
       </div>
     )
   }
 
   if (!authorized || !pedido) {
     return (
-      <div className="min-h-screen bg-[#EAEDED] flex items-center justify-center">
-        <div className="text-center px-4">
-          <p className="text-5xl mb-3">🔒</p>
-          <p className="text-gray-700 font-bold">No tienes permiso</p>
-          <p className="text-sm text-gray-400 mt-1">Este pedido no pertenece a tu tienda.</p>
-          <a href="/vendedor" className="mt-4 inline-block text-sm underline" style={{ color: '#007185' }}>
-            Volver al panel
-          </a>
-        </div>
+      <div className="mk-vempty">
+        <Icon name="lock" size={36} stroke={1.5} />
+        <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--ink)' }}>No tienes permiso para ver este pedido</p>
+        <p style={{ fontSize: 12.5, color: 'var(--muted)' }}>Este pedido no pertenece a tu tienda.</p>
+        <a href="/vendedor/pedidos" className="mk-btn mk-btn-ghost">Volver a pedidos</a>
       </div>
     )
   }
@@ -173,9 +157,6 @@ export default function VendedorTrackingPage() {
   const ultimoEvento = eventos[eventos.length - 1] ?? null
   const trackingCode = ultimoEvento?.tracking_code ?? null
   const telNormalizado = normalizarTelefonoPeru(pedido.telefono)
-
-  // Link WhatsApp: si hay un evento recién insertado, generamos el mensaje
-  // con su estado. Si no, usamos el último estado registrado (o nada).
   const eventoParaNotificar = lastInserted ?? ultimoEvento
   const waMessage = eventoParaNotificar
     ? mensajeWhatsApp({
@@ -188,78 +169,72 @@ export default function VendedorTrackingPage() {
   const waLink = waMessage ? whatsappLink({ telefono: pedido.telefono, mensaje: waMessage }) : null
 
   return (
-    <div className="min-h-screen bg-[#EAEDED]" style={{ fontFamily: 'Inter, sans-serif' }}>
-      <header className="sticky top-0 z-50 px-4 py-2.5 flex items-center gap-3" style={{ backgroundColor: '#131921' }}>
-        <a href="/" className="flex items-center gap-0.5 shrink-0">
-          <span className="text-white text-2xl font-black tracking-tight">merkao</span>
-          <span className="text-2xl font-black" style={{ color: '#FF9900' }}>.pe</span>
-        </a>
-        <div className="flex-1" />
-        <a href="/vendedor" className="text-gray-400 text-xs hover:text-white transition">← Panel vendedor</a>
-      </header>
-
-      <div className="max-w-3xl mx-auto px-4 py-8 space-y-5">
+    <>
+      <div className="mk-vmain-head">
         <div>
-          <p className="text-xs font-black tracking-widest" style={{ color: '#FF9900' }}>PANEL VENDEDOR · TRACKING</p>
-          <h1 className="text-2xl font-black text-gray-800 mt-1">Actualizar estado del envío</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Pedido <code className="bg-gray-100 px-1.5 py-0.5 rounded">{pedido.id.slice(0, 8)}</code>
+          <button onClick={() => router.push('/vendedor/pedidos')} className="mk-vback">
+            <Icon name="chevronLeft" size={14} /> Volver a pedidos
+          </button>
+          <h1>Tracking del pedido</h1>
+          <p>
+            Pedido <code style={{ background: 'var(--bg)', padding: '2px 6px', borderRadius: 4 }}>{pedido.id.slice(0, 8)}</code>
             {' · '}para {pedido.nombre_comprador}
           </p>
         </div>
+      </div>
 
-        {/* Datos del comprador */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 grid sm:grid-cols-2 gap-3 text-xs">
+      {/* Datos del comprador */}
+      <div className="mk-vpanel">
+        <div className="mk-vpanel-head">
+          <div><h3>Datos del comprador</h3></div>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
           <div>
-            <p className="text-gray-400">Nombre</p>
-            <p className="font-bold text-gray-800">{pedido.nombre_comprador}</p>
+            <div style={{ fontSize: 11.5, color: 'var(--muted-2)' }}>Nombre</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--ink)' }}>{pedido.nombre_comprador}</div>
           </div>
           <div>
-            <p className="text-gray-400">Email</p>
-            <p className="font-bold text-gray-800 break-all">{pedido.email_comprador}</p>
+            <div style={{ fontSize: 11.5, color: 'var(--muted-2)' }}>Email</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--ink)', wordBreak: 'break-all' }}>{pedido.email_comprador}</div>
           </div>
           <div>
-            <p className="text-gray-400">Teléfono</p>
-            <p className="font-bold text-gray-800">
-              {pedido.telefono || <span className="text-red-600">⚠️ no registrado</span>}
+            <div style={{ fontSize: 11.5, color: 'var(--muted-2)' }}>Teléfono</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--ink)' }}>
+              {pedido.telefono || <span style={{ color: '#B91C1C' }}>⚠ no registrado</span>}
               {pedido.telefono && telNormalizado && (
-                <span className="ml-2 text-[10px] text-gray-400">→ +{telNormalizado}</span>
+                <span style={{ marginLeft: 8, fontSize: 11, color: 'var(--muted-2)' }}>→ +{telNormalizado}</span>
               )}
               {pedido.telefono && !telNormalizado && (
-                <span className="ml-2 text-[10px] text-red-500">⚠ formato inválido</span>
+                <span style={{ marginLeft: 8, fontSize: 11, color: '#B91C1C' }}>⚠ formato inválido</span>
               )}
-            </p>
+            </div>
           </div>
           <div>
-            <p className="text-gray-400">Dirección</p>
-            <p className="font-bold text-gray-800">{pedido.direccion_entrega || '—'}</p>
+            <div style={{ fontSize: 11.5, color: 'var(--muted-2)' }}>Dirección</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--ink)' }}>{pedido.direccion_entrega || '—'}</div>
           </div>
           {trackingCode && (
-            <div className="sm:col-span-2 pt-2 border-t border-gray-100 flex items-center justify-between gap-3">
+            <div style={{ gridColumn: '1/-1', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingTop: 12, borderTop: '1px solid var(--line-2)' }}>
               <div>
-                <p className="text-gray-400">Código de tracking</p>
-                <code className="text-sm font-mono font-bold" style={{ color: '#007185' }}>{trackingCode}</code>
+                <div style={{ fontSize: 11.5, color: 'var(--muted-2)' }}>Código de tracking</div>
+                <code style={{ fontSize: 14, fontFamily: 'ui-monospace, monospace', fontWeight: 700, color: 'var(--brand-700)' }}>{trackingCode}</code>
               </div>
-              <a
-                href={`/tracking/${trackingCode}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs font-bold underline shrink-0"
-                style={{ color: '#007185' }}
-              >
-                Ver como comprador ↗
+              <a href={`/tracking/${trackingCode}`} target="_blank" rel="noopener noreferrer" className="mk-btn mk-btn-ghost">
+                <Icon name="eye" size={14} /> Ver como comprador
               </a>
             </div>
           )}
         </div>
+      </div>
 
-        {/* Form nuevo evento */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
-          <h2 className="text-sm font-bold text-gray-800">Registrar nuevo evento</h2>
+      {/* Form nuevo evento */}
+      <div className="mk-vpanel">
+        <div className="mk-vpanel-head"><div><h3>Registrar nuevo evento</h3></div></div>
 
-          <div>
-            <label className="block text-xs font-bold text-gray-700 mb-1.5">Nuevo estado</label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <div className="mk-vform">
+          <div className="mk-vfield">
+            <label>Nuevo estado</label>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8 }}>
               {ESTADOS.map((s) => {
                 const m = ESTADO_META[s]
                 const active = nuevoEstado === s
@@ -268,13 +243,22 @@ export default function VendedorTrackingPage() {
                     key={s}
                     type="button"
                     onClick={() => setNuevoEstado(s)}
-                    className={
-                      active
-                        ? 'flex flex-col items-center gap-1 rounded-xl border-2 border-orange-500 bg-orange-50 px-3 py-3 text-xs font-bold text-orange-700'
-                        : 'flex flex-col items-center gap-1 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 px-3 py-3 text-xs font-medium text-gray-700'
-                    }
+                    style={{
+                      padding: '12px 10px',
+                      borderRadius: 11,
+                      border: active ? '2px solid var(--brand)' : '1.5px solid var(--line)',
+                      background: active ? 'var(--brand-tint)' : '#fff',
+                      color: active ? 'var(--brand-700)' : 'var(--ink)',
+                      fontSize: 12.5,
+                      fontWeight: active ? 800 : 600,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: 4,
+                    }}
                   >
-                    <span className="text-xl">{m.icono}</span>
+                    <span style={{ fontSize: 18 }}>{m.icono}</span>
                     {m.label}
                   </button>
                 )
@@ -282,35 +266,29 @@ export default function VendedorTrackingPage() {
             </div>
           </div>
 
-          {/* Transportista + número de guía */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label htmlFor="transportista" className="block text-xs font-bold text-gray-700 mb-1.5">
-                Transportista
-              </label>
+          <div className="mk-vfield-row">
+            <div className="mk-vfield">
+              <label htmlFor="transportista">Transportista</label>
               <select
                 id="transportista"
                 value={transportista}
                 onChange={(e) => setTransportista(e.target.value as Transportista)}
                 disabled={saving}
-                className="w-full px-3 py-2.5 text-sm rounded-xl border border-gray-300 bg-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none disabled:opacity-60"
               >
                 {TRANSPORTISTAS.map((t) => {
                   const m = TRANSPORTISTA_META[t]
                   return (
-                    <option key={t} value={t}>
-                      {m.icono} {m.label}
-                    </option>
+                    <option key={t} value={t}>{m.icono} {m.label}</option>
                   )
                 })}
               </select>
-              <p className="text-[11px] text-gray-400 mt-1">{TRANSPORTISTA_META[transportista].descripcion}</p>
+              <span className="mk-vfield-hint">{TRANSPORTISTA_META[transportista].descripcion}</span>
             </div>
-            <div>
-              <label htmlFor="numero_guia" className="block text-xs font-bold text-gray-700 mb-1.5">
+            <div className="mk-vfield">
+              <label htmlFor="numero_guia">
                 Número de guía
                 {!TRANSPORTISTA_META[transportista].tieneTrackingExterno && (
-                  <span className="text-gray-400 font-normal"> (opcional)</span>
+                  <span style={{ color: 'var(--muted-2)', fontWeight: 500 }}> opcional</span>
                 )}
               </label>
               <input
@@ -321,15 +299,13 @@ export default function VendedorTrackingPage() {
                 placeholder="Ej: 0011235813"
                 disabled={saving}
                 maxLength={50}
-                className="w-full px-3 py-2.5 text-sm rounded-xl border border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none disabled:opacity-60"
               />
               {numeroGuia && linkTrackingExterno(transportista, numeroGuia) && (
                 <a
                   href={linkTrackingExterno(transportista, numeroGuia)!}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-block mt-1 text-[11px] underline"
-                  style={{ color: '#007185' }}
+                  style={{ fontSize: 11.5, color: 'var(--brand-700)', fontWeight: 700, textDecoration: 'underline', marginTop: 4, display: 'inline-block' }}
                 >
                   Probar tracking oficial ↗
                 </a>
@@ -337,9 +313,9 @@ export default function VendedorTrackingPage() {
             </div>
           </div>
 
-          <div>
-            <label htmlFor="notas" className="block text-xs font-bold text-gray-700 mb-1.5">
-              Notas <span className="text-gray-400 font-normal">(opcional, visible para el comprador)</span>
+          <div className="mk-vfield">
+            <label htmlFor="notas">
+              Notas <span style={{ color: 'var(--muted-2)', fontWeight: 500 }}>visible para el comprador</span>
             </label>
             <textarea
               id="notas"
@@ -349,91 +325,81 @@ export default function VendedorTrackingPage() {
               maxLength={500}
               placeholder="Ej: enviado vía Olva Courier, guía 1234567. Llega en 2-3 días hábiles."
               disabled={saving}
-              className="w-full px-3 py-2.5 text-sm rounded-xl border border-gray-300 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none resize-y disabled:opacity-60"
             />
-            <p className="text-[11px] text-gray-400 mt-1 text-right">{notas.length}/500</p>
+            <span className="mk-vfield-counter">{notas.length}/500</span>
           </div>
 
           {error && (
-            <div className="rounded-xl bg-red-50 border border-red-200 text-red-700 px-3 py-2 text-sm">
+            <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', color: '#B91C1C', padding: '10px 14px', borderRadius: 10, fontSize: 13 }}>
               {error}
             </div>
           )}
 
-          <button
-            type="button"
-            onClick={submit}
-            disabled={saving}
-            className="w-full font-bold px-6 py-3 rounded-xl text-sm transition hover:brightness-110 disabled:opacity-60"
-            style={{ backgroundColor: '#FF9900', color: '#131921' }}
-          >
-            {saving ? 'Guardando…' : '💾 Guardar evento'}
+          <button type="button" onClick={submit} disabled={saving} className="mk-btn mk-btn-primary" style={{ padding: '13px 22px', fontSize: 15 }}>
+            {saving ? 'Guardando…' : <><Icon name="check" size={17} /> Guardar evento</>}
           </button>
         </div>
+      </div>
 
-        {/* Acción WhatsApp */}
-        {eventoParaNotificar && (
-          <div className="bg-green-50 border border-green-200 rounded-2xl p-5">
-            <h2 className="text-sm font-bold text-green-900 mb-2">📲 Notificar al comprador por WhatsApp</h2>
-            <p className="text-xs text-green-800 mb-3">
-              Al hacer click se abre WhatsApp Web/App con el mensaje pre-cargado para que lo envíes vos.
-              Se envía desde <strong>tu</strong> WhatsApp — más personal y sin requerir API de Meta.
-            </p>
-            {waMessage && (
-              <pre className="bg-white border border-green-200 rounded-xl p-3 text-xs text-gray-700 whitespace-pre-wrap mb-3">
-                {waMessage}
-              </pre>
-            )}
-            {waLink ? (
-              <a
-                href={waLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 font-bold px-5 py-2.5 rounded-xl text-sm bg-green-600 hover:bg-green-700 text-white transition"
-              >
-                💬 Abrir WhatsApp con mensaje
-              </a>
-            ) : (
-              <p className="text-xs text-red-700 font-bold">
-                ⚠️ No hay teléfono válido del comprador. Pedí su número y registralo en el pedido.
-              </p>
-            )}
-          </div>
-        )}
-
-        {/* Historial */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-50">
-            <h2 className="text-sm font-bold text-gray-800">Historial de tracking</h2>
-            <p className="text-xs text-gray-500 mt-0.5">{eventos.length} evento{eventos.length === 1 ? '' : 's'}</p>
-          </div>
-          {eventos.length === 0 ? (
-            <div className="px-6 py-8 text-center text-sm text-gray-400">
-              Todavía no hay eventos registrados. Creá el primero arriba.
+      {/* Acción WhatsApp */}
+      {eventoParaNotificar && (
+        <div className="mk-vpanel" style={{ background: 'var(--green-tint)', borderColor: 'rgba(19,122,75,.3)' }}>
+          <div className="mk-vpanel-head">
+            <div>
+              <h3 style={{ color: 'var(--green)' }}>
+                <Icon name="message" size={17} stroke={1.9} /> Notificar al comprador por WhatsApp
+              </h3>
+              <span className="mk-vpanel-sub">
+                Al hacer click se abre WhatsApp con el mensaje pre-cargado. Se envía desde <strong>tu</strong> WhatsApp.
+              </span>
             </div>
+          </div>
+          {waMessage && (
+            <pre style={{ background: '#fff', border: '1px solid #BFE0CD', borderRadius: 10, padding: 12, fontSize: 12, color: 'var(--ink)', whiteSpace: 'pre-wrap', margin: 0 }}>
+              {waMessage}
+            </pre>
+          )}
+          {waLink ? (
+            <a href={waLink} target="_blank" rel="noopener noreferrer" className="mk-btn" style={{ background: 'var(--green)', color: '#fff', alignSelf: 'flex-start' }}>
+              <Icon name="message" size={16} stroke={1.8} /> Abrir WhatsApp con mensaje
+            </a>
           ) : (
-            <ul className="divide-y divide-gray-50">
-              {[...eventos].reverse().map((e) => {
-                const m = ESTADO_META[e.estado as EstadoTracking] ?? ESTADO_META.preparando
-                const fecha = new Date(e.created_at).toLocaleString('es-PE', {
-                  dateStyle: 'medium',
-                  timeStyle: 'short',
-                })
-                return (
-                  <li key={e.id} className="px-6 py-4 flex items-start gap-3">
-                    <span className="text-xl shrink-0">{m.icono}</span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-gray-800">{m.label}</p>
-                      {e.notas && <p className="text-xs text-gray-600 mt-1 whitespace-pre-wrap">{e.notas}</p>}
-                      <p className="text-[11px] text-gray-400 mt-1">{fecha}</p>
-                    </div>
-                  </li>
-                )
-              })}
-            </ul>
+            <p style={{ fontSize: 12.5, color: '#B91C1C', fontWeight: 700, margin: 0 }}>
+              ⚠ No hay teléfono válido del comprador. Pedí su número y registralo en el pedido.
+            </p>
           )}
         </div>
+      )}
+
+      {/* Historial */}
+      <div className="mk-vpanel" style={{ padding: 0 }}>
+        <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--line-2)' }}>
+          <h3>Historial de tracking</h3>
+          <span className="mk-vpanel-sub">{eventos.length} evento{eventos.length === 1 ? '' : 's'}</span>
+        </div>
+        {eventos.length === 0 ? (
+          <div style={{ padding: '32px 24px', textAlign: 'center', fontSize: 13, color: 'var(--muted-2)' }}>
+            Todavía no hay eventos registrados. Creá el primero arriba.
+          </div>
+        ) : (
+          <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+            {[...eventos].reverse().map((e) => {
+              const m = ESTADO_META[e.estado as EstadoTracking] ?? ESTADO_META.preparando
+              const fecha = new Date(e.created_at).toLocaleString('es-PE', { dateStyle: 'medium', timeStyle: 'short' })
+              return (
+                <li key={e.id} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '14px 24px', borderTop: '1px solid var(--line-2)' }}>
+                  <span style={{ fontSize: 22, flexShrink: 0 }}>{m.icono}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: 14, fontWeight: 800, color: 'var(--ink)' }}>{m.label}</p>
+                    {e.notas && <p style={{ fontSize: 12.5, color: 'var(--muted)', margin: '4px 0 0', whiteSpace: 'pre-wrap' }}>{e.notas}</p>}
+                    <p style={{ fontSize: 11.5, color: 'var(--muted-2)', margin: '4px 0 0' }}>{fecha}</p>
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
+        )}
       </div>
-    </div>
+    </>
   )
 }

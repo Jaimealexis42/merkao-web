@@ -2,38 +2,20 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/useAuth'
+import { fmt } from '@/lib/precios'
+import { Icon } from '@/lib/icons'
 
-type Tienda = {
-  nombre: string
-  descripcion: string
-  logo_url: string
-}
-
-const EMPTY: Tienda = {
-  nombre: '',
-  descripcion: '',
-  logo_url: '',
-}
+type Tienda = { nombre: string; descripcion: string; logo_url: string }
+const EMPTY: Tienda = { nombre: '', descripcion: '', logo_url: '' }
 
 type Stats = {
   productosActivos: number
   productosTotal: number
   ventasCompletadas: number
   ingresos: number
-  valoracion: number
-  numResenas: number
 }
-
-const EMPTY_STATS: Stats = {
-  productosActivos: 0,
-  productosTotal: 0,
-  ventasCompletadas: 0,
-  ingresos: 0,
-  valoracion: 0,
-  numResenas: 0,
-}
-
-const ESTADOS_VENTA_COMPLETADA = ['entregado', 'liberado']
+const EMPTY_STATS: Stats = { productosActivos: 0, productosTotal: 0, ventasCompletadas: 0, ingresos: 0 }
+const ESTADOS_COMPLETADA = ['entregado', 'liberado']
 
 export default function MiTiendaPage() {
   const { user, loading: authLoading } = useAuth()
@@ -57,19 +39,9 @@ export default function MiTiendaPage() {
       setError('')
 
       const [tiendaRes, productosRes, pedidosRes] = await Promise.all([
-        supabase
-          .from('tiendas')
-          .select('nombre, descripcion, logo_url')
-          .eq('id', user.id)
-          .maybeSingle(),
-        supabase
-          .from('productos')
-          .select('id, estado')
-          .eq('vendedor_id', user.id),
-        supabase
-          .from('pedidos')
-          .select('id, total, estado')
-          .eq('vendedor_id', user.id),
+        supabase.from('tiendas').select('nombre, descripcion, logo_url').eq('id', user.id).maybeSingle(),
+        supabase.from('productos').select('id, estado').eq('vendedor_id', user.id),
+        supabase.from('pedidos').select('id, total, estado').eq('vendedor_id', user.id),
       ])
 
       if (cancel) return
@@ -83,16 +55,14 @@ export default function MiTiendaPage() {
       setForm(tiendaData)
 
       const productos = productosRes.data ?? []
-      const pedidos   = pedidosRes.data   ?? []
-      const completados = pedidos.filter((p) => ESTADOS_VENTA_COMPLETADA.includes(p.estado))
+      const pedidos   = pedidosRes.data ?? []
+      const completados = pedidos.filter((p) => ESTADOS_COMPLETADA.includes(p.estado))
 
       setStats({
         productosActivos:  productos.filter((p) => p.estado === 'activo').length,
         productosTotal:    productos.length,
         ventasCompletadas: completados.length,
-        ingresos:          completados.reduce((acc, p) => acc + (Number(p.total) || 0), 0),
-        valoracion:        0,
-        numResenas:        0,
+        ingresos:          completados.reduce((a, p) => a + (Number(p.total) || 0), 0),
       })
 
       setLoading(false)
@@ -112,18 +82,16 @@ export default function MiTiendaPage() {
     setError('')
     setExito(false)
 
-    const { error: sbError } = await supabase
-      .from('tiendas')
-      .upsert(
-        {
-          id:          user.id,
-          nombre:      form.nombre.trim()      || null,
-          descripcion: form.descripcion.trim() || null,
-          logo_url:    form.logo_url.trim()    || null,
-          updated_at:  new Date().toISOString(),
-        },
-        { onConflict: 'id' },
-      )
+    const { error: sbError } = await supabase.from('tiendas').upsert(
+      {
+        id:          user.id,
+        nombre:      form.nombre.trim()      || null,
+        descripcion: form.descripcion.trim() || null,
+        logo_url:    form.logo_url.trim()    || null,
+        updated_at:  new Date().toISOString(),
+      },
+      { onConflict: 'id' },
+    )
 
     if (sbError) {
       setError('No se pudo guardar la tienda: ' + sbError.message)
@@ -134,12 +102,6 @@ export default function MiTiendaPage() {
       setTimeout(() => setExito(false), 4000)
     }
     setGuardando(false)
-  }
-
-  const handleCancelar = () => {
-    setForm(tienda)
-    setEditMode(false)
-    setError('')
   }
 
   const handleCopiarLink = async () => {
@@ -155,11 +117,7 @@ export default function MiTiendaPage() {
   }
 
   if (authLoading || loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <p className="text-gray-400 text-sm animate-pulse">Cargando tienda...</p>
-      </div>
-    )
+    return <div className="mk-vempty"><p style={{ color: 'var(--muted-2)' }}>Cargando tienda…</p></div>
   }
 
   if (!user) return null
@@ -169,67 +127,56 @@ export default function MiTiendaPage() {
   const publicUrl = `/tienda/${user.id}`
 
   return (
-    <div className="space-y-6 max-w-3xl">
-
-      {/* Cabecera */}
-      <div className="flex items-start justify-between flex-wrap gap-3">
+    <>
+      <div className="mk-vmain-head">
         <div>
-          <h1 className="text-2xl font-black text-gray-800">Mi tienda</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Personaliza cómo te ven los compradores en Merkao.
-          </p>
+          <h1>Mi tienda</h1>
+          <p>Personaliza cómo te ven los compradores en Merkao.</p>
         </div>
         {!editMode && (
-          <button
-            onClick={() => setEditMode(true)}
-            className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition"
-          >
-            ✏️ Editar perfil de tienda
+          <button onClick={() => setEditMode(true)} className="mk-btn mk-btn-primary">
+            <Icon name="edit" size={16} /> Editar perfil
           </button>
         )}
       </div>
 
-      {/* Mensajes */}
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-600">
-          ⚠️ {error}
+      {exito && (
+        <div className="mk-vpanel" style={{ background: 'var(--green-tint)', borderColor: 'var(--green)', color: 'var(--green)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Icon name="checkCircle" size={20} />
+            <span style={{ fontWeight: 700, fontSize: 14 }}>Cambios guardados correctamente.</span>
+          </div>
         </div>
       )}
-      {exito && (
-        <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-sm text-green-700 font-medium">
-          ✅ Cambios guardados correctamente.
+      {error && (
+        <div className="mk-vpanel" style={{ background: '#FEF2F2', borderColor: '#FECACA', color: '#B91C1C' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Icon name="lock" size={20} />
+            <span style={{ fontWeight: 700, fontSize: 14 }}>{error}</span>
+          </div>
         </div>
       )}
 
-      {/* Tarjeta principal: información de la tienda */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+      {/* Card principal */}
+      <div className="mk-vpanel">
         {!editMode ? (
-          <div className="flex items-start gap-5 flex-wrap">
-            {/* Logo */}
-            <div className="shrink-0">
+          <div style={{ display: 'flex', gap: 22, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+            <div style={{ flexShrink: 0 }}>
               {tienda.logo_url ? (
-                <img
-                  src={tienda.logo_url}
-                  alt={nombreVisible}
-                  className="w-24 h-24 rounded-2xl object-cover border-4 border-orange-100"
-                />
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={tienda.logo_url} alt={nombreVisible} style={{ width: 96, height: 96, borderRadius: 16, objectFit: 'cover', border: '4px solid var(--brand-tint)' }} />
               ) : (
-                <div
-                  className="w-24 h-24 rounded-2xl flex items-center justify-center text-4xl font-black text-white border-4 border-orange-100"
-                  style={{ backgroundColor: '#FF9900' }}
-                >
+                <div style={{ width: 96, height: 96, borderRadius: 16, background: 'linear-gradient(135deg, var(--brand), var(--brand-700))', color: '#fff', fontSize: 38, fontWeight: 800, display: 'grid', placeItems: 'center', border: '4px solid var(--brand-tint)' }}>
                   {inicial}
                 </div>
               )}
             </div>
-
-            {/* Info */}
-            <div className="flex-1 min-w-0">
-              <h2 className="text-xl font-black text-gray-900 leading-tight">{nombreVisible}</h2>
-              <p className="text-xs text-gray-400 mt-0.5">{user.email}</p>
-              <p className="text-sm text-gray-600 mt-3 whitespace-pre-line">
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--ink)' }}>{nombreVisible}</h2>
+              <p style={{ fontSize: 12, color: 'var(--muted-2)', margin: '4px 0 12px' }}>{user.email}</p>
+              <p style={{ fontSize: 14, color: 'var(--text)', margin: 0, whiteSpace: 'pre-line' }}>
                 {tienda.descripcion || (
-                  <span className="text-gray-400 italic">
+                  <span style={{ color: 'var(--muted-2)', fontStyle: 'italic' }}>
                     Aún no agregaste una descripción. Cuéntales a los compradores qué hace especial a tu tienda.
                   </span>
                 )}
@@ -237,75 +184,26 @@ export default function MiTiendaPage() {
             </div>
           </div>
         ) : (
-          <form onSubmit={handleGuardar} className="space-y-5">
-            <h2 className="text-sm font-bold text-gray-700">Editar perfil de tienda</h2>
-
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">
-                Nombre de la tienda <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="nombre"
-                value={form.nombre}
-                onChange={handleChange}
-                placeholder="Ej. Tejidos Andinos del Cusco"
-                required
-                maxLength={80}
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition"
-              />
+          <form onSubmit={handleGuardar} className="mk-vform">
+            <div className="mk-vfield">
+              <label>Nombre de la tienda <span className="req">*</span></label>
+              <input type="text" name="nombre" value={form.nombre} onChange={handleChange} placeholder="Ej. Tejidos Andinos del Cusco" required maxLength={80} />
             </div>
-
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">
-                Descripción
-              </label>
-              <textarea
-                name="descripcion"
-                value={form.descripcion}
-                onChange={handleChange}
-                placeholder="¿Qué vendes? ¿Por qué deberían comprarte? Máx. 500 caracteres."
-                maxLength={500}
-                rows={4}
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition resize-none"
-              />
-              <p className="text-[11px] text-gray-400 mt-1">
-                {form.descripcion.length}/500 caracteres
-              </p>
+            <div className="mk-vfield">
+              <label>Descripción</label>
+              <textarea name="descripcion" value={form.descripcion} onChange={handleChange} placeholder="¿Qué vendes? ¿Por qué deberían comprarte?" maxLength={500} rows={4} />
+              <span className="mk-vfield-counter">{form.descripcion.length}/500</span>
             </div>
-
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">
-                URL del logo
-              </label>
-              <input
-                type="url"
-                name="logo_url"
-                value={form.logo_url}
-                onChange={handleChange}
-                placeholder="https://..."
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition"
-              />
-              <p className="text-[11px] text-gray-400 mt-1">
-                Pega la URL pública de tu logo (formato cuadrado recomendado).
-              </p>
+            <div className="mk-vfield">
+              <label>URL del logo</label>
+              <input type="url" name="logo_url" value={form.logo_url} onChange={handleChange} placeholder="https://..." />
+              <span className="mk-vfield-hint">Pega la URL pública de tu logo (formato cuadrado recomendado).</span>
             </div>
-
-            <div className="flex gap-2 pt-2">
-              <button
-                type="submit"
-                disabled={guardando}
-                className="flex-1 py-3 rounded-xl font-black text-sm transition hover:brightness-110 disabled:opacity-60"
-                style={{ backgroundColor: '#FF9900', color: '#131921' }}
-              >
-                {guardando ? 'Guardando...' : '💾 Guardar cambios'}
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button type="submit" disabled={guardando} className="mk-btn mk-btn-primary" style={{ flex: 1 }}>
+                {guardando ? 'Guardando…' : <><Icon name="check" size={16} /> Guardar cambios</>}
               </button>
-              <button
-                type="button"
-                onClick={handleCancelar}
-                disabled={guardando}
-                className="px-5 py-3 rounded-xl font-bold text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 transition disabled:opacity-60"
-              >
+              <button type="button" onClick={() => { setForm(tienda); setEditMode(false) }} className="mk-btn mk-btn-ghost">
                 Cancelar
               </button>
             </div>
@@ -313,90 +211,74 @@ export default function MiTiendaPage() {
         )}
       </div>
 
-      {/* Link público a la tienda */}
+      {/* Link público */}
       {!editMode && (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <h2 className="text-sm font-bold text-gray-700 mb-3">🌐 Link público a tu tienda</h2>
-          <p className="text-xs text-gray-500 mb-4">
-            Comparte este link con tus clientes para que vean todos tus productos en un solo lugar.
-          </p>
-          <div className="flex gap-2 flex-wrap">
-            <code className="flex-1 min-w-0 truncate bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-mono text-gray-700">
+        <div className="mk-vpanel">
+          <div className="mk-vpanel-head">
+            <div>
+              <h3><Icon name="globe" size={17} stroke={1.9} /> Link público a tu tienda</h3>
+              <span className="mk-vpanel-sub">Comparte este link con tus clientes para que vean todos tus productos.</span>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <code style={{ flex: 1, minWidth: 0, background: 'var(--bg)', border: '1px solid var(--line)', borderRadius: 10, padding: '11px 14px', fontSize: 12, fontFamily: 'ui-monospace, monospace', color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {typeof window !== 'undefined' ? `${window.location.origin}${publicUrl}` : publicUrl}
             </code>
-            <button
-              onClick={handleCopiarLink}
-              className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-4 py-2.5 rounded-xl text-xs transition shrink-0"
-            >
-              {copiado ? '✅ Copiado' : '📋 Copiar'}
+            <button onClick={handleCopiarLink} className="mk-btn mk-btn-ghost">
+              <Icon name="copy" size={14} /> {copiado ? 'Copiado' : 'Copiar'}
             </button>
-            <a
-              href={publicUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition shrink-0"
-            >
-              👁️ Ver tienda
+            <a href={publicUrl} target="_blank" rel="noopener noreferrer" className="mk-btn mk-btn-primary">
+              <Icon name="eye" size={14} /> Ver tienda
             </a>
           </div>
         </div>
       )}
 
-      {/* Estadísticas */}
+      {/* Stats */}
       {!editMode && (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <h2 className="text-sm font-bold text-gray-700 mb-4">📊 Estadísticas básicas</h2>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-
-            <div className="bg-blue-50 rounded-2xl p-4">
-              <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-lg mb-2">
-                📦
-              </div>
-              <p className="text-2xl font-black text-gray-800">{stats.productosActivos}</p>
-              <p className="text-xs text-gray-500 mt-0.5">
-                Productos activos
-                {stats.productosTotal !== stats.productosActivos && (
-                  <span className="text-gray-400"> · {stats.productosTotal} total</span>
-                )}
-              </p>
+        <div className="mk-vstats">
+          <div className="mk-vstat">
+            <div className="mk-vstat-top">
+              <span className="mk-vstat-label">Productos activos</span>
+              <span className="mk-vstat-ico navy"><Icon name="box" size={18} stroke={1.9} /></span>
             </div>
-
-            <div className="bg-green-50 rounded-2xl p-4">
-              <div className="w-10 h-10 rounded-xl bg-green-100 text-green-600 flex items-center justify-center text-lg mb-2">
-                🛒
-              </div>
-              <p className="text-2xl font-black text-gray-800">{stats.ventasCompletadas}</p>
-              <p className="text-xs text-gray-500 mt-0.5">Ventas completadas</p>
+            <div className="mk-vstat-value">{stats.productosActivos}</div>
+            <div className="mk-vstat-foot">
+              <span className="mk-vstat-sub">de {stats.productosTotal} publicados</span>
             </div>
-
-            <div className="bg-orange-50 rounded-2xl p-4">
-              <div className="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center text-lg mb-2">
-                💰
-              </div>
-              <p className="text-2xl font-black text-gray-800">
-                S/ {stats.ingresos.toFixed(2)}
-              </p>
-              <p className="text-xs text-gray-500 mt-0.5">Ingresos acumulados</p>
+          </div>
+          <div className="mk-vstat">
+            <div className="mk-vstat-top">
+              <span className="mk-vstat-label">Ventas completadas</span>
+              <span className="mk-vstat-ico green"><Icon name="checkCircle" size={18} stroke={1.9} /></span>
             </div>
-
-            <div className="bg-yellow-50 rounded-2xl p-4">
-              <div className="w-10 h-10 rounded-xl bg-yellow-100 text-yellow-600 flex items-center justify-center text-lg mb-2">
-                ⭐
-              </div>
-              <p className="text-2xl font-black text-gray-800">
-                {stats.numResenas > 0 ? stats.valoracion.toFixed(1) : '—'}
-              </p>
-              <p className="text-xs text-gray-500 mt-0.5">
-                {stats.numResenas > 0
-                  ? `Valoración (${stats.numResenas} reseñas)`
-                  : 'Sin reseñas aún'}
-              </p>
+            <div className="mk-vstat-value">{stats.ventasCompletadas}</div>
+            <div className="mk-vstat-foot">
+              <span className="mk-vstat-sub">entregadas o liberadas</span>
             </div>
-
+          </div>
+          <div className="mk-vstat">
+            <div className="mk-vstat-top">
+              <span className="mk-vstat-label">Ingresos acumulados</span>
+              <span className="mk-vstat-ico brand"><Icon name="wallet" size={18} stroke={1.9} /></span>
+            </div>
+            <div className="mk-vstat-value">{fmt(stats.ingresos)}</div>
+            <div className="mk-vstat-foot">
+              <span className="mk-vstat-sub">de ventas confirmadas</span>
+            </div>
+          </div>
+          <div className="mk-vstat">
+            <div className="mk-vstat-top">
+              <span className="mk-vstat-label">Valoración</span>
+              <span className="mk-vstat-ico amber"><Icon name="star" size={18} stroke={1.9} /></span>
+            </div>
+            <div className="mk-vstat-value">—</div>
+            <div className="mk-vstat-foot">
+              <span className="mk-vstat-sub">Sin reseñas aún</span>
+            </div>
           </div>
         </div>
       )}
-
-    </div>
+    </>
   )
 }

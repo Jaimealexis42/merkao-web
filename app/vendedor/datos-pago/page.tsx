@@ -2,16 +2,9 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/useAuth'
+import { Icon } from '@/lib/icons'
 
-const BANCOS = [
-  'BCP',
-  'Interbank',
-  'BBVA',
-  'Scotiabank',
-  'BanBif',
-  'Caja Cusco',
-  'Otro',
-]
+const BANCOS = ['BCP', 'Interbank', 'BBVA', 'Scotiabank', 'BanBif', 'Caja Cusco', 'Otro']
 
 type DatosPago = {
   nombre_titular: string
@@ -32,13 +25,12 @@ const EMPTY: DatosPago = {
 export default function DatosPagoPage() {
   const { user } = useAuth()
 
-  const [form, setForm]         = useState<DatosPago>(EMPTY)
-  const [loading, setLoading]   = useState(true)
+  const [form, setForm]           = useState<DatosPago>(EMPTY)
+  const [loading, setLoading]     = useState(true)
   const [guardando, setGuardando] = useState(false)
-  const [exito, setExito]       = useState(false)
-  const [error, setError]       = useState('')
+  const [exito, setExito]         = useState(false)
+  const [error, setError]         = useState('')
 
-  /* ── Cargar datos guardados ── */
   useEffect(() => {
     if (!user) return
     supabase
@@ -63,7 +55,6 @@ export default function DatosPagoPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setForm({ ...form, [e.target.name]: e.target.value })
 
-  /* ── Guardar ── */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!user) return
@@ -71,20 +62,18 @@ export default function DatosPagoPage() {
     setError('')
     setExito(false)
 
-    const { error: sbError } = await supabase
-      .from('perfiles')
-      .upsert(
-        {
-          id:             user.id,
-          nombre_titular: form.nombre_titular.trim() || null,
-          banco:          form.banco          || null,
-          num_cuenta:     form.num_cuenta.trim() || null,
-          cci:            form.cci.trim()        || null,
-          yape_plin:      form.yape_plin.trim()  || null,
-          updated_at:     new Date().toISOString(),
-        },
-        { onConflict: 'id' },
-      )
+    const { error: sbError } = await supabase.from('perfiles').upsert(
+      {
+        id:             user.id,
+        nombre_titular: form.nombre_titular.trim() || null,
+        banco:          form.banco          || null,
+        num_cuenta:     form.num_cuenta.trim() || null,
+        cci:            form.cci.trim()        || null,
+        yape_plin:      form.yape_plin.trim()  || null,
+        updated_at:     new Date().toISOString(),
+      },
+      { onConflict: 'id' },
+    )
 
     if (sbError) {
       setError('No se pudieron guardar los datos: ' + sbError.message)
@@ -96,46 +85,39 @@ export default function DatosPagoPage() {
   }
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <p className="text-gray-400 text-sm animate-pulse">Cargando datos de pago...</p>
-      </div>
-    )
+    return <div className="mk-vempty"><p style={{ color: 'var(--muted-2)' }}>Cargando datos de pago…</p></div>
   }
 
   return (
-    <div className="space-y-6 max-w-2xl">
-
-      {/* Cabecera */}
-      <div>
-        <h1 className="text-2xl font-black text-gray-800">Datos de pago</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Agrega tu cuenta bancaria y/o Yape/Plin para que Merkao pueda transferirte tus ingresos.
-        </p>
-      </div>
-
-      {/* Aviso escrow */}
-      <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 flex gap-3">
-        <span className="text-2xl shrink-0">🔒</span>
-        <div className="text-xs text-blue-700">
-          <p className="font-bold mb-0.5">¿Cómo funciona el pago?</p>
-          <p>
-            Cuando un comprador confirma la recepción de su pedido, el monto en escrow se libera
-            y Merkao lo transfiere a los datos que registras aquí en un plazo de 1–2 días hábiles.
-          </p>
+    <>
+      <div className="mk-vmain-head">
+        <div>
+          <h1>Datos de pago</h1>
+          <p>Agrega tu cuenta bancaria y/o Yape/Plin para que Merkao pueda transferirte tus ingresos.</p>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
-
-        {/* ── Datos del titular ── */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
-          <h2 className="text-sm font-bold text-gray-700">Titular de la cuenta</h2>
-
+      {/* Aviso escrow */}
+      <div className="mk-vpanel" style={{ background: 'var(--navy-tint)', borderColor: 'rgba(43,108,176,.3)' }}>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <Icon name="lock" size={22} stroke={1.8} style={{ color: 'var(--navy)', flexShrink: 0 }} />
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              Nombre completo del titular <span className="text-red-500">*</span>
-            </label>
+            <p style={{ fontSize: 14, fontWeight: 800, color: 'var(--navy)' }}>¿Cómo funciona el pago?</p>
+            <p style={{ fontSize: 13, color: 'var(--ink)', margin: '4px 0 0', lineHeight: 1.5 }}>
+              Cuando el comprador confirma la recepción de su pedido, el monto en escrow se libera y Merkao
+              lo transfiere a los datos que registras aquí en un plazo de 1–2 días hábiles.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18, maxWidth: 720 }}>
+
+        {/* Titular */}
+        <div className="mk-vpanel">
+          <div className="mk-vpanel-head"><div><h3>Titular de la cuenta</h3></div></div>
+          <div className="mk-vfield">
+            <label>Nombre completo del titular <span className="req">*</span></label>
             <input
               type="text"
               name="nombre_titular"
@@ -143,76 +125,58 @@ export default function DatosPagoPage() {
               onChange={handleChange}
               placeholder="Ej. Juan Pérez García"
               required
-              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition"
             />
           </div>
         </div>
 
-        {/* ── Cuenta bancaria ── */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
-          <h2 className="text-sm font-bold text-gray-700">Cuenta bancaria</h2>
-
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Banco</label>
-            <select
-              name="banco"
-              value={form.banco}
-              onChange={handleChange}
-              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition bg-white"
-            >
-              <option value="">— Selecciona tu banco —</option>
-              {BANCOS.map((b) => (
-                <option key={b} value={b}>{b}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              Número de cuenta
-            </label>
-            <input
-              type="text"
-              name="num_cuenta"
-              value={form.num_cuenta}
-              onChange={handleChange}
-              placeholder="Ej. 191-12345678-0-12"
-              inputMode="numeric"
-              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition font-mono"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              CCI — Código de Cuenta Interbancario
-            </label>
-            <input
-              type="text"
-              name="cci"
-              value={form.cci}
-              onChange={handleChange}
-              placeholder="20 dígitos — Ej. 00219100123456780112"
-              inputMode="numeric"
-              maxLength={20}
-              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition font-mono"
-            />
-            <p className="text-[11px] text-gray-400 mt-1">
-              Puedes ver tu CCI en la app de tu banco o en la sección "Mis cuentas".
-            </p>
+        {/* Bancaria */}
+        <div className="mk-vpanel">
+          <div className="mk-vpanel-head"><div><h3>Cuenta bancaria</h3></div></div>
+          <div className="mk-vform">
+            <div className="mk-vfield">
+              <label>Banco</label>
+              <select name="banco" value={form.banco} onChange={handleChange}>
+                <option value="">— Selecciona tu banco —</option>
+                {BANCOS.map((b) => <option key={b} value={b}>{b}</option>)}
+              </select>
+            </div>
+            <div className="mk-vfield">
+              <label>Número de cuenta</label>
+              <input
+                type="text"
+                name="num_cuenta"
+                value={form.num_cuenta}
+                onChange={handleChange}
+                placeholder="Ej. 191-12345678-0-12"
+                inputMode="numeric"
+                style={{ fontFamily: 'ui-monospace, Menlo, monospace' }}
+              />
+            </div>
+            <div className="mk-vfield">
+              <label>CCI — Código de Cuenta Interbancario</label>
+              <input
+                type="text"
+                name="cci"
+                value={form.cci}
+                onChange={handleChange}
+                placeholder="20 dígitos — Ej. 00219100123456780112"
+                inputMode="numeric"
+                maxLength={20}
+                style={{ fontFamily: 'ui-monospace, Menlo, monospace' }}
+              />
+              <span className="mk-vfield-hint">Puedes ver tu CCI en la app de tu banco o en &ldquo;Mis cuentas&rdquo;.</span>
+            </div>
           </div>
         </div>
 
-        {/* ── Yape / Plin ── */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
-          <h2 className="text-sm font-bold text-gray-700">Yape / Plin</h2>
-
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              Número de celular registrado en Yape o Plin
-            </label>
-            <div className="flex gap-2">
-              <span className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-500 bg-gray-50 shrink-0">
-                🇵🇪 +51
+        {/* Yape / Plin */}
+        <div className="mk-vpanel">
+          <div className="mk-vpanel-head"><div><h3>Yape / Plin</h3></div></div>
+          <div className="mk-vfield">
+            <label>Número de celular registrado en Yape o Plin</label>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', padding: '0 14px', border: '1.5px solid var(--line)', borderRadius: 9, background: 'var(--bg)', color: 'var(--muted)', fontSize: 13, fontWeight: 700, flexShrink: 0 }}>
+                +51
               </span>
               <input
                 type="tel"
@@ -222,42 +186,40 @@ export default function DatosPagoPage() {
                 placeholder="9XX XXX XXX"
                 inputMode="numeric"
                 maxLength={9}
-                className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition font-mono"
+                style={{ fontFamily: 'ui-monospace, Menlo, monospace' }}
               />
             </div>
-            <p className="text-[11px] text-gray-400 mt-1">
+            <span className="mk-vfield-hint">
               Solo para montos menores a S/ 2,000. Para importes mayores se usará transferencia bancaria.
-            </p>
+            </span>
           </div>
         </div>
 
         {/* Mensajes */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-600">
-            ⚠️ {error}
+          <div className="mk-vpanel" style={{ background: '#FEF2F2', borderColor: '#FECACA', color: '#B91C1C' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 14, fontWeight: 700 }}>
+              <Icon name="lock" size={18} /> {error}
+            </div>
           </div>
         )}
         {exito && (
-          <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-sm text-green-700 font-medium">
-            ✅ Datos de pago guardados correctamente.
+          <div className="mk-vpanel" style={{ background: 'var(--green-tint)', borderColor: 'var(--green)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'var(--green)' }}>
+              <Icon name="checkCircle" size={18} />
+              <span style={{ fontWeight: 700, fontSize: 14 }}>Datos de pago guardados correctamente.</span>
+            </div>
           </div>
         )}
 
-        {/* Botón guardar */}
-        <button
-          type="submit"
-          disabled={guardando}
-          className="w-full py-3.5 rounded-xl font-black text-sm transition hover:brightness-110 disabled:opacity-60"
-          style={{ backgroundColor: '#FF9900', color: '#131921' }}
-        >
-          {guardando ? 'Guardando...' : '💾 Guardar datos de pago'}
+        {/* Submit */}
+        <button type="submit" disabled={guardando} className="mk-btn mk-btn-primary" style={{ padding: '13px 22px', fontSize: 15 }}>
+          {guardando ? 'Guardando…' : <><Icon name="check" size={17} /> Guardar datos de pago</>}
         </button>
-
-        <p className="text-xs text-gray-400 text-center">
+        <p style={{ fontSize: 12, color: 'var(--muted-2)', textAlign: 'center', margin: 0 }}>
           Tu información bancaria está protegida y solo se usa para realizar pagos a tu cuenta.
         </p>
-
       </form>
-    </div>
+    </>
   )
 }

@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/useAuth'
 import { getPctPorNombre } from '@/lib/comisiones'
+import { Icon } from '@/lib/icons'
 
 const CATEGORIAS_MAP: { nombre: string; id: number }[] = [
   { nombre: 'Ropa y Moda',    id: 1 },
@@ -25,21 +26,23 @@ const CIUDADES_PERU = [
   'Ayacucho', 'Juliaca', 'Ica', 'Puno', 'Huánuco', 'Tarapoto',
 ]
 
+const IGV = 0.18
+
 export default function PublicarProducto() {
   const { user } = useAuth()
 
   const [form, setForm] = useState({
-    nombre:                    '',
-    descripcion:               '',
-    precio:                    '',
-    precio_oferta:             '',
-    precio_mayoreo:            '',
-    cantidad_minima_mayoreo:   '',
-    costo_envio:               '0',
-    ciudad:                    '',
-    categoria:                 '',
-    stock:                     '1',
-    condicion:                 'nuevo',
+    nombre: '',
+    descripcion: '',
+    precio: '',
+    precio_oferta: '',
+    precio_mayoreo: '',
+    cantidad_minima_mayoreo: '',
+    costo_envio: '0',
+    ciudad: '',
+    categoria: '',
+    stock: '1',
+    condicion: 'nuevo',
   })
   const [loading, setLoading] = useState(false)
   const [exito, setExito]     = useState(false)
@@ -48,6 +51,8 @@ export default function PublicarProducto() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
+
+  const setSeg = (key: string, value: string) => setForm((p) => ({ ...p, [key]: value }))
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -88,308 +93,240 @@ export default function PublicarProducto() {
     }
   }
 
-  return (
-    <div className="space-y-6">
+  const base  = parseFloat(form.precio) || 0
+  const igv   = base * IGV
+  const total = base + igv
 
-      {/* Cabecera */}
-      <div>
-        <h1 className="text-2xl font-black text-gray-800">Publicar producto</h1>
-        <p className="text-sm text-gray-500 mt-1">Completa los datos para poner tu producto a la venta en Merkao.</p>
+  return (
+    <>
+      <div className="mk-vmain-head">
+        <div>
+          <h1>Publicar producto</h1>
+          <p>Completa los datos para poner tu producto a la venta en Merkao.</p>
+        </div>
+        <a href="/vendedor/mis-productos" className="mk-btn mk-btn-ghost">
+          <Icon name="chevronLeft" size={14} /> Cancelar
+        </a>
       </div>
 
       {exito && (
-        <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-sm text-green-700 flex items-center gap-3">
-          <span className="text-xl">✅</span>
-          <div>
-            <p className="font-bold">¡Producto publicado con éxito!</p>
-            <p className="text-xs mt-0.5">Ya está visible en el marketplace.</p>
+        <div className="mk-vpanel" style={{ background: 'var(--green-tint)', borderColor: 'var(--green)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <Icon name="checkCircle" size={22} style={{ color: 'var(--green)' }} />
+            <div style={{ flex: 1 }}>
+              <p style={{ fontSize: 14, fontWeight: 800, color: 'var(--green)' }}>¡Producto publicado con éxito!</p>
+              <p style={{ fontSize: 12, color: 'var(--muted)' }}>Ya está visible en el marketplace.</p>
+            </div>
+            <a href="/vendedor/mis-productos" className="mk-btn mk-btn-ghost">Ver mis productos</a>
           </div>
-          <a href="/vendedor/mis-productos" className="ml-auto text-xs font-bold text-green-700 underline hover:no-underline">
-            Ver mis productos
-          </a>
         </div>
       )}
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-600 flex items-center gap-2">
-          <span>⚠️</span> {error}
+        <div className="mk-vpanel" style={{ background: '#FEF2F2', borderColor: '#FECACA', color: '#B91C1C' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 14, fontWeight: 700 }}>
+            <Icon name="lock" size={18} /> {error}
+          </div>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
 
         {/* Información básica */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
-          <h2 className="text-sm font-bold text-gray-700 mb-2">Información básica</h2>
+        <div className="mk-vpanel">
+          <div className="mk-vpanel-head"><div><h3>Información básica</h3></div></div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Nombre del producto <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              name="nombre"
-              value={form.nombre}
-              onChange={handleChange}
-              placeholder="Ej: Chompa de alpaca hecha a mano"
-              required
-              maxLength={120}
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition"
-            />
-            <p className="text-xs text-gray-400 mt-1">{form.nombre.length}/120 caracteres</p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Descripción <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              name="descripcion"
-              value={form.descripcion}
-              onChange={handleChange}
-              placeholder="Describe tu producto: materiales, medidas, colores disponibles, etc."
-              required
-              rows={4}
-              maxLength={1000}
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition resize-none"
-            />
-            <p className="text-xs text-gray-400 mt-1">{form.descripcion.length}/1000 caracteres</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Categoría <span className="text-red-500">*</span>
-              </label>
-              <select
-                name="categoria"
-                value={form.categoria}
+          <div className="mk-vform">
+            <div className="mk-vfield">
+              <label>Nombre del producto <span className="req">*</span></label>
+              <input
+                type="text"
+                name="nombre"
+                value={form.nombre}
                 onChange={handleChange}
+                placeholder="Ej: Chompa de alpaca hecha a mano"
                 required
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition bg-white"
-              >
-                <option value="">Selecciona una categoría</option>
-                {CATEGORIAS_MAP.map((cat) => (
-                  <option key={cat.id} value={cat.nombre}>{cat.nombre}</option>
-                ))}
-              </select>
-              {form.categoria && (() => {
-                const pct = getPctPorNombre(form.categoria)
-                if (pct === null) return null
-                return (
-                  <div className="mt-1.5 flex items-center gap-1.5 text-xs">
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-bold">
-                      🎉 0 % los primeros 3 meses
-                    </span>
-                    <span className="text-gray-400">· después</span>
-                    <span className="font-bold text-gray-600">{pct} % por venta</span>
-                  </div>
-                )
-              })()}
+                maxLength={120}
+              />
+              <span className="mk-vfield-counter">{form.nombre.length}/120</span>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Ciudad</label>
-              <select
-                name="ciudad"
-                value={form.ciudad}
+            <div className="mk-vfield">
+              <label>Descripción <span className="req">*</span></label>
+              <textarea
+                name="descripcion"
+                value={form.descripcion}
                 onChange={handleChange}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition bg-white"
-              >
-                <option value="">Selecciona ciudad</option>
-                {CIUDADES_PERU.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
+                placeholder="Describe materiales, medidas, colores, historia del producto…"
+                required
+                rows={4}
+                maxLength={1000}
+              />
+              <span className="mk-vfield-counter">{form.descripcion.length}/1000</span>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Condición</label>
-              <div className="flex gap-2">
-                {['nuevo', 'usado'].map((op) => (
-                  <button
-                    key={op}
-                    type="button"
-                    onClick={() => setForm({ ...form, condicion: op })}
-                    className={`flex-1 py-3 rounded-xl text-sm font-bold border-2 transition capitalize ${
-                      form.condicion === op
-                        ? 'border-orange-500 bg-orange-50 text-orange-600'
-                        : 'border-gray-100 text-gray-500 hover:border-gray-200'
-                    }`}
-                  >
-                    {op === 'nuevo' ? '✨ Nuevo' : '🔄 Usado'}
-                  </button>
-                ))}
+            <div className="mk-vfield-row three">
+              <div className="mk-vfield">
+                <label>Categoría <span className="req">*</span></label>
+                <select name="categoria" value={form.categoria} onChange={handleChange} required>
+                  <option value="">Selecciona una categoría</option>
+                  {CATEGORIAS_MAP.map((c) => (
+                    <option key={c.id} value={c.nombre}>{c.nombre}</option>
+                  ))}
+                </select>
+                {form.categoria && (() => {
+                  const pct = getPctPorNombre(form.categoria)
+                  if (pct === null) return null
+                  return (
+                    <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 4 }}>
+                      <span className="mk-vbadge green">0% los primeros 3 meses</span>
+                      <span style={{ fontSize: 11, color: 'var(--muted-2)' }}>después {pct}%</span>
+                    </div>
+                  )
+                })()}
+              </div>
+
+              <div className="mk-vfield">
+                <label>Ciudad</label>
+                <select name="ciudad" value={form.ciudad} onChange={handleChange}>
+                  <option value="">Selecciona ciudad</option>
+                  {CIUDADES_PERU.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="mk-vfield">
+                <label>Condición</label>
+                <div className="mk-vseg">
+                  {[['nuevo', 'Nuevo'], ['usado', 'Usado']].map(([v, l]) => (
+                    <button
+                      key={v}
+                      type="button"
+                      onClick={() => setSeg('condicion', v)}
+                      className={form.condicion === v ? 'on' : ''}
+                    >
+                      {l}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Precio y stock */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
-          <h2 className="text-sm font-bold text-gray-700 mb-2">Precio y stock</h2>
+        <div className="mk-vpanel">
+          <div className="mk-vpanel-head"><div><h3>Precio y stock</h3></div></div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Precio unitario (S/) <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-bold">S/</span>
-                <input
-                  type="number"
-                  name="precio"
-                  value={form.precio}
-                  onChange={handleChange}
-                  placeholder="0.00"
-                  required
-                  min="0.01"
-                  step="0.01"
-                  className="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition"
-                />
+          <div className="mk-vform">
+            <div className="mk-vfield-row three">
+              <div className="mk-vfield">
+                <label>Precio unitario <span className="req">*</span></label>
+                <div className="mk-vfield-money">
+                  <span className="mk-vfield-cur">S/</span>
+                  <input type="number" name="precio" value={form.precio} onChange={handleChange} placeholder="0.00" required min="0.01" step="0.01" />
+                </div>
+              </div>
+              <div className="mk-vfield">
+                <label>Precio de oferta <span style={{ color: 'var(--muted-2)', fontWeight: 500 }}>opcional</span></label>
+                <div className="mk-vfield-money">
+                  <span className="mk-vfield-cur">S/</span>
+                  <input type="number" name="precio_oferta" value={form.precio_oferta} onChange={handleChange} placeholder="0.00" min="0.01" step="0.01" />
+                </div>
+              </div>
+              <div className="mk-vfield">
+                <label>Stock disponible <span className="req">*</span></label>
+                <input type="number" name="stock" value={form.stock} onChange={handleChange} required min="0" />
               </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Precio de oferta (S/)
-                <span className="ml-1 text-xs text-gray-400">opcional</span>
-              </label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-bold">S/</span>
-                <input
-                  type="number"
-                  name="precio_oferta"
-                  value={form.precio_oferta}
-                  onChange={handleChange}
-                  placeholder="0.00"
-                  min="0.01"
-                  step="0.01"
-                  className="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition"
-                />
+
+            {base > 0 && (
+              <div style={{ background: 'var(--bg)', border: '1px solid var(--line)', borderRadius: 11, padding: 14 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--muted)', padding: '4px 0' }}>
+                  <span>Precio base</span><span>S/ {base.toFixed(2)}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--muted)', padding: '4px 0' }}>
+                  <span>+ IGV 18%</span><span>S/ {igv.toFixed(2)}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, fontWeight: 800, color: 'var(--ink)', padding: '8px 0 4px', borderTop: '1px dashed var(--line)', marginTop: 4 }}>
+                  <span>Total al comprador</span><span>S/ {total.toFixed(2)}</span>
+                </div>
               </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Stock disponible <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="number"
-                name="stock"
-                value={form.stock}
-                onChange={handleChange}
-                required
-                min="0"
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Venta al por mayor */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
-          <div>
-            <h2 className="text-sm font-bold text-gray-700 mb-1">Venta al por mayor</h2>
-            <p className="text-xs text-gray-400">Opcional. Si el comprador pide la cantidad mínima o más, se aplica el precio mayoreo automáticamente.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Precio mayoreo (S/)
-                <span className="ml-1 text-xs text-gray-400">opcional</span>
-              </label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-bold">S/</span>
-                <input
-                  type="number"
-                  name="precio_mayoreo"
-                  value={form.precio_mayoreo}
-                  onChange={handleChange}
-                  placeholder="0.00"
-                  min="0.01"
-                  step="0.01"
-                  className="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition"
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Cantidad mínima para mayoreo
-                <span className="ml-1 text-xs text-gray-400">unidades</span>
-              </label>
-              <input
-                type="number"
-                name="cantidad_minima_mayoreo"
-                value={form.cantidad_minima_mayoreo}
-                onChange={handleChange}
-                placeholder="Ej: 10"
-                min="2"
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition"
-              />
-            </div>
-          </div>
-
-          {form.precio && form.precio_mayoreo && (
-            <div className="bg-green-50 border border-green-100 rounded-xl p-3 text-xs text-green-700">
-              📦 Comprando {form.cantidad_minima_mayoreo || '?'}+ unidades pagarán <strong>S/ {form.precio_mayoreo}</strong> c/u en vez de <strong>S/ {form.precio}</strong>
-            </div>
-          )}
-        </div>
-
-        {/* Costo de envío */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
-          <div>
-            <h2 className="text-sm font-bold text-gray-700 mb-1">Costo de envío (flete)</h2>
-            <p className="text-xs text-gray-400">Ingresa el costo fijo de envío. Déjalo en 0 si prefieres acordarlo con el comprador.</p>
-          </div>
-
-          <div className="max-w-xs">
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-bold">S/</span>
-              <input
-                type="number"
-                name="costo_envio"
-                value={form.costo_envio}
-                onChange={handleChange}
-                placeholder="0.00"
-                min="0"
-                step="0.01"
-                className="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition"
-              />
-            </div>
-            {parseFloat(form.costo_envio || '0') === 0 ? (
-              <p className="text-xs text-blue-600 mt-1">🚚 Se mostrará como "Flete a acordar con comprador"</p>
-            ) : (
-              <p className="text-xs text-gray-400 mt-1">🚚 El comprador verá el costo de envío de S/ {form.costo_envio}</p>
             )}
           </div>
         </div>
 
-        {/* Nota de fotos */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <h2 className="text-sm font-bold text-gray-700 mb-3">Fotos del producto</h2>
-          <div className="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center">
-            <p className="text-3xl mb-2">📷</p>
-            <p className="text-sm font-medium text-gray-600">Carga de fotos próximamente</p>
-            <p className="text-xs text-gray-400 mt-1">Por ahora se mostrará un ícono según la categoría</p>
+        {/* Mayoreo */}
+        <div className="mk-vpanel">
+          <div className="mk-vpanel-head">
+            <div>
+              <h3>Venta al por mayor</h3>
+              <span className="mk-vpanel-sub">Opcional. Si el comprador pide la cantidad mínima o más, se aplica el precio mayoreo automáticamente.</span>
+            </div>
+          </div>
+
+          <div className="mk-vfield-row">
+            <div className="mk-vfield">
+              <label>Precio mayoreo <span style={{ color: 'var(--muted-2)', fontWeight: 500 }}>opcional</span></label>
+              <div className="mk-vfield-money">
+                <span className="mk-vfield-cur">S/</span>
+                <input type="number" name="precio_mayoreo" value={form.precio_mayoreo} onChange={handleChange} placeholder="0.00" min="0.01" step="0.01" />
+              </div>
+            </div>
+            <div className="mk-vfield">
+              <label>Cantidad mínima <span style={{ color: 'var(--muted-2)', fontWeight: 500 }}>unidades</span></label>
+              <input type="number" name="cantidad_minima_mayoreo" value={form.cantidad_minima_mayoreo} onChange={handleChange} placeholder="Ej: 10" min="2" />
+            </div>
+          </div>
+
+          {form.precio && form.precio_mayoreo && (
+            <div style={{ background: 'var(--green-tint)', border: '1px solid #BFE0CD', borderRadius: 10, padding: '10px 13px', fontSize: 12.5, color: 'var(--green)', fontWeight: 600 }}>
+              Comprando {form.cantidad_minima_mayoreo || '?'}+ unidades pagarán <strong>S/ {form.precio_mayoreo}</strong> c/u en vez de <strong>S/ {form.precio}</strong>
+            </div>
+          )}
+        </div>
+
+        {/* Envío */}
+        <div className="mk-vpanel">
+          <div className="mk-vpanel-head">
+            <div>
+              <h3>Costo de envío</h3>
+              <span className="mk-vpanel-sub">Costo fijo de flete. Déjalo en 0 si prefieres acordarlo con el comprador.</span>
+            </div>
+          </div>
+
+          <div className="mk-vfield" style={{ maxWidth: 280 }}>
+            <div className="mk-vfield-money">
+              <span className="mk-vfield-cur">S/</span>
+              <input type="number" name="costo_envio" value={form.costo_envio} onChange={handleChange} placeholder="0.00" min="0" step="0.01" />
+            </div>
+            <span className="mk-vfield-hint">
+              <Icon name="truck" size={12} stroke={1.8} />{' '}
+              {parseFloat(form.costo_envio || '0') === 0
+                ? 'Se mostrará como "Flete a acordar con comprador"'
+                : `El comprador verá flete S/ ${form.costo_envio}`}
+            </span>
           </div>
         </div>
 
-        {/* Botón de envío */}
-        <div className="flex items-center gap-4">
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-8 py-3 rounded-xl transition disabled:opacity-60 text-sm"
-          >
-            {loading ? 'Publicando...' : '🚀 Publicar producto'}
-          </button>
-          <a href="/vendedor" className="text-sm text-gray-400 hover:text-gray-600 transition">
-            Cancelar
-          </a>
+        {/* Fotos placeholder */}
+        <div className="mk-vpanel">
+          <div className="mk-vpanel-head"><div><h3>Fotos del producto</h3></div></div>
+          <div className="mk-vempty">
+            <Icon name="eye" size={28} stroke={1.5} />
+            <p>Carga de fotos próximamente. Por ahora se mostrará un ícono según la categoría.</p>
+          </div>
         </div>
 
+        {/* Submit */}
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+          <button type="submit" disabled={loading} className="mk-btn mk-btn-primary" style={{ padding: '13px 22px', fontSize: 15 }}>
+            {loading ? 'Publicando…' : <><Icon name="check" size={17} /> Publicar producto</>}
+          </button>
+          <a href="/vendedor" className="mk-btn mk-btn-ghost">Cancelar</a>
+        </div>
       </form>
-    </div>
+    </>
   )
 }
