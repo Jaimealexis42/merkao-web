@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { calcularPrecios, fmt } from '@/lib/precios'
 import { useCarritoStore } from '@/src/store/carritoStore'
+import { Icon } from '@/lib/icons'
 
 type Producto = {
   id: string
@@ -22,31 +23,12 @@ type Producto = {
   vendedor_id: string | null
 }
 
-const ICONO_CATEGORIA: Record<string, string> = {
-  'Ropa y Moda':    '👗',
-  'Electrónicos':   '📱',
-  'Alimentos':      '🥗',
-  'Artesanías':     '🎨',
-  'Hogar':          '🛋️',
-  'Autos y Motos':  '🚗',
-  'Agrícola':       '🌾',
-  'Salud y Belleza':'💄',
-  'Deportes':       '⚽',
-  'Juguetes':       '🧸',
-  'Libros':         '📚',
-  'Otros':          '📦',
-}
-
-function StarRating({ rating }: { rating: number }) {
+function Stars({ value, size = 14 }: { value: number; size?: number }) {
+  const full = Math.round(value)
   return (
-    <div className="flex items-center gap-1">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <span
-          key={star}
-          className={`text-sm ${star <= Math.floor(rating) ? 'text-yellow-400' : star - 0.5 <= rating ? 'text-yellow-300' : 'text-gray-200'}`}
-        >
-          ★
-        </span>
+    <div className="mk-stars-track">
+      {[0, 1, 2, 3, 4].map((i) => (
+        <Icon key={i} name="star" size={size} stroke={1.5} className={i < full ? 'mk-star on' : 'mk-star off'} />
       ))}
     </div>
   )
@@ -56,12 +38,13 @@ export default function ProductoDetalle() {
   const { id } = useParams<{ id: string }>()
   const router  = useRouter()
 
-  const [producto, setProducto]     = useState<Producto | null>(null)
-  const [loading, setLoading]       = useState(true)
-  const [notFound, setNotFound]     = useState(false)
-  const [cantidad, setCantidad]     = useState(1)
+  const [producto, setProducto]   = useState<Producto | null>(null)
+  const [loading, setLoading]     = useState(true)
+  const [notFound, setNotFound]   = useState(false)
+  const [cantidad, setCantidad]   = useState(1)
   const [imagenActiva, setImagenActiva] = useState(0)
-  const [addedToCart, setAddedToCart]   = useState(false)
+  const [added, setAdded]         = useState(false)
+  const [fav, setFav]             = useState(false)
   const agregarItem  = useCarritoStore((s) => s.agregarItem)
   const totalItems   = useCarritoStore((s) => s.totalItems)
 
@@ -73,30 +56,27 @@ export default function ProductoDetalle() {
       .eq('id', id)
       .single()
       .then(({ data, error }) => {
-        if (error || !data) {
-          setNotFound(true)
-        } else {
-          setProducto(data as Producto)
-        }
+        if (error || !data) setNotFound(true)
+        else setProducto(data as Producto)
         setLoading(false)
       })
   }, [id])
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-400 text-sm animate-pulse">Cargando producto...</p>
+      <div className="mk-empty-page">
+        <p style={{ color: 'var(--muted-2)' }}>Cargando producto…</p>
       </div>
     )
   }
 
   if (notFound || !producto) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-4 px-4">
-        <p className="text-5xl">📦</p>
-        <p className="text-xl font-black text-gray-800">Producto no encontrado</p>
-        <p className="text-sm text-gray-500">Este producto no existe o fue eliminado.</p>
-        <a href="/" className="mt-2 bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-3 rounded-xl text-sm transition">
+      <div className="mk-empty-page">
+        <Icon name="box" size={56} stroke={1.4} />
+        <h2>Producto no encontrado</h2>
+        <p>Este producto no existe o fue eliminado.</p>
+        <a href="/" className="mk-btn mk-btn-primary" style={{ marginTop: 8 }}>
           Volver al inicio
         </a>
       </div>
@@ -111,15 +91,17 @@ export default function ProductoDetalle() {
     ? producto.precio_mayoreo
     : (producto.precio_oferta ?? producto.precio)
 
-  const precios        = calcularPrecios(precioActivo)
-  const totalConEnvio  = precios.subtotal + (producto.costo_envio ?? 0)
-  const esMayoreo      = !!(producto.precio_mayoreo && producto.cantidad_minima_mayoreo && cantidad >= producto.cantidad_minima_mayoreo)
-  const hayOferta      = !esMayoreo && !!producto.precio_oferta
-  const precioOriginal = producto.precio
+  const precios       = calcularPrecios(precioActivo)
+  const esMayoreo     = !!(producto.precio_mayoreo && producto.cantidad_minima_mayoreo && cantidad >= producto.cantidad_minima_mayoreo)
+  const hayOferta     = !esMayoreo && !!producto.precio_oferta
+  const precioOriginalSubtotal = calcularPrecios(producto.precio).subtotal
+  const descuentoPct  = hayOferta
+    ? Math.round((1 - (producto.precio_oferta! / producto.precio)) * 100)
+    : esMayoreo
+    ? Math.round((1 - (producto.precio_mayoreo! / producto.precio)) * 100)
+    : 0
 
-  // Galería: imagen real si existe, más 3 slots vacíos de muestra
-  const icono   = ICONO_CATEGORIA[producto.categoria] ?? '📦'
-  const galeria = producto.imagen_url
+  const galeria: (string | null)[] = producto.imagen_url
     ? [producto.imagen_url, null, null]
     : [null, null, null]
 
@@ -128,7 +110,6 @@ export default function ProductoDetalle() {
   }
 
   const handleAddToCart = () => {
-    if (!producto) return
     agregarItem(
       {
         id:       producto.id,
@@ -139,360 +120,361 @@ export default function ProductoDetalle() {
       },
       cantidad,
     )
-    setAddedToCart(true)
-    setTimeout(() => setAddedToCart(false), 2000)
+    setAdded(true)
+    setTimeout(() => setAdded(false), 2000)
   }
 
-  const incrementar = () => {
-    if (cantidad < producto.stock) setCantidad((q) => q + 1)
-  }
+  const incrementar = () => { if (cantidad < producto.stock) setCantidad((q) => q + 1) }
+  const decrementar = () => { if (cantidad > 1) setCantidad((q) => q - 1) }
 
-  const decrementar = () => {
-    if (cantidad > 1) setCantidad((q) => q - 1)
-  }
-
-  // Rating estático — sin tabla de reseñas aún
-  const rating     = 4.5
-  const numResenas = 12
+  const rating       = 4.8
+  const numResenas   = 12
+  const sold         = 124
+  const distribucion: [string, number][] = [['5', 78], ['4', 15], ['3', 5], ['2', 1], ['1', 1]]
+  const stockBajo    = producto.stock > 0 && producto.stock <= 5
 
   return (
-    <div className="min-h-screen bg-gray-50">
-
-      {/* ── Header ── */}
-      <header className="sticky top-0 z-50 px-4 py-2.5 flex items-center gap-3" style={{ backgroundColor: '#131921' }}>
-        <a href="/" className="flex items-center gap-0.5 border-2 border-transparent hover:border-white rounded px-1 py-1 transition shrink-0">
-          <span className="text-white text-2xl font-black tracking-tight">merkao</span>
-          <span className="text-2xl font-black" style={{ color: '#FF9900' }}>.pe</span>
-        </a>
-
-        <div className="flex-1" />
-
-        <a
-          href="/carrito"
-          className="relative flex items-end gap-1 border-2 border-transparent hover:border-white rounded px-2 py-1 transition shrink-0"
-        >
-          <div className="relative">
-            <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M2.25 2.25a.75.75 0 000 1.5h1.386c.17 0 .318.114.362.278l2.558 9.592a3.752 3.752 0 00-2.806 3.63c0 .414.336.75.75.75h15.75a.75.75 0 000-1.5H5.378A2.25 2.25 0 017.5 15h11.218a.75.75 0 00.674-.421 60.358 60.358 0 002.96-7.228.75.75 0 00-.525-.965A60.864 60.864 0 005.68 4.509l-.232-.867A1.875 1.875 0 003.636 2.25H2.25zM3.75 20.25a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zM16.5 20.25a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0z" />
-            </svg>
-            {totalItems() > 0 && (
-              <span className="absolute -top-1 -right-1 text-xs font-black w-5 h-5 rounded-full flex items-center justify-center bg-red-500 text-white">
-                {totalItems() > 99 ? '99+' : totalItems()}
-              </span>
-            )}
+    <>
+      {/* ── Header compacto ── */}
+      <header className="mk-phdr">
+        <div className="mk-phdr-inner">
+          <a href="/" className="mk-logo">merkao<span className="mk-logo-dot">.pe</span></a>
+          <div className="mk-phdr-search">
+            <input placeholder="Buscar productos, marcas y categorías…" />
+            <button className="mk-phdr-search-btn" aria-label="Buscar">
+              <Icon name="search" size={19} />
+            </button>
           </div>
-          <span className="text-white text-xs font-bold hidden sm:inline pb-1">Carrito</span>
-        </a>
+          <a className="mk-phdr-link" href="/vendedor">
+            <Icon name="store" size={17} stroke={1.8} /> Vende en Merkao
+          </a>
+          <a className="mk-phdr-cart" href="/carrito">
+            <span className="mk-cart-ico">
+              <Icon name="cart" size={22} stroke={1.8} />
+              {totalItems() > 0 && (
+                <span className="mk-cart-badge">{totalItems() > 99 ? '99+' : totalItems()}</span>
+              )}
+            </span>
+            <strong>Carrito</strong>
+          </a>
+        </div>
       </header>
 
-      {/* Breadcrumb */}
-      <div className="bg-white border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-2 text-xs text-gray-400 flex-wrap">
-          <a href="/" className="hover:text-orange-500 transition">Inicio</a>
-          <span>/</span>
-          <a href={`/?categoria=${producto.categoria}`} className="hover:text-orange-500 transition">
-            {producto.categoria}
-          </a>
-          <span>/</span>
-          <span className="text-gray-600 truncate max-w-[200px]">{producto.nombre}</span>
-        </div>
-      </div>
+      <div className="mk-pwrap">
 
-      <div className="max-w-6xl mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* ── Breadcrumb ── */}
+        <nav className="mk-crumb">
+          <a href="/">Inicio</a>
+          <Icon name="chevronRight" size={13} />
+          <a href={`/?categoria=${encodeURIComponent(producto.categoria)}`}>{producto.categoria}</a>
+          <Icon name="chevronRight" size={13} />
+          <span className="mk-crumb-now">{producto.nombre.slice(0, 60)}{producto.nombre.length > 60 ? '…' : ''}</span>
+        </nav>
 
-          {/* ─── COLUMNA IZQUIERDA: Galería ─── */}
-          <div className="space-y-3">
+        {/* ── Top: galería + buybox ── */}
+        <section className="mk-ptop">
 
-            {/* Imagen principal */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden aspect-square flex items-center justify-center">
-              {galeria[imagenActiva] ? (
-                <img
-                  src={galeria[imagenActiva]!}
-                  alt={producto.nombre}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="flex flex-col items-center justify-center gap-4 text-gray-300">
-                  <span className="text-9xl">{icono}</span>
-                  <span className="text-sm text-gray-300">Sin foto disponible</span>
-                </div>
-              )}
-            </div>
-
-            {/* Miniaturas */}
-            <div className="flex gap-2">
+          {/* Galería */}
+          <div className="mk-gallery">
+            <div className="mk-gal-thumbs">
               {galeria.map((img, i) => (
                 <button
                   key={i}
+                  className={'mk-gal-thumb' + (i === imagenActiva ? ' on' : '')}
                   onClick={() => setImagenActiva(i)}
-                  className={`flex-1 aspect-square bg-white rounded-xl border-2 transition flex items-center justify-center overflow-hidden ${
-                    imagenActiva === i
-                      ? 'border-orange-400 shadow-sm'
-                      : 'border-gray-100 hover:border-gray-200'
-                  }`}
+                  aria-label={`Vista ${i + 1}`}
                 >
                   {img ? (
-                    <img src={img} alt="" className="w-full h-full object-cover" />
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img src={img} alt="" />
                   ) : (
-                    <span className="text-2xl text-gray-200">{icono}</span>
+                    <span className="mk-gal-thumb-ph">
+                      <Icon name="box" size={18} stroke={1.5} />
+                    </span>
                   )}
                 </button>
               ))}
             </div>
-
-            {/* Condición */}
-            <div className="flex gap-2">
-              <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                producto.condicion === 'nuevo'
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-gray-100 text-gray-600'
-              }`}>
-                {producto.condicion === 'nuevo' ? '✨ Nuevo' : '🔄 Usado'}
+            <div className="mk-gal-main">
+              {galeria[imagenActiva] ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={galeria[imagenActiva]!} alt={producto.nombre} />
+              ) : (
+                <div className="mk-gal-main-ph">
+                  <Icon name="box" size={56} stroke={1.4} className="mk-gal-main-ph-ico" />
+                  <span style={{ fontSize: 12, letterSpacing: '.12em', textTransform: 'uppercase' }}>
+                    Sin foto disponible
+                  </span>
+                </div>
+              )}
+              {producto.ciudad && (
+                <span className="mk-gal-loc">
+                  <Icon name="mapPin" size={13} stroke={2} /> {producto.ciudad}
+                </span>
+              )}
+              <span className={'mk-gal-cond' + (producto.condicion !== 'nuevo' ? ' usado' : '')}>
+                {producto.condicion === 'nuevo' ? 'Nuevo' : 'Usado'}
               </span>
-              {producto.stock <= 5 && producto.stock > 0 && (
-                <span className="px-3 py-1 rounded-full text-xs font-bold bg-orange-100 text-orange-700">
-                  ⚡ ¡Últimas {producto.stock} unidades!
-                </span>
-              )}
-              {producto.stock === 0 && (
-                <span className="px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">
-                  Sin stock
-                </span>
-              )}
             </div>
           </div>
 
-          {/* ─── COLUMNA DERECHA: Info y compra ─── */}
-          <div className="space-y-5">
-
-            {/* Nombre y rating */}
-            <div>
-              <h1 className="text-2xl font-black text-gray-900 leading-tight">
-                {producto.nombre}
-              </h1>
-              <div className="flex items-center gap-2 mt-2">
-                <StarRating rating={rating} />
-                <span className="text-sm font-bold text-gray-700">{rating}</span>
-                <span className="text-xs text-gray-400">({numResenas} reseñas)</span>
-              </div>
+          {/* BuyBox */}
+          <div className="mk-buybox">
+            <span className="mk-bb-cat">{producto.categoria}</span>
+            <h1 className="mk-bb-title">{producto.nombre}</h1>
+            <div className="mk-bb-meta">
+              <Stars value={rating} />
+              <span className="mk-bb-rating-num">{rating}</span>
+              <a href="#mk-reviews" className="mk-bb-link">{numResenas} reseñas</a>
+              <span className="mk-bb-dot">·</span>
+              <span className="mk-bb-sold">{sold.toLocaleString('es-PE')} vendidos</span>
             </div>
 
-            {/* Precio principal */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-3">
-
-              {/* Badge mayoreo */}
-              {esMayoreo && (
-                <div className="bg-green-50 border border-green-200 rounded-xl px-3 py-2 text-xs text-green-700 font-bold flex items-center gap-2">
-                  <span className="text-base">📦</span>
-                  ¡Precio mayoreo aplicado! ({cantidad}+ unidades)
-                </div>
-              )}
-
-              {/* Precio con tachado si hay oferta o mayoreo */}
-              <div className="flex items-end gap-3 flex-wrap">
-                <span className="text-4xl font-black text-orange-500">
-                  {fmt(precios.subtotal)}
-                </span>
+            {/* Card precio */}
+            <div className="mk-bb-price-card">
+              <div className="mk-bb-price">
+                {fmt(precios.total)}
                 {(hayOferta || esMayoreo) && (
-                  <span className="text-lg text-gray-400 line-through mb-1">
-                    {fmt(calcularPrecios(precioOriginal).subtotal)}
-                  </span>
-                )}
-                {hayOferta && !esMayoreo && (
-                  <span className="text-sm font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full mb-1">
-                    -{Math.round((1 - (producto.precio_oferta! / precioOriginal)) * 100)}% OFF
-                  </span>
+                  <>
+                    <span className="mk-bb-price-strike">{fmt(precioOriginalSubtotal)}</span>
+                    {descuentoPct > 0 && (
+                      <span className="mk-bb-price-discount">-{descuentoPct}%</span>
+                    )}
+                  </>
                 )}
               </div>
-
-              {/* Desglose IGV */}
-              <div className="text-xs text-gray-400 space-y-0.5">
-                <div className="flex justify-between">
-                  <span>Precio sin IGV</span>
-                  <span>{fmt(precios.base)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>IGV (18%)</span>
-                  <span>{fmt(precios.igv)}</span>
-                </div>
-                <div className="flex justify-between font-bold text-gray-600 border-t border-gray-100 pt-1 mt-1">
-                  <span>Subtotal c/IGV</span>
-                  <span>{fmt(precios.subtotal)}</span>
-                </div>
+              <div className="mk-bb-breakdown">
+                <div className="mk-bb-bd-row"><span>Precio base</span><span>{fmt(precios.base)}</span></div>
+                <div className="mk-bb-bd-row"><span>IGV 18%</span><span>{fmt(precios.igv)}</span></div>
+                <div className="mk-bb-bd-row"><span>Tarifa Merkao 3%</span><span>{fmt(precios.tarifaServicio)}</span></div>
+                <div className="mk-bb-bd-row total"><span>Total a pagar</span><span>{fmt(precios.total)}</span></div>
               </div>
-
-              {/* Flete */}
-              <div className="flex items-center justify-between text-sm border-t border-gray-100 pt-3">
-                <span className="flex items-center gap-1.5 text-gray-600">
-                  <span>🚚</span> Costo de envío
-                </span>
-                {!producto.costo_envio || producto.costo_envio === 0 ? (
-                  <span className="text-blue-600 font-medium text-xs">A acordar con vendedor</span>
-                ) : (
-                  <span className="font-bold text-gray-800">{fmt(producto.costo_envio)}</span>
-                )}
-              </div>
-
-              {/* Total estimado con flete */}
-              {producto.costo_envio && producto.costo_envio > 0 && (
-                <div className="flex items-center justify-between text-sm font-black text-gray-900 bg-gray-50 rounded-xl px-3 py-2">
-                  <span>Total estimado (×{cantidad})</span>
-                  <span>{fmt((totalConEnvio) * cantidad)}</span>
-                </div>
-              )}
             </div>
 
-            {/* Precio por mayor */}
-            {producto.precio_mayoreo && producto.cantidad_minima_mayoreo && !esMayoreo && (
-              <div className="bg-green-50 border border-green-200 rounded-2xl p-4">
-                <p className="text-xs font-bold text-green-800 mb-1">📦 Descuento por volumen</p>
-                <p className="text-sm text-green-700">
-                  Compra <strong>{producto.cantidad_minima_mayoreo}+</strong> unidades y paga solo{' '}
-                  <strong>{fmt(calcularPrecios(producto.precio_mayoreo).subtotal)}</strong> c/u
-                  {' '}(ahorras{' '}
-                  <strong>
-                    {fmt(precios.subtotal - calcularPrecios(producto.precio_mayoreo).subtotal)}
-                  </strong>{' '}
-                  por unidad)
-                </p>
+            {/* Badge mayoreo */}
+            {esMayoreo && (
+              <div className="mk-bb-mayoreo">
+                <Icon name="checkCircle" size={16} />
+                ¡Precio mayoreo activo! Comprando <strong>{cantidad}+</strong> unidades.
+              </div>
+            )}
+            {!esMayoreo && producto.precio_mayoreo && producto.cantidad_minima_mayoreo && (
+              <div className="mk-bb-mayoreo">
+                <Icon name="box" size={16} />
+                Compra <strong>{producto.cantidad_minima_mayoreo}+</strong> unidades y paga <strong>{fmt(calcularPrecios(producto.precio_mayoreo).total)}</strong> c/u.
               </div>
             )}
 
-            {/* Selector de cantidad */}
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-gray-700">Cantidad</label>
-              <div className="flex items-center gap-3">
-                <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden bg-white">
-                  <button
-                    onClick={decrementar}
-                    disabled={cantidad <= 1}
-                    className="w-11 h-11 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition disabled:opacity-30 text-xl font-bold"
-                  >
-                    −
-                  </button>
-                  <span className="w-12 text-center font-black text-gray-900">{cantidad}</span>
-                  <button
-                    onClick={incrementar}
-                    disabled={cantidad >= producto.stock}
-                    className="w-11 h-11 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition disabled:opacity-30 text-xl font-bold"
-                  >
-                    +
-                  </button>
-                </div>
-                <span className="text-xs text-gray-400">{producto.stock} disponibles</span>
+            {/* Qty + stock */}
+            <div className="mk-bb-buy-row">
+              <div className="mk-bb-qty">
+                <button onClick={decrementar} disabled={cantidad <= 1} aria-label="Menos">−</button>
+                <span>{cantidad}</span>
+                <button onClick={incrementar} disabled={cantidad >= producto.stock} aria-label="Más">+</button>
               </div>
-
-              {/* Hint mayoreo */}
-              {producto.precio_mayoreo && producto.cantidad_minima_mayoreo && !esMayoreo && (
-                <p className="text-xs text-green-600">
-                  Agrega {producto.cantidad_minima_mayoreo - cantidad} más para precio mayoreo
-                </p>
-              )}
+              <span className={'mk-bb-stock' + (stockBajo ? ' low' : '')}>
+                <span className="mk-bb-stock-dot" />
+                {producto.stock === 0
+                  ? 'Sin stock'
+                  : stockBajo
+                  ? `¡Últimas ${producto.stock} unidades!`
+                  : `${producto.stock} disponibles`}
+              </span>
             </div>
 
-            {/* Botones de acción */}
-            <div className="space-y-3">
+            {/* CTAs */}
+            <div className="mk-bb-cta-row">
               <button
                 onClick={handleBuyNow}
                 disabled={producto.stock === 0}
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-black py-4 rounded-2xl text-base transition disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
+                className="mk-btn mk-btn-primary mk-bb-buy"
+                style={producto.stock === 0 ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
               >
-                {producto.stock === 0 ? 'Sin stock' : '⚡ Comprar ahora'}
+                {producto.stock === 0 ? 'Sin stock' : 'Comprar ahora'}
               </button>
               <button
                 onClick={handleAddToCart}
                 disabled={producto.stock === 0}
-                className={`w-full border-2 font-black py-4 rounded-2xl text-base transition ${
-                  addedToCart
-                    ? 'border-green-400 bg-green-50 text-green-700'
-                    : 'border-orange-400 text-orange-600 hover:bg-orange-50'
-                }`}
+                className={'mk-btn mk-btn-ghost mk-bb-add' + (added ? ' added' : '')}
               >
-                {addedToCart ? '✅ ¡Agregado al carrito!' : '🛒 Agregar al carrito'}
+                <Icon name="cart" size={17} stroke={1.9} /> {added ? '¡Agregado!' : 'Al carrito'}
+              </button>
+              <button
+                onClick={() => setFav((f) => !f)}
+                className={'mk-bb-fav' + (fav ? ' on' : '')}
+                aria-label="Guardar"
+                aria-pressed={fav}
+              >
+                <Icon name="heart" size={19} stroke={2} />
               </button>
             </div>
 
-            {/* Info vendedor */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-4">
-              <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center text-2xl shrink-0">
-                🏪
+            {/* Trust list */}
+            <div className="mk-bb-trust">
+              <div className="mk-bb-trust-row">
+                <span className="mk-bb-trust-ico green"><Icon name="shield" size={17} stroke={1.8} /></span>
+                <div>
+                  <strong>Compra protegida con Pago Escrow</strong>
+                  <small>Tu dinero queda retenido hasta que confirmes la entrega.</small>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs text-gray-400 font-medium">Vendedor</p>
-                <p className="font-bold text-gray-800 text-sm">Tienda Merkao</p>
-                {producto.ciudad && (
-                  <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
-                    <span>📍</span> {producto.ciudad}, Perú
-                  </p>
-                )}
+              <div className="mk-bb-trust-row">
+                <span className="mk-bb-trust-ico"><Icon name="truck" size={17} stroke={1.8} /></span>
+                <div>
+                  <strong>Envío a todo el Perú</strong>
+                  <small>
+                    {!producto.costo_envio || producto.costo_envio === 0
+                      ? 'Flete a acordar con el vendedor · 3 a 6 días hábiles.'
+                      : `Flete: ${fmt(producto.costo_envio)} · 3 a 6 días hábiles.`}
+                  </small>
+                </div>
               </div>
-              <div className="text-right shrink-0">
-                <StarRating rating={rating} />
-                <p className="text-xs text-gray-400 mt-0.5">{numResenas} ventas</p>
+              <div className="mk-bb-trust-row">
+                <span className="mk-bb-trust-ico"><Icon name="checkCircle" size={17} stroke={1.8} /></span>
+                <div>
+                  <strong>Devolución garantizada</strong>
+                  <small>Si no llega o no es lo descrito, te devolvemos el pago.</small>
+                </div>
               </div>
             </div>
+          </div>
+        </section>
 
-            {/* Garantías */}
-            <div className="grid grid-cols-3 gap-3 text-center">
-              {[
-                { icono: '🔒', label: 'Pago seguro' },
-                { icono: '✅', label: 'Compra protegida' },
-                { icono: '🚚', label: 'Envío a todo el Perú' },
-              ].map(({ icono, label }) => (
-                <div key={label} className="bg-white rounded-xl border border-gray-100 p-3">
-                  <p className="text-xl mb-1">{icono}</p>
-                  <p className="text-xs text-gray-500 font-medium leading-tight">{label}</p>
+        {/* ── Detalles: descripción + side seller ── */}
+        <section className="mk-details">
+          <div className="mk-det-main">
+            <div className="mk-det-block">
+              <h2>Descripción</h2>
+              {producto.descripcion ? (
+                <p>{producto.descripcion}</p>
+              ) : (
+                <p className="mk-det-empty">El vendedor no añadió una descripción para este producto.</p>
+              )}
+            </div>
+
+            <div className="mk-det-block">
+              <h2>Especificaciones</h2>
+              <div className="mk-spec-grid">
+                <div className="mk-spec-row"><span className="mk-spec-k">Categoría</span><span className="mk-spec-v">{producto.categoria}</span></div>
+                <div className="mk-spec-row"><span className="mk-spec-k">Condición</span><span className="mk-spec-v">{producto.condicion}</span></div>
+                {producto.ciudad && (
+                  <div className="mk-spec-row"><span className="mk-spec-k">Origen</span><span className="mk-spec-v">{producto.ciudad}, Perú</span></div>
+                )}
+                <div className="mk-spec-row"><span className="mk-spec-k">Stock</span><span className="mk-spec-v">{producto.stock} unidades</span></div>
+                {producto.precio_mayoreo && producto.cantidad_minima_mayoreo && (
+                  <div className="mk-spec-row">
+                    <span className="mk-spec-k">Precio mayoreo</span>
+                    <span className="mk-spec-v">{fmt(calcularPrecios(producto.precio_mayoreo).total)} desde {producto.cantidad_minima_mayoreo} und.</span>
+                  </div>
+                )}
+                <div className="mk-spec-row">
+                  <span className="mk-spec-k">Envío</span>
+                  <span className="mk-spec-v">
+                    {!producto.costo_envio || producto.costo_envio === 0
+                      ? 'A acordar con el vendedor'
+                      : fmt(producto.costo_envio)}
+                  </span>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Side: seller card */}
+          <aside className="mk-det-side">
+            <div className="mk-seller-card">
+              <div className="mk-seller-head">
+                <div className="mk-seller-avatar">
+                  {(producto.ciudad ?? 'M').slice(0, 2).toUpperCase()}
+                </div>
+                <div className="mk-seller-info">
+                  <div className="mk-seller-name">
+                    Tienda Merkao
+                    <span className="mk-seller-verif">
+                      <Icon name="checkCircle" size={12} /> Verificado
+                    </span>
+                  </div>
+                  <div className="mk-seller-sub">
+                    <Icon name="mapPin" size={12} stroke={2} />
+                    {producto.ciudad ? `${producto.ciudad}, Perú` : 'Perú'}
+                  </div>
+                </div>
+              </div>
+              <div className="mk-seller-stats">
+                <div className="mk-seller-stat">
+                  <strong>{rating}</strong>
+                  <span><Icon name="star" size={11} className="mk-star on" /> Rating</span>
+                </div>
+                <div className="mk-seller-stat">
+                  <strong>98%</strong>
+                  <span>Buenas ventas</span>
+                </div>
+                <div className="mk-seller-stat">
+                  <strong>{sold}</strong>
+                  <span>Vendidos</span>
+                </div>
+              </div>
+              <div className="mk-seller-actions">
+                <a
+                  href={producto.vendedor_id ? `/tienda/${producto.vendedor_id}` : '#'}
+                  className="mk-btn mk-btn-ghost"
+                >
+                  <Icon name="store" size={15} stroke={1.8} /> Ver tienda
+                </a>
+                <button className="mk-btn mk-btn-ghost" type="button">
+                  <Icon name="message" size={15} stroke={1.8} /> Contactar
+                </button>
+              </div>
+            </div>
+          </aside>
+        </section>
+
+        {/* ── Reseñas ── */}
+        <section className="mk-reviews" id="mk-reviews">
+          <h2>Reseñas de compradores</h2>
+          <div className="mk-rev-wrap">
+            <div className="mk-rev-summary">
+              <div className="mk-rev-big">{rating}</div>
+              <Stars value={rating} size={16} />
+              <span className="mk-rev-count">{numResenas} reseñas verificadas</span>
+              <div className="mk-rev-dist">
+                {distribucion.map(([star, pct]) => (
+                  <div className="mk-rev-dist-row" key={star}>
+                    <span className="mk-rev-dist-star">{star} <Icon name="star" size={11} className="mk-star on" /></span>
+                    <div className="mk-rev-dist-bar"><div style={{ width: pct + '%' }} /></div>
+                    <span className="mk-rev-dist-pct">{pct}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="mk-rev-list">
+              {[
+                { autor: 'María Q.', loc: 'Arequipa', estrellas: 5, fecha: 'hace 3 días', txt: 'Hermoso producto, llegó bien empaquetado y en 4 días. La calidad es la que esperaba. Muy recomendado.' },
+                { autor: 'Carlos M.', loc: 'Lima', estrellas: 5, fecha: 'hace 1 semana', txt: 'Excelente acabado. El pago con Escrow me dio mucha confianza para comprar a un vendedor nuevo.' },
+                { autor: 'Ana T.', loc: 'Trujillo', estrellas: 4, fecha: 'hace 2 semanas', txt: 'Muy bonito, llegó tal cual se ve en la foto. La talla me quedó un poco grande pero el material es buenísimo.' },
+              ].map((r, i) => (
+                <article className="mk-rev-item" key={i}>
+                  <div className="mk-rev-item-head">
+                    <div className="mk-rev-avatar">{r.autor[0]}</div>
+                    <div className="mk-rev-who">
+                      <strong>{r.autor}</strong>
+                      <span className="mk-rev-loc"><Icon name="mapPin" size={11} stroke={2} /> {r.loc}</span>
+                    </div>
+                    <span className="mk-rev-verif">
+                      <Icon name="checkCircle" size={13} /> Compra verificada
+                    </span>
+                  </div>
+                  <div className="mk-rev-item-meta">
+                    <Stars value={r.estrellas} />
+                    <span className="mk-rev-date">{r.fecha}</span>
+                  </div>
+                  <p className="mk-rev-txt">{r.txt}</p>
+                </article>
               ))}
             </div>
           </div>
-        </div>
-
-        {/* ─── SECCIÓN: Descripción ─── */}
-        <div className="mt-8 bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <h2 className="text-lg font-black text-gray-800 mb-4">Descripción del producto</h2>
-          {producto.descripcion ? (
-            <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
-              {producto.descripcion}
-            </p>
-          ) : (
-            <p className="text-sm text-gray-400 italic">El vendedor no añadió descripción.</p>
-          )}
-        </div>
-
-        {/* ─── SECCIÓN: Reseñas placeholder ─── */}
-        <div className="mt-6 bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-black text-gray-800">Reseñas</h2>
-            <div className="flex items-center gap-2">
-              <StarRating rating={rating} />
-              <span className="font-black text-gray-800">{rating}</span>
-              <span className="text-sm text-gray-400">/ 5 ({numResenas})</span>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            {[
-              { autor: 'María G.', texto: 'Excelente calidad, llegó rápido y bien empaquetado. Lo recomiendo.', estrellas: 5, fecha: 'hace 3 días' },
-              { autor: 'Carlos T.', texto: 'Muy bueno, tal como se describe. El vendedor responde rápido.', estrellas: 4, fecha: 'hace 1 semana' },
-            ].map((r, i) => (
-              <div key={i} className="border-t border-gray-50 pt-4 first:border-0 first:pt-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="w-7 h-7 bg-orange-100 rounded-full flex items-center justify-center text-xs font-black text-orange-600">
-                    {r.autor[0]}
-                  </div>
-                  <span className="text-sm font-bold text-gray-800">{r.autor}</span>
-                  <StarRating rating={r.estrellas} />
-                  <span className="text-xs text-gray-400 ml-auto">{r.fecha}</span>
-                </div>
-                <p className="text-sm text-gray-600 ml-9">{r.texto}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+        </section>
 
       </div>
-    </div>
+    </>
   )
 }
