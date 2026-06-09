@@ -22,8 +22,20 @@ type Producto = {
   stock: number
   imagenes: string[] | null
   vendedor_id: string | null
-  created_at: string
+  estado: string | null
 }
+
+type LoadErr = {
+  code?: string
+  message: string
+  details?: string | null
+}
+
+// Campos mínimos que usa la UI. NO incluimos created_at (no se usa).
+// Si alguno de estos no existe en la DB, Supabase devuelve un 42703 que ahora
+// se loguea y se muestra en pantalla en vez de un genérico "no encontrado".
+const PRODUCTO_SELECT =
+  'id, nombre, descripcion, precio, precio_mayoreo, cantidad_minima_mayoreo, costo_envio, ciudad, categoria_id, condicion, stock, imagenes, vendedor_id, estado'
 
 type CatDef = { id: number; slug: string; nombre: string; icon: IconName }
 
@@ -70,6 +82,7 @@ export default function ProductoDetalle() {
   const [producto, setProducto] = useState<Producto | null>(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
+  const [loadErr, setLoadErr] = useState<LoadErr | null>(null)
   const [cantidad, setCantidad] = useState(1)
   const [imagenActiva, setImagenActiva] = useState(0)
   const [added, setAdded] = useState(false)
@@ -85,36 +98,55 @@ export default function ProductoDetalle() {
 
     ;(async () => {
       setLoading(true)
+      setLoadErr(null)
+      setNotFound(false)
+
+      // maybeSingle: si no hay filas devuelve data=null sin tirar PGRST116.
+      // Eso permite separar "no existe / sin permisos" de "error real".
       const { data, error } = await supabase
         .from('productos')
-        .select(
-          'id, nombre, descripcion, precio, precio_mayoreo, cantidad_minima_mayoreo, costo_envio, ciudad, categoria_id, condicion, stock, imagenes, vendedor_id, created_at',
-        )
+        .select(PRODUCTO_SELECT)
         .eq('id', id)
-        .single()
+        .maybeSingle()
 
       if (cancelled) return
-      if (error || !data) {
+
+      if (error) {
+        // Loguea el error real para diagnóstico desde el browser console
+        console.error('[productos/[id]] supabase error:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          id,
+        })
+        setLoadErr({ code: error.code, message: error.message, details: error.details })
+        setLoading(false)
+        return
+      }
+
+      if (!data) {
+        console.warn('[productos/[id]] sin filas para id', id, '— puede ser RLS o id inválido')
         setNotFound(true)
         setLoading(false)
         return
       }
+
       const prod = data as Producto
       setProducto(prod)
       setImagenActiva(0)
       setLoading(false)
 
-      // Related: same category, excluding current, max 4
-      const { data: rel } = await supabase
+      // Related: misma categoría, excluyendo actual, máx 4. No bloquea el render.
+      const { data: rel, error: relErr } = await supabase
         .from('productos')
-        .select(
-          'id, nombre, descripcion, precio, precio_mayoreo, cantidad_minima_mayoreo, costo_envio, ciudad, categoria_id, condicion, stock, imagenes, vendedor_id, created_at',
-        )
+        .select(PRODUCTO_SELECT)
         .eq('estado', 'activo')
         .eq('categoria_id', prod.categoria_id)
         .neq('id', prod.id)
         .order('vistas', { ascending: false })
         .limit(4)
+      if (relErr) console.warn('[productos/[id]] related error:', relErr.message)
       if (!cancelled) setRelacionados((rel ?? []) as Producto[])
     })()
 
@@ -133,12 +165,48 @@ export default function ProductoDetalle() {
     )
   }
 
+  if (loadErr) {
+    return (
+      <div className="mk-empty-page">
+        <Icon name="bell" size={56} stroke={1.4} />
+        <h2>No pudimos cargar este producto</h2>
+        <p style={{ marginBottom: 4 }}>
+          Hubo un problema consultando la base de datos. Detalle técnico:
+        </p>
+        <pre
+          style={{
+            background: 'var(--bg)',
+            border: '1px solid var(--line)',
+            borderRadius: 10,
+            padding: '10px 14px',
+            fontSize: 12,
+            color: '#B91C1C',
+            maxWidth: 520,
+            textAlign: 'left',
+            whiteSpace: 'pre-wrap',
+            margin: '8px auto 16px',
+            fontFamily: 'ui-monospace, Menlo, monospace',
+          }}
+        >
+          {loadErr.code ? `[${loadErr.code}] ` : ''}{loadErr.message}
+          {loadErr.details ? '\n' + loadErr.details : ''}
+        </pre>
+        <Link href="/" className="mk-btn mk-btn-primary" style={{ marginTop: 8 }}>
+          Volver al inicio
+        </Link>
+      </div>
+    )
+  }
+
   if (notFound || !producto) {
     return (
       <div className="mk-empty-page">
         <Icon name="box" size={56} stroke={1.4} />
         <h2>Producto no encontrado</h2>
-        <p>Este producto no existe o fue eliminado.</p>
+        <p>Este producto no existe, está pausado o ya no está disponible.</p>
+        <p style={{ fontSize: 12, color: 'var(--muted-2)', marginTop: 4 }}>
+          ID consultado: <code style={{ background: 'var(--bg)', padding: '2px 6px', borderRadius: 6 }}>{id}</code>
+        </p>
         <Link href="/" className="mk-btn mk-btn-primary" style={{ marginTop: 8 }}>
           Volver al inicio
         </Link>
