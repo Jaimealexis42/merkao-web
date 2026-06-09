@@ -1,7 +1,7 @@
 {
-  "lastIndex": 2,
-  "lastPostedDate": "2026-06-07",
-  "totalPosts": 3,
+  "lastIndex": 4,
+  "lastPostedDate": "2026-06-09",
+  "totalPosts": 4,
   "history": [
     {
       "fecha": "2026-06-07T15:23:06.606Z",
@@ -42,6 +42,26 @@
         "photographer": "Deb Dowd",
         "photographer_url": "https://unsplash.com/@fin777",
         "alt": "woman in blue and red dress wearing red and white hat"
+      }
+    },
+    {
+      "fecha": "2026-06-09T22:46:33.115Z",
+      "fechaPeru": "2026-06-09",
+      "variantIndex": 4,
+      "variantId": 5,
+      "enfoque": "Testimonio en primera persona",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122109711465345830",
+      "fbPhotoId": "122109711435345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122109711465345830",
+      "image": {
+        "query": "peruvian market fruits",
+        "theme": "alimentos",
+        "photo_id": "BWUvkv93HU4",
+        "photo_url": "https://images.unsplash.com/photo-1774082290292-eeef41f4d889?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwyfHxwZXJ1dmlhbiUyMG1hcmtldCUyMGZydWl0c3xlbnwxfDB8fHwxNzgxMDQ1MTgxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Sheila C",
+        "photographer_url": "https://unsplash.com/@qld_traveller",
+        "alt": "Woman selling colorful textiles at a market stall."
       }
     }
   ]
