@@ -6,16 +6,9 @@ import { useAuth } from '@/lib/useAuth'
 import { T, CAT_NAMES, type Lang } from '@/lib/translations'
 import { useCarritoStore } from '@/src/store/carritoStore'
 import { Icon, type IconName } from '@/lib/icons'
+import { DEPARTAMENTOS_PERU } from '@/lib/peru-geo'
 
 /* ─────────────────────────── CONSTANTES ─────────────────────────── */
-
-const DEPARTAMENTOS_PERU = [
-  'Amazonas', 'Áncash', 'Apurímac', 'Arequipa', 'Ayacucho', 'Cajamarca',
-  'Callao', 'Cusco', 'Huancavelica', 'Huánuco', 'Ica', 'Junín',
-  'La Libertad', 'Lambayeque', 'Lima', 'Loreto', 'Madre de Dios',
-  'Moquegua', 'Pasco', 'Piura', 'Puno', 'San Martín', 'Tacna',
-  'Tumbes', 'Ucayali',
-]
 
 type CatDef = { id: number; icon: IconName; accent?: boolean }
 
