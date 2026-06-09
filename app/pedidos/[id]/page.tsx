@@ -1,29 +1,34 @@
 'use client'
-import { useState, useEffect } from 'react'
+
+import { useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { fmt, ARANCELES } from '@/lib/precios'
 import { useAuth } from '@/lib/useAuth'
+import { Icon, type IconName } from '@/lib/icons'
 
-/* ─── Tipos ─── */
+type EstadoPedido =
+  | 'pagado' | 'enviado' | 'entregado' | 'liberado' | 'disputado' | 'cancelado'
 
 type Pedido = {
   id: string
   comprador_id: string | null
   vendedor_id: string | null
+  producto_id: string | null
   total: number
   comision: number | null
-  estado: string
-  direccion_entrega: string
-  metodo_pago: string
+  estado: EstadoPedido
+  direccion_entrega: string | null
+  metodo_pago: string | null
   culqi_charge_id: string | null
   created_at: string
-  escrow_liberado: boolean
-  igv: number
-  arancel: number
-  pais_comprador: string
-  nombre_comprador: string
-  email_comprador: string
+  escrow_liberado: boolean | null
+  igv: number | null
+  arancel: number | null
+  pais_comprador: string | null
+  nombre_comprador: string | null
+  email_comprador: string | null
 }
 
 type PedidoItem = {
@@ -37,433 +42,517 @@ type PedidoItem = {
 type Producto = {
   id: string
   nombre: string
-  imagenes: string[]
+  imagenes: string[] | null
   ciudad: string | null
   vendedor_id: string | null
-  categoria_id: number
 }
 
-/* ─── Timeline ─── */
+type TrackingEvent = {
+  tracking_code: string | null
+  estado: string | null
+  transportista: string | null
+}
 
-const TIMELINE = [
-  { key: 'pagado',    label: 'Pago recibido',    icono: '💳', desc: 'El pago está retenido en escrow de forma segura.' },
-  { key: 'enviado',   label: 'Producto enviado', icono: '📦', desc: 'El vendedor despachó tu pedido. En camino.' },
-  { key: 'entregado', label: 'Entregado',        icono: '🚚', desc: 'El producto fue entregado. Confirma si todo está OK.' },
-  { key: 'liberado',  label: 'Pago liberado',    icono: '💸', desc: 'Confirmaste la recepción. El pago fue liberado al vendedor.' },
+const TIMELINE: { key: EstadoPedido; label: string; desc: string; icon: IconName }[] = [
+  { key: 'pagado',    label: 'Pago recibido',    desc: 'Tu pago está retenido en Escrow de forma segura.',         icon: 'card' },
+  { key: 'enviado',   label: 'Producto enviado', desc: 'El vendedor despachó tu pedido. Va en camino.',            icon: 'truck' },
+  { key: 'entregado', label: 'Entregado',        desc: 'El producto fue entregado. Confirma para liberar el pago.', icon: 'home' },
+  { key: 'liberado',  label: 'Pago liberado',    desc: 'Confirmaste la recepción. El vendedor ya recibió el pago.', icon: 'wallet' },
 ]
-const TIMELINE_IDX: Record<string, number> = { pagado: 0, enviado: 1, entregado: 2, liberado: 3 }
-
-/* ─── Helpers ─── */
-
-function estadoBadgeClases(estado: string) {
-  if (estado === 'liberado')  return 'bg-green-100 text-green-700'
-  if (estado === 'disputado') return 'bg-red-100 text-red-700'
-  if (estado === 'cancelado') return 'bg-gray-200 text-gray-600'
-  return 'bg-blue-100 text-blue-700'
+const TIMELINE_IDX: Record<EstadoPedido, number> = {
+  pagado: 0, enviado: 1, entregado: 2, liberado: 3,
+  disputado: 2, cancelado: 0,
 }
 
-function estadoLabel(estado: string) {
-  const map: Record<string, string> = {
-    pagado: '💳 Pagado', enviado: '📦 Enviado', entregado: '🚚 Entregado',
-    liberado: '💸 Completado', disputado: '⚠️ En disputa', cancelado: '✕ Cancelado',
-  }
-  return map[estado] ?? estado
+const ESTADO_BADGE: Record<EstadoPedido, { label: string; tone: 'amber' | 'navy' | 'green' | 'red' | 'gray'; icon: IconName }> = {
+  pagado:    { label: 'Pago retenido', tone: 'amber', icon: 'lock' },
+  enviado:   { label: 'En camino',     tone: 'navy',  icon: 'truck' },
+  entregado: { label: 'Por confirmar', tone: 'amber', icon: 'home' },
+  liberado:  { label: 'Completado',    tone: 'green', icon: 'checkCircle' },
+  disputado: { label: 'En disputa',    tone: 'red',   icon: 'bell' },
+  cancelado: { label: 'Cancelado',     tone: 'gray',  icon: 'trash' },
 }
 
-/* ─── Página ─── */
+function shortId(id: string) {
+  return '#MK-' + id.slice(0, 8).toUpperCase()
+}
+
+function fmtFecha(iso: string) {
+  return new Date(iso).toLocaleDateString('es-PE', {
+    day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit',
+  })
+}
 
 export default function PedidoPage() {
-  const { id }   = useParams<{ id: string }>()
-  const router   = useRouter()
+  const { id } = useParams<{ id: string }>()
+  const router = useRouter()
   const { user, loading: authLoading } = useAuth()
 
-  const [pedido, setPedido]         = useState<Pedido | null>(null)
-  const [items, setItems]           = useState<PedidoItem[]>([])
-  const [producto, setProducto]     = useState<Producto | null>(null)
-  const [loading, setLoading]       = useState(true)
-  const [notFound, setNotFound]     = useState(false)
-  const [accion, setAccion]         = useState<'confirmar' | 'disputar' | null>(null)
+  const [pedido, setPedido] = useState<Pedido | null>(null)
+  const [items, setItems] = useState<PedidoItem[]>([])
+  const [producto, setProducto] = useState<Producto | null>(null)
+  const [tracking, setTracking] = useState<TrackingEvent | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [notFound, setNotFound] = useState(false)
+  const [accion, setAccion] = useState<'confirmar' | 'disputar' | null>(null)
   const [procesando, setProcesando] = useState(false)
-  const [mensaje, setMensaje]       = useState('')
+  const [mensaje, setMensaje] = useState<{ tone: 'green' | 'amber'; text: string } | null>(null)
 
-  /* ── 1. Esperar auth y redirigir si no hay sesión ── */
   useEffect(() => {
-    if (!authLoading && !user) router.replace('/login')
+    if (!authLoading && !user) router.replace('/login?redirect=/perfil')
   }, [authLoading, user, router])
 
-  /* ── 2. Cargar pedido ── */
   useEffect(() => {
     if (!id || authLoading || !user) return
+    let cancelled = false
 
-    supabase
-      .from('pedidos')
-      .select('*')
-      .eq('id', id)
-      .single()
-      .then(async ({ data, error: e }) => {
-        if (e || !data) { setNotFound(true); setLoading(false); return }
+    ;(async () => {
+      setLoading(true)
+      const { data, error } = await supabase
+        .from('pedidos')
+        .select('*')
+        .eq('id', id)
+        .single()
 
-        // ── Verificar ownership ──
-        // Si el pedido tiene comprador_id asignado, debe coincidir con el usuario.
-        // Si comprador_id es null (checkout como invitado), verificar por email.
-        const esOwner =
-          (data.comprador_id && data.comprador_id === user.id) ||
-          (!data.comprador_id && data.email_comprador === user.email)
+      if (cancelled) return
+      if (error || !data) {
+        setNotFound(true)
+        setLoading(false)
+        return
+      }
 
-        if (!esOwner) { router.replace('/'); return }
+      const ped = data as Pedido
+      const esOwner =
+        (ped.comprador_id && ped.comprador_id === user.id) ||
+        (!ped.comprador_id && ped.email_comprador === user.email)
+      if (!esOwner) {
+        router.replace('/')
+        return
+      }
 
-        setPedido(data as Pedido)
+      setPedido(ped)
 
-        // ── 3a. Intentar cargar pedido_items ──
-        const { data: itemsData } = await supabase
+      const [itemsRes, trackingRes] = await Promise.all([
+        supabase
           .from('pedido_items')
           .select('id, nombre_producto, cantidad, precio_unitario, imagen_url')
+          .eq('pedido_id', id),
+        supabase
+          .from('order_tracking')
+          .select('tracking_code, estado, transportista')
           .eq('pedido_id', id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+      ])
 
-        if (itemsData && itemsData.length > 0) {
-          setItems(itemsData as PedidoItem[])
-        } else if (data.producto_id) {
-          // ── 3b. Fallback: cargar el producto único del pedido ──
-          const { data: prod } = await supabase
-            .from('productos')
-            .select('id, nombre, imagenes, ciudad, vendedor_id, categoria_id')
-            .eq('id', data.producto_id)
-            .single()
-          if (prod) setProducto(prod as Producto)
-        }
+      if (cancelled) return
 
-        setLoading(false)
-      })
+      if (itemsRes.data && itemsRes.data.length > 0) {
+        setItems(itemsRes.data as PedidoItem[])
+      } else if (ped.producto_id) {
+        const { data: prod } = await supabase
+          .from('productos')
+          .select('id, nombre, imagenes, ciudad, vendedor_id')
+          .eq('id', ped.producto_id)
+          .single()
+        if (!cancelled && prod) setProducto(prod as Producto)
+      }
+
+      setTracking((trackingRes.data as TrackingEvent | null) ?? null)
+      setLoading(false)
+    })()
+
+    return () => { cancelled = true }
   }, [id, authLoading, user, router])
 
-  /* ── Cambiar estado (confirmar / disputar) ── */
-  const cambiarEstado = async (nuevoEstado: string) => {
+  const estadoIdx = useMemo(() => {
+    if (!pedido) return 0
+    return TIMELINE_IDX[pedido.estado] ?? 0
+  }, [pedido])
+
+  const cambiarEstado = async (nuevoEstado: EstadoPedido) => {
     if (!pedido) return
     setProcesando(true)
     const updates: Record<string, unknown> = { estado: nuevoEstado }
     if (nuevoEstado === 'liberado') updates.escrow_liberado = true
 
-    const { error: e } = await supabase
+    const { error } = await supabase
       .from('pedidos')
       .update(updates)
       .eq('id', pedido.id)
 
-    if (e) {
-      setMensaje('Error al actualizar: ' + e.message)
+    if (error) {
+      setMensaje({ tone: 'amber', text: 'No se pudo actualizar: ' + error.message })
     } else {
       setPedido({ ...pedido, ...updates } as Pedido)
-      if (nuevoEstado === 'liberado')  setMensaje('✅ Recepción confirmada. El pago fue liberado al vendedor.')
-      if (nuevoEstado === 'disputado') setMensaje('⚠️ Disputa abierta. Nuestro equipo te contactará en 24h.')
+      if (nuevoEstado === 'liberado')
+        setMensaje({ tone: 'green', text: 'Recepción confirmada. El pago fue liberado al vendedor.' })
+      if (nuevoEstado === 'disputado')
+        setMensaje({ tone: 'amber', text: 'Disputa abierta. Nuestro equipo te contactará en 24-48 h.' })
     }
     setProcesando(false)
     setAccion(null)
   }
 
-  /* ── Estados de carga ── */
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-[#EAEDED] flex items-center justify-center">
-        <p className="text-gray-400 text-sm animate-pulse">Cargando pedido...</p>
+      <div style={{ minHeight: '70vh', display: 'grid', placeItems: 'center' }}>
+        <p style={{ color: 'var(--muted)' }}>Cargando pedido…</p>
       </div>
     )
   }
 
   if (notFound || !pedido) {
     return (
-      <div className="min-h-screen bg-[#EAEDED] flex items-center justify-center">
-        <div className="text-center px-4">
-          <p className="text-5xl mb-3">⚠️</p>
-          <p className="text-gray-700 font-bold">Pedido no encontrado</p>
-          <p className="text-sm text-gray-400 mt-1">El ID no existe o no tienes acceso.</p>
-          <a href="/" className="mt-4 inline-block text-sm underline" style={{ color: '#007185' }}>Volver al inicio</a>
-        </div>
+      <div className="mk-empty-page">
+        <Icon name="box" size={56} stroke={1.4} />
+        <h2>Pedido no encontrado</h2>
+        <p>El ID no existe o no tienes acceso a este pedido.</p>
+        <Link href="/mis-pedidos" className="mk-btn mk-btn-primary" style={{ marginTop: 8 }}>
+          Ver mis pedidos
+        </Link>
       </div>
     )
   }
 
-  const estadoIdx  = TIMELINE_IDX[pedido.estado] ?? 0
-  const arancelInfo = ARANCELES[pedido.pais_comprador]
-  const base        = pedido.total - (pedido.igv ?? 0) - (pedido.arancel ?? 0)
-  const fecha       = new Date(pedido.created_at).toLocaleDateString('es-PE', {
-    day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit',
-  })
+  const badge = ESTADO_BADGE[pedido.estado] ?? ESTADO_BADGE.pagado
+  const arancelInfo = pedido.pais_comprador ? ARANCELES[pedido.pais_comprador] : null
+  const base = +(pedido.total - (pedido.igv ?? 0) - (pedido.arancel ?? 0)).toFixed(2)
+  const sellerCiudad = producto?.ciudad ?? null
+  const sellerId = producto?.vendedor_id ?? pedido.vendedor_id
+  const isCancelOrDispute = pedido.estado === 'cancelado' || pedido.estado === 'disputado'
+  const donePctRatio = Math.min(estadoIdx, TIMELINE.length - 1) / (TIMELINE.length - 1)
+  // height % between dots. Each row spans ~58px. Easier: compute via line clipping.
+  const donePct = isCancelOrDispute ? 0 : donePctRatio * 100
 
   return (
-    <div className="min-h-screen bg-[#EAEDED]" style={{ fontFamily: 'Inter, sans-serif' }}>
-
+    <>
       {/* ── Header ── */}
-      <header className="sticky top-0 z-50 px-4 py-2.5 flex items-center gap-3" style={{ backgroundColor: '#131921' }}>
-        <a href="/" className="flex items-center gap-0.5 border-2 border-transparent hover:border-white rounded px-1 py-1 transition shrink-0">
-          <span className="text-white text-2xl font-black tracking-tight">merkao</span>
-          <span className="text-2xl font-black" style={{ color: '#FF9900' }}>.pe</span>
-        </a>
-        <div className="flex-1" />
-        <a href="/perfil" className="text-gray-300 text-xs hover:text-white transition hidden sm:inline">👤 Mi perfil</a>
-        <a href="/" className="text-gray-400 text-xs hover:text-white transition">← Inicio</a>
+      <header className="mk-chdr">
+        <div className="mk-chdr-inner">
+          <Link href="/" className="mk-logo">
+            merkao<span className="mk-logo-dot">.pe</span>
+          </Link>
+          <span className="mk-chdr-secure">
+            <Icon name="shield" size={15} stroke={1.9} /> Pago Escrow protegido
+          </span>
+          <Link href="/mis-pedidos" className="mk-chdr-help">
+            <Icon name="chevronLeft" size={15} /> Mis pedidos
+          </Link>
+        </div>
       </header>
 
-      {/* Breadcrumb */}
-      <div style={{ backgroundColor: '#232f3e' }}>
-        <div className="max-w-3xl mx-auto px-4 py-2 flex items-center gap-2 text-xs text-gray-400">
-          <a href="/" className="hover:text-white transition">Inicio</a>
-          <span>/</span>
-          <a href="/perfil" className="hover:text-white transition">Mi perfil</a>
-          <span>/</span>
-          <span className="text-white">Pedido</span>
-        </div>
-      </div>
+      <main className="mk-pdet">
+        <nav className="mk-crumb-row" aria-label="Migas">
+          <Link href="/">Inicio</Link>
+          <Icon name="chevronRight" size={12} stroke={2} />
+          <Link href="/mis-pedidos">Mis pedidos</Link>
+          <Icon name="chevronRight" size={12} stroke={2} />
+          <span className="on">{shortId(pedido.id)}</span>
+        </nav>
 
-      <div className="max-w-3xl mx-auto px-4 py-8 space-y-5">
-
-        {/* ── Cabecera del pedido ── */}
-        <div className="flex items-start justify-between flex-wrap gap-3">
-          <div>
-            <h1 className="text-2xl font-black text-gray-800">Seguimiento de pedido</h1>
-            <p className="text-xs text-gray-400 mt-1">
-              ID: <code className="bg-gray-100 px-1.5 py-0.5 rounded">{pedido.id}</code>
-            </p>
-            <p className="text-xs text-gray-400">Realizado el {fecha}</p>
+        {/* Head card */}
+        <section className="mk-pdet-head">
+          <div className="mk-pdet-head-info">
+            <h1>Seguimiento de pedido</h1>
+            <span className="mk-pdet-id">
+              ID: <code>{shortId(pedido.id)}</code>
+            </span>
+            <span className="mk-pdet-date">Realizado el {fmtFecha(pedido.created_at)}</span>
           </div>
-          <span className={`px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wide ${estadoBadgeClases(pedido.estado)}`}>
-            {estadoLabel(pedido.estado)}
+          <span className={'mk-pdet-badge ' + badge.tone}>
+            <Icon name={badge.icon} size={14} stroke={2} /> {badge.label}
           </span>
-        </div>
+        </section>
 
         {mensaje && (
-          <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-sm text-green-700 font-medium">
-            {mensaje}
+          <div className={'mk-pdet-msg ' + mensaje.tone}>
+            <Icon name={mensaje.tone === 'green' ? 'checkCircle' : 'bell'} size={16} stroke={1.9} />
+            <span>{mensaje.text}</span>
           </div>
         )}
 
-        {/* ── Timeline escrow ── */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <h2 className="text-sm font-bold text-gray-800 mb-5">Estado del proceso</h2>
-          <div className="relative">
-            {/* Track line */}
-            <div className="absolute left-5 top-5 bottom-5 w-0.5 bg-gray-200" />
-            <div
-              className="absolute left-5 top-5 w-0.5 bg-green-400 transition-all duration-700"
-              style={{ height: `${(estadoIdx / (TIMELINE.length - 1)) * 100}%` }}
-            />
-
-            <div className="space-y-6">
-              {TIMELINE.map((step, i) => {
-                const completado = i <= estadoIdx && !['cancelado', 'disputado'].includes(pedido.estado)
-                const actual     = i === estadoIdx
-                return (
-                  <div key={step.key} className="flex items-start gap-4">
-                    <div className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center text-lg border-2 shrink-0 transition-all ${
-                      completado ? 'border-green-400 bg-green-50' : 'border-gray-200 bg-white'
-                    } ${actual ? 'ring-4 ring-green-100 shadow-sm' : ''}`}>
-                      {step.icono}
-                    </div>
-                    <div className="flex-1 pt-2">
-                      <p className={`text-sm font-bold ${completado ? 'text-gray-800' : 'text-gray-400'}`}>
-                        {step.label}
-                      </p>
-                      <p className={`text-xs mt-0.5 ${actual ? 'text-green-600 font-medium' : 'text-gray-400'}`}>
-                        {step.desc}
-                      </p>
-                    </div>
-                    {completado && i < estadoIdx && (
-                      <span className="text-green-500 text-sm font-black mt-2.5">✓</span>
-                    )}
-                    {actual && !['liberado', 'disputado', 'cancelado'].includes(pedido.estado) && (
-                      <span className="mt-2.5 text-xs font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700">
-                        Actual
-                      </span>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
+        {/* Timeline */}
+        <section className="mk-pdet-card">
+          <div className="mk-pdet-card-h">
+            <Icon name="shield" size={16} stroke={2} /> Estado del proceso Escrow
           </div>
-        </div>
-
-        {/* ── Productos del pedido ── */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-50">
-            <h2 className="text-sm font-bold text-gray-800">Productos en este pedido</h2>
-          </div>
-
-          {items.length > 0 ? (
-            <ul className="divide-y divide-gray-50">
-              {items.map((item) => (
-                <li key={item.id} className="flex items-center gap-4 px-6 py-4">
-                  <div className="w-14 h-14 rounded-xl bg-gray-50 border border-gray-100 overflow-hidden shrink-0 flex items-center justify-center">
-                    {item.imagen_url ? (
-                      <img src={item.imagen_url} alt={item.nombre_producto} className="w-full h-full object-cover" />
+          <div className="mk-tline">
+            {!isCancelOrDispute && (
+              <div className="mk-tline-done-bar" style={{ height: `calc(${donePct}% - ${donePct === 0 ? 0 : 18}px)` }} />
+            )}
+            {TIMELINE.map((step, i) => {
+              const done = !isCancelOrDispute && i < estadoIdx
+              const current = !isCancelOrDispute && i === estadoIdx
+              const cls = done ? ' done' : current ? ' current' : ''
+              return (
+                <div key={step.key} className={'mk-tline-row' + cls}>
+                  <div className="mk-tline-dot">
+                    {done ? (
+                      <Icon name="check" size={16} stroke={2.4} />
                     ) : (
-                      <span className="text-2xl text-gray-300">📦</span>
+                      <Icon name={step.icon} size={16} stroke={1.9} />
                     )}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-gray-800 truncate">{item.nombre_producto}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">Cantidad: {item.cantidad}</p>
+                  <div className="mk-tline-info">
+                    <strong>{step.label}</strong>
+                    <small>{step.desc}</small>
                   </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-sm font-black text-gray-900">{fmt(item.precio_unitario * item.cantidad)}</p>
-                    <p className="text-xs text-gray-400">{fmt(item.precio_unitario)} c/u</p>
+                  {current && <span className="mk-tline-tag current">Actual</span>}
+                  {done && <span className="mk-tline-tag done">Hecho</span>}
+                </div>
+              )
+            })}
+          </div>
+        </section>
+
+        {/* Tracking link */}
+        {tracking?.tracking_code && (
+          <Link href={`/tracking/${tracking.tracking_code}`} className="mk-pdet-tracking-link">
+            <Icon name="truck" size={20} stroke={1.9} />
+            <div style={{ flex: 1 }}>
+              <strong>Tu pedido tiene tracking activo</strong>
+              <small>
+                {tracking.transportista ? `${tracking.transportista} · ` : ''}
+                Código: <strong style={{ fontFamily: 'ui-monospace, Menlo, monospace' }}>{tracking.tracking_code}</strong>
+              </small>
+            </div>
+            <Icon name="arrowRight" size={16} stroke={2} />
+          </Link>
+        )}
+
+        {/* Items */}
+        <section className="mk-pdet-card">
+          <div className="mk-pdet-card-h">
+            <Icon name="box" size={16} stroke={2} /> Productos en este pedido
+          </div>
+          {items.length > 0 ? (
+            <div className="mk-pdet-items">
+              {items.map((it) => (
+                <div key={it.id} className="mk-pdet-item">
+                  <div className="mk-pdet-item-thumb">
+                    {it.imagen_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={it.imagen_url} alt={it.nombre_producto} />
+                    ) : (
+                      <Icon name="box" size={22} stroke={1.6} />
+                    )}
                   </div>
-                </li>
+                  <div className="mk-pdet-item-info">
+                    <strong>{it.nombre_producto}</strong>
+                    <small>Cantidad: {it.cantidad}</small>
+                  </div>
+                  <div className="mk-pdet-item-price">
+                    <strong>{fmt(it.precio_unitario * it.cantidad)}</strong>
+                    <small>{fmt(it.precio_unitario)} c/u</small>
+                  </div>
+                </div>
               ))}
-            </ul>
+            </div>
           ) : producto ? (
-            <div className="flex items-center gap-4 px-6 py-4">
-              <div className="w-14 h-14 rounded-xl bg-gray-50 border border-gray-100 overflow-hidden shrink-0 flex items-center justify-center">
-                {producto.imagenes?.[0] ? (
-                  <img src={producto.imagenes[0]} alt={producto.nombre} className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-2xl text-gray-300">📦</span>
-                )}
+            <div className="mk-pdet-items">
+              <div className="mk-pdet-item">
+                <div className="mk-pdet-item-thumb">
+                  {producto.imagenes?.[0] ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={producto.imagenes[0]} alt={producto.nombre} />
+                  ) : (
+                    <Icon name="box" size={22} stroke={1.6} />
+                  )}
+                </div>
+                <div className="mk-pdet-item-info">
+                  <strong>{producto.nombre}</strong>
+                  {producto.ciudad && <small><Icon name="mapPin" size={11} stroke={2} /> {producto.ciudad}, Perú</small>}
+                </div>
+                <Link href={`/productos/${producto.id}`} className="mk-btn mk-btn-ghost" style={{ padding: '8px 12px', fontSize: 12.5 }}>
+                  Ver producto <Icon name="arrowRight" size={13} />
+                </Link>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-gray-800 truncate">{producto.nombre}</p>
-                {producto.ciudad && (
-                  <p className="text-xs text-gray-400 mt-0.5">📍 {producto.ciudad}, Perú</p>
-                )}
-              </div>
-              <a
-                href={`/productos/${producto.id}`}
-                className="text-xs font-bold shrink-0 hover:underline"
-                style={{ color: '#007185' }}
-              >
-                Ver producto →
-              </a>
             </div>
           ) : (
-            <div className="px-6 py-6 text-center text-sm text-gray-400">
-              Sin detalle de productos disponible.
-            </div>
+            <p style={{ fontSize: 13, color: 'var(--muted)', margin: 0 }}>
+              Sin detalle de productos disponible para este pedido.
+            </p>
           )}
-        </div>
+        </section>
 
-        {/* ── Vendedor ── */}
-        {(producto?.ciudad || producto?.vendedor_id) && (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex items-center gap-4">
-            <div className="w-11 h-11 bg-orange-100 rounded-full flex items-center justify-center text-xl shrink-0">
-              🏪
+        {/* Vendedor */}
+        {(sellerId || sellerCiudad) && (
+          <section className="mk-pdet-card">
+            <div className="mk-pdet-card-h">
+              <Icon name="store" size={16} stroke={2} /> Vendedor
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs text-gray-400">Vendedor</p>
-              <p className="text-sm font-bold text-gray-800">Tienda Merkao</p>
-              {producto?.ciudad && (
-                <p className="text-xs text-gray-500 mt-0.5">📍 {producto.ciudad}, Perú</p>
+            <div className="mk-pdet-item" style={{ background: 'var(--bg)' }}>
+              <div
+                className="mk-pdet-item-thumb"
+                style={{ background: 'linear-gradient(135deg, var(--brand), var(--brand-700))', color: '#fff', border: 'none' }}
+              >
+                <Icon name="store" size={22} stroke={1.7} />
+              </div>
+              <div className="mk-pdet-item-info">
+                <strong>Tienda Merkao</strong>
+                <small>
+                  {sellerCiudad ? (
+                    <><Icon name="mapPin" size={11} stroke={2} /> {sellerCiudad}, Perú · </>
+                  ) : null}
+                  Pago Escrow activo
+                </small>
+              </div>
+              {sellerId && (
+                <Link href={`/tienda/${sellerId}`} className="mk-btn mk-btn-ghost" style={{ padding: '8px 12px', fontSize: 12.5 }}>
+                  Ver tienda <Icon name="arrowRight" size={13} />
+                </Link>
               )}
             </div>
-            <div className="text-right shrink-0 text-xs text-gray-400">
-              <p>🔒 Escrow activo</p>
-              <p className="mt-0.5">Pago protegido</p>
-            </div>
-          </div>
+          </section>
         )}
 
-        {/* ── Acción: confirmar o disputar (cuando está entregado) ── */}
+        {/* Acciones (solo cuando entregado) */}
         {pedido.estado === 'entregado' && (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <h2 className="text-sm font-bold text-gray-800 mb-1">¿Recibiste tu pedido?</h2>
-            <p className="text-xs text-gray-500 mb-4">
-              Confirma la recepción para liberar el pago al vendedor, o abre una disputa si hay algún problema.
-            </p>
+          <section className="mk-pdet-card">
+            <div className="mk-pdet-card-h">
+              <Icon name="checkCircle" size={16} stroke={2} /> ¿Ya recibiste tu pedido?
+            </div>
             {accion === null ? (
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setAccion('confirmar')}
-                  className="flex-1 py-3 rounded-xl text-sm font-bold transition hover:brightness-110"
-                  style={{ backgroundColor: '#FF9900', color: '#131921' }}
-                >
-                  ✅ Confirmar recepción
-                </button>
-                <button
-                  onClick={() => setAccion('disputar')}
-                  className="flex-1 py-3 rounded-xl text-sm font-bold border-2 border-red-200 text-red-600 hover:bg-red-50 transition"
-                >
-                  ⚠️ Abrir disputa
-                </button>
-              </div>
-            ) : (
-              <div className="bg-gray-50 rounded-xl p-4">
-                <p className="text-sm font-medium text-gray-700 mb-3">
-                  {accion === 'confirmar'
-                    ? '¿Confirmas que recibiste el producto en buen estado? El pago se liberará al vendedor.'
-                    : '¿Quieres abrir una disputa? Nuestro equipo revisará el caso en 24–48h.'}
+              <>
+                <p style={{ fontSize: 13.5, color: 'var(--muted)', margin: '0 0 14px', lineHeight: 1.55 }}>
+                  Confirma la recepción para liberar el pago al vendedor, o abre una disputa
+                  si hay algún problema con tu pedido.
                 </p>
-                <div className="flex gap-3">
+                <div className="mk-pdet-actions">
                   <button
-                    onClick={() => cambiarEstado(accion === 'confirmar' ? 'liberado' : 'disputado')}
-                    disabled={procesando}
-                    className="flex-1 py-2.5 rounded-xl text-sm font-bold transition hover:brightness-110 disabled:opacity-60"
-                    style={{
-                      backgroundColor: accion === 'confirmar' ? '#FF9900' : '#dc2626',
-                      color: accion === 'confirmar' ? '#131921' : 'white',
-                    }}
+                    type="button"
+                    onClick={() => setAccion('confirmar')}
+                    className="mk-btn mk-btn-primary"
                   >
-                    {procesando ? 'Procesando...' : accion === 'confirmar' ? 'Sí, confirmar' : 'Sí, abrir disputa'}
+                    <Icon name="check" size={16} stroke={2.2} /> Confirmar entrega
                   </button>
                   <button
+                    type="button"
+                    onClick={() => setAccion('disputar')}
+                    className="mk-btn mk-btn-warn"
+                  >
+                    <Icon name="bell" size={16} stroke={2} /> Abrir disputa
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="mk-pdet-confirm">
+                <p>
+                  {accion === 'confirmar'
+                    ? <>¿Confirmas que recibiste el producto en buen estado? Liberaremos <strong>{fmt(pedido.total)}</strong> al vendedor.</>
+                    : <>¿Quieres abrir una disputa? Nuestro equipo de soporte revisará el caso y te contactará en 24-48 h.</>}
+                </p>
+                <div className="mk-pdet-confirm-actions">
+                  <button
+                    type="button"
                     onClick={() => setAccion(null)}
-                    className="flex-1 py-2.5 rounded-xl text-sm font-medium border border-gray-200 hover:bg-gray-50 transition"
+                    disabled={procesando}
+                    className="mk-btn mk-btn-ghost"
                   >
                     Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => cambiarEstado(accion === 'confirmar' ? 'liberado' : 'disputado')}
+                    disabled={procesando}
+                    className={'mk-btn ' + (accion === 'confirmar' ? 'mk-btn-primary' : 'mk-btn-warn')}
+                  >
+                    <Icon name={accion === 'confirmar' ? 'check' : 'bell'} size={16} stroke={2} />
+                    {procesando
+                      ? 'Procesando…'
+                      : accion === 'confirmar' ? 'Sí, liberar pago' : 'Sí, abrir disputa'}
                   </button>
                 </div>
               </div>
             )}
-          </div>
+          </section>
         )}
 
-        {/* ── Resumen financiero ── */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <h2 className="text-sm font-bold text-gray-800 mb-4">Resumen del pago</h2>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between text-gray-500">
+        {/* Resumen del pago */}
+        <section className="mk-pdet-card">
+          <div className="mk-pdet-card-h">
+            <Icon name="wallet" size={16} stroke={2} /> Resumen del pago
+          </div>
+          <div className="mk-prof-rows">
+            <div className="mk-prof-row">
               <span>Precio base</span>
               <span>{fmt(base)}</span>
             </div>
-            <div className="flex justify-between text-gray-500">
+            <div className="mk-prof-row">
               <span>IGV 18%</span>
               <span>{fmt(pedido.igv ?? 0)}</span>
             </div>
             {(pedido.arancel ?? 0) > 0 && arancelInfo && (
-              <div className="flex justify-between text-amber-600">
+              <div className="mk-prof-row">
                 <span>Arancel {arancelInfo.bandera} {Math.round(arancelInfo.tasa * 100)}%</span>
-                <span>+{fmt(pedido.arancel)}</span>
+                <span className="amber">+{fmt(pedido.arancel ?? 0)}</span>
               </div>
             )}
-            <div className="flex justify-between font-black text-base border-t border-gray-100 pt-2" style={{ color: '#B12704' }}>
+            <div className="mk-prof-row">
               <span>Total pagado</span>
-              <span>{fmt(pedido.total)}</span>
+              <span style={{ fontSize: 16, fontWeight: 800, color: 'var(--ink)' }}>{fmt(pedido.total)}</span>
             </div>
+            <div className="mk-prof-row">
+              <span>Método de pago</span>
+              <span style={{ textTransform: 'capitalize' }}>{pedido.metodo_pago ?? '—'}</span>
+            </div>
+            <div className="mk-prof-row">
+              <span>Estado del Escrow</span>
+              {pedido.escrow_liberado ? (
+                <span className="green">✓ Liberado al vendedor</span>
+              ) : (
+                <span className="amber">🔒 En custodia</span>
+              )}
+            </div>
+            {pedido.culqi_charge_id && (
+              <div className="mk-prof-row">
+                <span>Charge Culqi</span>
+                <span><code>{pedido.culqi_charge_id.slice(0, 14)}…</code></span>
+              </div>
+            )}
           </div>
-          <div className="mt-3 flex items-center gap-2 text-xs text-gray-400">
-            <span>💳</span>
-            <span>Método: <strong className="text-gray-600">{pedido.metodo_pago}</strong></span>
-            {pedido.escrow_liberado
-              ? <span className="ml-auto text-green-600 font-bold">✓ Escrow liberado</span>
-              : <span className="ml-auto text-blue-600 font-bold">🔒 En custodia escrow</span>}
-          </div>
-        </div>
+        </section>
 
-        {/* ── Datos de entrega ── */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <h2 className="text-sm font-bold text-gray-800 mb-4">Datos de entrega</h2>
-          <div className="grid grid-cols-2 gap-3 text-xs text-gray-600">
-            <div>
-              <p className="text-gray-400 mb-0.5">Comprador</p>
-              <p className="font-medium">{pedido.nombre_comprador || '—'}</p>
-            </div>
-            <div>
-              <p className="text-gray-400 mb-0.5">Correo</p>
-              <p className="font-medium">{pedido.email_comprador || '—'}</p>
-            </div>
-            <div className="col-span-2">
-              <p className="text-gray-400 mb-0.5">Dirección</p>
-              <p className="font-medium">{pedido.direccion_entrega || '—'}</p>
-            </div>
+        {/* Datos de entrega */}
+        <section className="mk-pdet-card">
+          <div className="mk-pdet-card-h">
+            <Icon name="mapPin" size={16} stroke={2} /> Datos de entrega
           </div>
-        </div>
+          <div className="mk-prof-rows">
+            <div className="mk-prof-row">
+              <span>Comprador</span>
+              <span>{pedido.nombre_comprador ?? '—'}</span>
+            </div>
+            <div className="mk-prof-row">
+              <span>Correo</span>
+              <span>{pedido.email_comprador ?? '—'}</span>
+            </div>
+            <div className="mk-prof-row">
+              <span>Dirección</span>
+              <span>{pedido.direccion_entrega ?? '—'}</span>
+            </div>
+            {pedido.pais_comprador && (
+              <div className="mk-prof-row">
+                <span>País</span>
+                <span>
+                  {arancelInfo ? `${arancelInfo.bandera} ${arancelInfo.pais}` : '🇵🇪 Perú'}
+                </span>
+              </div>
+            )}
+          </div>
+        </section>
 
-      </div>
-    </div>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center', marginTop: 8 }}>
+          <Link href="/mis-pedidos" className="mk-btn mk-btn-ghost">
+            <Icon name="chevronLeft" size={14} stroke={2} /> Volver a mis pedidos
+          </Link>
+          <Link href="/" className="mk-btn mk-btn-primary">
+            Seguir comprando <Icon name="arrowRight" size={15} />
+          </Link>
+        </div>
+      </main>
+    </>
   )
 }

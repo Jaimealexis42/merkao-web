@@ -1,27 +1,43 @@
 'use client'
-import { useState, useEffect } from 'react'
+
+import { useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { calcularPrecios, fmt } from '@/lib/precios'
 import { useCarritoStore } from '@/src/store/carritoStore'
-import { Icon } from '@/lib/icons'
+import { Icon, type IconName } from '@/lib/icons'
 
 type Producto = {
   id: string
   nombre: string
   descripcion: string | null
   precio: number
-  precio_oferta: number | null
   precio_mayoreo: number | null
   cantidad_minima_mayoreo: number | null
   costo_envio: number | null
   ciudad: string | null
-  categoria: string
-  condicion: string
+  categoria_id: number
+  condicion: string | null
   stock: number
-  imagen_url: string | null
+  imagenes: string[] | null
   vendedor_id: string | null
+  created_at: string
 }
+
+type CatDef = { id: number; slug: string; nombre: string; icon: IconName }
+
+const CATEGORIAS: CatDef[] = [
+  { id: 1, slug: 'ropa-y-moda',   nombre: 'Ropa y moda',   icon: 'shirt' },
+  { id: 2, slug: 'electronicos',  nombre: 'Electrónicos',  icon: 'smartphone' },
+  { id: 3, slug: 'alimentos',     nombre: 'Alimentos',     icon: 'food' },
+  { id: 4, slug: 'artesanias',    nombre: 'Artesanías',    icon: 'palette' },
+  { id: 5, slug: 'hogar',         nombre: 'Hogar',         icon: 'home' },
+  { id: 6, slug: 'autos-y-motos', nombre: 'Autos y motos', icon: 'car' },
+  { id: 7, slug: 'agricola',      nombre: 'Agrícola',      icon: 'sprout' },
+  { id: 8, slug: 'otros',         nombre: 'Otros',         icon: 'box' },
+]
+const CAT_BY_ID = Object.fromEntries(CATEGORIAS.map((c) => [c.id, c]))
 
 function Stars({ value, size = 14 }: { value: number; size?: number }) {
   const full = Math.round(value)
@@ -34,33 +50,80 @@ function Stars({ value, size = 14 }: { value: number; size?: number }) {
   )
 }
 
+function ratingFromId(id: string) {
+  const n = id.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
+  return Math.round((4.0 + (n % 11) / 10) * 10) / 10
+}
+function reviewsFromId(id: string) {
+  const n = id.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
+  return 50 + (n % 950)
+}
+function soldFromId(id: string) {
+  const n = id.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
+  return 80 + (n % 240)
+}
+
 export default function ProductoDetalle() {
   const { id } = useParams<{ id: string }>()
-  const router  = useRouter()
+  const router = useRouter()
 
-  const [producto, setProducto]   = useState<Producto | null>(null)
-  const [loading, setLoading]     = useState(true)
-  const [notFound, setNotFound]   = useState(false)
-  const [cantidad, setCantidad]   = useState(1)
+  const [producto, setProducto] = useState<Producto | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [notFound, setNotFound] = useState(false)
+  const [cantidad, setCantidad] = useState(1)
   const [imagenActiva, setImagenActiva] = useState(0)
-  const [added, setAdded]         = useState(false)
-  const [fav, setFav]             = useState(false)
-  const agregarItem  = useCarritoStore((s) => s.agregarItem)
-  const totalItems   = useCarritoStore((s) => s.totalItems)
+  const [added, setAdded] = useState(false)
+  const [fav, setFav] = useState(false)
+  const [relacionados, setRelacionados] = useState<Producto[]>([])
+
+  const agregarItem = useCarritoStore((s) => s.agregarItem)
+  const totalItems = useCarritoStore((s) => s.totalItems)
 
   useEffect(() => {
     if (!id) return
-    supabase
-      .from('productos')
-      .select('*')
-      .eq('id', id)
-      .single()
-      .then(({ data, error }) => {
-        if (error || !data) setNotFound(true)
-        else setProducto(data as Producto)
+    let cancelled = false
+
+    ;(async () => {
+      setLoading(true)
+      const { data, error } = await supabase
+        .from('productos')
+        .select(
+          'id, nombre, descripcion, precio, precio_mayoreo, cantidad_minima_mayoreo, costo_envio, ciudad, categoria_id, condicion, stock, imagenes, vendedor_id, created_at',
+        )
+        .eq('id', id)
+        .single()
+
+      if (cancelled) return
+      if (error || !data) {
+        setNotFound(true)
         setLoading(false)
-      })
+        return
+      }
+      const prod = data as Producto
+      setProducto(prod)
+      setImagenActiva(0)
+      setLoading(false)
+
+      // Related: same category, excluding current, max 4
+      const { data: rel } = await supabase
+        .from('productos')
+        .select(
+          'id, nombre, descripcion, precio, precio_mayoreo, cantidad_minima_mayoreo, costo_envio, ciudad, categoria_id, condicion, stock, imagenes, vendedor_id, created_at',
+        )
+        .eq('estado', 'activo')
+        .eq('categoria_id', prod.categoria_id)
+        .neq('id', prod.id)
+        .order('vistas', { ascending: false })
+        .limit(4)
+      if (!cancelled) setRelacionados((rel ?? []) as Producto[])
+    })()
+
+    return () => { cancelled = true }
   }, [id])
+
+  const rating = useMemo(() => (producto ? ratingFromId(producto.id) : 0), [producto])
+  const numResenas = useMemo(() => (producto ? reviewsFromId(producto.id) : 0), [producto])
+  const sold = useMemo(() => (producto ? soldFromId(producto.id) : 0), [producto])
 
   if (loading) {
     return (
@@ -76,34 +139,42 @@ export default function ProductoDetalle() {
         <Icon name="box" size={56} stroke={1.4} />
         <h2>Producto no encontrado</h2>
         <p>Este producto no existe o fue eliminado.</p>
-        <a href="/" className="mk-btn mk-btn-primary" style={{ marginTop: 8 }}>
+        <Link href="/" className="mk-btn mk-btn-primary" style={{ marginTop: 8 }}>
           Volver al inicio
-        </a>
+        </Link>
       </div>
     )
   }
 
-  const precioActivo = (
+  const cat = CAT_BY_ID[producto.categoria_id]
+  const catNombre = cat?.nombre ?? 'Categoría'
+  const catSlug = cat?.slug ?? 'otros'
+
+  const precioActivo =
+    producto.precio_mayoreo &&
+    producto.cantidad_minima_mayoreo &&
+    cantidad >= producto.cantidad_minima_mayoreo
+      ? producto.precio_mayoreo
+      : producto.precio
+
+  const precios = calcularPrecios(precioActivo)
+  const esMayoreo = !!(
     producto.precio_mayoreo &&
     producto.cantidad_minima_mayoreo &&
     cantidad >= producto.cantidad_minima_mayoreo
   )
-    ? producto.precio_mayoreo
-    : (producto.precio_oferta ?? producto.precio)
-
-  const precios       = calcularPrecios(precioActivo)
-  const esMayoreo     = !!(producto.precio_mayoreo && producto.cantidad_minima_mayoreo && cantidad >= producto.cantidad_minima_mayoreo)
-  const hayOferta     = !esMayoreo && !!producto.precio_oferta
-  const precioOriginalSubtotal = calcularPrecios(producto.precio).subtotal
-  const descuentoPct  = hayOferta
-    ? Math.round((1 - (producto.precio_oferta! / producto.precio)) * 100)
-    : esMayoreo
-    ? Math.round((1 - (producto.precio_mayoreo! / producto.precio)) * 100)
+  const precioOriginalTotal = calcularPrecios(producto.precio).total
+  const descuentoPct = esMayoreo
+    ? Math.round((1 - producto.precio_mayoreo! / producto.precio) * 100)
     : 0
 
-  const galeria: (string | null)[] = producto.imagen_url
-    ? [producto.imagen_url, null, null]
-    : [null, null, null]
+  const imgs = (producto.imagenes ?? []).filter(Boolean)
+  const galeria: (string | null)[] = imgs.length > 0
+    ? (imgs.length >= 4 ? imgs.slice(0, 4) : [...imgs, ...Array(4 - imgs.length).fill(null)])
+    : [null, null, null, null]
+  const stockBajo = producto.stock > 0 && producto.stock <= 5
+  const condicionLabel = (producto.condicion ?? 'nuevo').toLowerCase()
+  const esNuevo = condicionLabel === 'nuevo'
 
   const handleBuyNow = () => {
     router.push(`/checkout?id=${producto.id}&cantidad=${cantidad}`)
@@ -112,10 +183,10 @@ export default function ProductoDetalle() {
   const handleAddToCart = () => {
     agregarItem(
       {
-        id:       producto.id,
-        nombre:   producto.nombre,
-        precio:   precios.subtotal,
-        imagen:   producto.imagen_url,
+        id: producto.id,
+        nombre: producto.nombre,
+        precio: precios.subtotal,
+        imagen: imgs[0] ?? null,
         vendedor: producto.ciudad ?? 'Vendedor Merkao',
       },
       cantidad,
@@ -124,31 +195,33 @@ export default function ProductoDetalle() {
     setTimeout(() => setAdded(false), 2000)
   }
 
-  const incrementar = () => { if (cantidad < producto.stock) setCantidad((q) => q + 1) }
-  const decrementar = () => { if (cantidad > 1) setCantidad((q) => q - 1) }
+  const incrementar = () => {
+    if (cantidad < producto.stock) setCantidad((q) => q + 1)
+  }
+  const decrementar = () => {
+    if (cantidad > 1) setCantidad((q) => q - 1)
+  }
 
-  const rating       = 4.8
-  const numResenas   = 12
-  const sold         = 124
   const distribucion: [string, number][] = [['5', 78], ['4', 15], ['3', 5], ['2', 1], ['1', 1]]
-  const stockBajo    = producto.stock > 0 && producto.stock <= 5
 
   return (
     <>
       {/* ── Header compacto ── */}
       <header className="mk-phdr">
         <div className="mk-phdr-inner">
-          <a href="/" className="mk-logo">merkao<span className="mk-logo-dot">.pe</span></a>
+          <Link href="/" className="mk-logo">
+            merkao<span className="mk-logo-dot">.pe</span>
+          </Link>
           <div className="mk-phdr-search">
             <input placeholder="Buscar productos, marcas y categorías…" />
             <button className="mk-phdr-search-btn" aria-label="Buscar">
               <Icon name="search" size={19} />
             </button>
           </div>
-          <a className="mk-phdr-link" href="/vendedor">
+          <Link className="mk-phdr-link" href="/vende">
             <Icon name="store" size={17} stroke={1.8} /> Vende en Merkao
-          </a>
-          <a className="mk-phdr-cart" href="/carrito">
+          </Link>
+          <Link className="mk-phdr-cart" href="/carrito">
             <span className="mk-cart-ico">
               <Icon name="cart" size={22} stroke={1.8} />
               {totalItems() > 0 && (
@@ -156,36 +229,37 @@ export default function ProductoDetalle() {
               )}
             </span>
             <strong>Carrito</strong>
-          </a>
+          </Link>
         </div>
       </header>
 
       <div className="mk-pwrap">
-
-        {/* ── Breadcrumb ── */}
-        <nav className="mk-crumb">
-          <a href="/">Inicio</a>
-          <Icon name="chevronRight" size={13} />
-          <a href={`/?categoria=${encodeURIComponent(producto.categoria)}`}>{producto.categoria}</a>
-          <Icon name="chevronRight" size={13} />
-          <span className="mk-crumb-now">{producto.nombre.slice(0, 60)}{producto.nombre.length > 60 ? '…' : ''}</span>
+        {/* Breadcrumb */}
+        <nav className="mk-crumb" aria-label="Migas">
+          <Link href="/">Inicio</Link>
+          <Icon name="chevronRight" size={13} stroke={2} />
+          <Link href={`/categorias/${catSlug}`}>{catNombre}</Link>
+          <Icon name="chevronRight" size={13} stroke={2} />
+          <span className="mk-crumb-now">
+            {producto.nombre.length > 60 ? producto.nombre.slice(0, 60) + '…' : producto.nombre}
+          </span>
         </nav>
 
-        {/* ── Top: galería + buybox ── */}
+        {/* Top: galería + buybox */}
         <section className="mk-ptop">
-
           {/* Galería */}
           <div className="mk-gallery">
             <div className="mk-gal-thumbs">
               {galeria.map((img, i) => (
                 <button
                   key={i}
+                  type="button"
                   className={'mk-gal-thumb' + (i === imagenActiva ? ' on' : '')}
                   onClick={() => setImagenActiva(i)}
                   aria-label={`Vista ${i + 1}`}
                 >
                   {img ? (
-                    /* eslint-disable-next-line @next/next/no-img-element */
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img src={img} alt="" />
                   ) : (
                     <span className="mk-gal-thumb-ph">
@@ -197,7 +271,7 @@ export default function ProductoDetalle() {
             </div>
             <div className="mk-gal-main">
               {galeria[imagenActiva] ? (
-                /* eslint-disable-next-line @next/next/no-img-element */
+                // eslint-disable-next-line @next/next/no-img-element
                 <img src={galeria[imagenActiva]!} alt={producto.nombre} />
               ) : (
                 <div className="mk-gal-main-ph">
@@ -212,15 +286,15 @@ export default function ProductoDetalle() {
                   <Icon name="mapPin" size={13} stroke={2} /> {producto.ciudad}
                 </span>
               )}
-              <span className={'mk-gal-cond' + (producto.condicion !== 'nuevo' ? ' usado' : '')}>
-                {producto.condicion === 'nuevo' ? 'Nuevo' : 'Usado'}
+              <span className={'mk-gal-cond' + (esNuevo ? '' : ' usado')}>
+                {esNuevo ? 'Nuevo' : condicionLabel === 'reacondicionado' ? 'Reacondicionado' : 'Usado'}
               </span>
             </div>
           </div>
 
           {/* BuyBox */}
           <div className="mk-buybox">
-            <span className="mk-bb-cat">{producto.categoria}</span>
+            <span className="mk-bb-cat">{catNombre}</span>
             <h1 className="mk-bb-title">{producto.nombre}</h1>
             <div className="mk-bb-meta">
               <Stars value={rating} />
@@ -234,12 +308,10 @@ export default function ProductoDetalle() {
             <div className="mk-bb-price-card">
               <div className="mk-bb-price">
                 {fmt(precios.total)}
-                {(hayOferta || esMayoreo) && (
+                {esMayoreo && (
                   <>
-                    <span className="mk-bb-price-strike">{fmt(precioOriginalSubtotal)}</span>
-                    {descuentoPct > 0 && (
-                      <span className="mk-bb-price-discount">-{descuentoPct}%</span>
-                    )}
+                    <span className="mk-bb-price-strike">{fmt(precioOriginalTotal)}</span>
+                    {descuentoPct > 0 && <span className="mk-bb-price-discount">-{descuentoPct}%</span>}
                   </>
                 )}
               </div>
@@ -254,37 +326,39 @@ export default function ProductoDetalle() {
             {/* Badge mayoreo */}
             {esMayoreo && (
               <div className="mk-bb-mayoreo">
-                <Icon name="checkCircle" size={16} />
+                <Icon name="checkCircle" size={16} stroke={1.9} />
                 ¡Precio mayoreo activo! Comprando <strong>{cantidad}+</strong> unidades.
               </div>
             )}
             {!esMayoreo && producto.precio_mayoreo && producto.cantidad_minima_mayoreo && (
               <div className="mk-bb-mayoreo">
-                <Icon name="box" size={16} />
-                Compra <strong>{producto.cantidad_minima_mayoreo}+</strong> unidades y paga <strong>{fmt(calcularPrecios(producto.precio_mayoreo).total)}</strong> c/u.
+                <Icon name="tag" size={16} stroke={1.9} />
+                Compra <strong>{producto.cantidad_minima_mayoreo}+</strong> unidades y paga{' '}
+                <strong>{fmt(calcularPrecios(producto.precio_mayoreo).total)}</strong> c/u.
               </div>
             )}
 
             {/* Qty + stock */}
             <div className="mk-bb-buy-row">
               <div className="mk-bb-qty">
-                <button onClick={decrementar} disabled={cantidad <= 1} aria-label="Menos">−</button>
+                <button type="button" onClick={decrementar} disabled={cantidad <= 1} aria-label="Menos">−</button>
                 <span>{cantidad}</span>
-                <button onClick={incrementar} disabled={cantidad >= producto.stock} aria-label="Más">+</button>
+                <button type="button" onClick={incrementar} disabled={cantidad >= producto.stock} aria-label="Más">+</button>
               </div>
               <span className={'mk-bb-stock' + (stockBajo ? ' low' : '')}>
                 <span className="mk-bb-stock-dot" />
                 {producto.stock === 0
                   ? 'Sin stock'
                   : stockBajo
-                  ? `¡Últimas ${producto.stock} unidades!`
-                  : `${producto.stock} disponibles`}
+                    ? `¡Últimas ${producto.stock} unidades!`
+                    : `${producto.stock} disponibles`}
               </span>
             </div>
 
             {/* CTAs */}
             <div className="mk-bb-cta-row">
               <button
+                type="button"
                 onClick={handleBuyNow}
                 disabled={producto.stock === 0}
                 className="mk-btn mk-btn-primary mk-bb-buy"
@@ -293,6 +367,7 @@ export default function ProductoDetalle() {
                 {producto.stock === 0 ? 'Sin stock' : 'Comprar ahora'}
               </button>
               <button
+                type="button"
                 onClick={handleAddToCart}
                 disabled={producto.stock === 0}
                 className={'mk-btn mk-btn-ghost mk-bb-add' + (added ? ' added' : '')}
@@ -300,6 +375,7 @@ export default function ProductoDetalle() {
                 <Icon name="cart" size={17} stroke={1.9} /> {added ? '¡Agregado!' : 'Al carrito'}
               </button>
               <button
+                type="button"
                 onClick={() => setFav((f) => !f)}
                 className={'mk-bb-fav' + (fav ? ' on' : '')}
                 aria-label="Guardar"
@@ -312,14 +388,18 @@ export default function ProductoDetalle() {
             {/* Trust list */}
             <div className="mk-bb-trust">
               <div className="mk-bb-trust-row">
-                <span className="mk-bb-trust-ico green"><Icon name="shield" size={17} stroke={1.8} /></span>
+                <span className="mk-bb-trust-ico green">
+                  <Icon name="shield" size={17} stroke={1.8} />
+                </span>
                 <div>
                   <strong>Compra protegida con Pago Escrow</strong>
                   <small>Tu dinero queda retenido hasta que confirmes la entrega.</small>
                 </div>
               </div>
               <div className="mk-bb-trust-row">
-                <span className="mk-bb-trust-ico"><Icon name="truck" size={17} stroke={1.8} /></span>
+                <span className="mk-bb-trust-ico">
+                  <Icon name="truck" size={17} stroke={1.8} />
+                </span>
                 <div>
                   <strong>Envío a todo el Perú</strong>
                   <small>
@@ -330,7 +410,9 @@ export default function ProductoDetalle() {
                 </div>
               </div>
               <div className="mk-bb-trust-row">
-                <span className="mk-bb-trust-ico"><Icon name="checkCircle" size={17} stroke={1.8} /></span>
+                <span className="mk-bb-trust-ico">
+                  <Icon name="checkCircle" size={17} stroke={1.8} />
+                </span>
                 <div>
                   <strong>Devolución garantizada</strong>
                   <small>Si no llega o no es lo descrito, te devolvemos el pago.</small>
@@ -340,13 +422,13 @@ export default function ProductoDetalle() {
           </div>
         </section>
 
-        {/* ── Detalles: descripción + side seller ── */}
+        {/* Detalles + seller card */}
         <section className="mk-details">
           <div className="mk-det-main">
             <div className="mk-det-block">
               <h2>Descripción</h2>
               {producto.descripcion ? (
-                <p>{producto.descripcion}</p>
+                <p style={{ whiteSpace: 'pre-line' }}>{producto.descripcion}</p>
               ) : (
                 <p className="mk-det-empty">El vendedor no añadió una descripción para este producto.</p>
               )}
@@ -355,8 +437,8 @@ export default function ProductoDetalle() {
             <div className="mk-det-block">
               <h2>Especificaciones</h2>
               <div className="mk-spec-grid">
-                <div className="mk-spec-row"><span className="mk-spec-k">Categoría</span><span className="mk-spec-v">{producto.categoria}</span></div>
-                <div className="mk-spec-row"><span className="mk-spec-k">Condición</span><span className="mk-spec-v">{producto.condicion}</span></div>
+                <div className="mk-spec-row"><span className="mk-spec-k">Categoría</span><span className="mk-spec-v">{catNombre}</span></div>
+                <div className="mk-spec-row"><span className="mk-spec-k">Condición</span><span className="mk-spec-v" style={{ textTransform: 'capitalize' }}>{condicionLabel}</span></div>
                 {producto.ciudad && (
                   <div className="mk-spec-row"><span className="mk-spec-k">Origen</span><span className="mk-spec-v">{producto.ciudad}, Perú</span></div>
                 )}
@@ -379,7 +461,7 @@ export default function ProductoDetalle() {
             </div>
           </div>
 
-          {/* Side: seller card */}
+          {/* Side seller card */}
           <aside className="mk-det-side">
             <div className="mk-seller-card">
               <div className="mk-seller-head">
@@ -414,21 +496,21 @@ export default function ProductoDetalle() {
                 </div>
               </div>
               <div className="mk-seller-actions">
-                <a
+                <Link
                   href={producto.vendedor_id ? `/tienda/${producto.vendedor_id}` : '#'}
                   className="mk-btn mk-btn-ghost"
                 >
                   <Icon name="store" size={15} stroke={1.8} /> Ver tienda
-                </a>
-                <button className="mk-btn mk-btn-ghost" type="button">
+                </Link>
+                <Link href="/contacto" className="mk-btn mk-btn-ghost">
                   <Icon name="message" size={15} stroke={1.8} /> Contactar
-                </button>
+                </Link>
               </div>
             </div>
           </aside>
         </section>
 
-        {/* ── Reseñas ── */}
+        {/* Reseñas */}
         <section className="mk-reviews" id="mk-reviews">
           <h2>Reseñas de compradores</h2>
           <div className="mk-rev-wrap">
@@ -439,7 +521,9 @@ export default function ProductoDetalle() {
               <div className="mk-rev-dist">
                 {distribucion.map(([star, pct]) => (
                   <div className="mk-rev-dist-row" key={star}>
-                    <span className="mk-rev-dist-star">{star} <Icon name="star" size={11} className="mk-star on" /></span>
+                    <span className="mk-rev-dist-star">
+                      {star} <Icon name="star" size={11} className="mk-star on" />
+                    </span>
                     <div className="mk-rev-dist-bar"><div style={{ width: pct + '%' }} /></div>
                     <span className="mk-rev-dist-pct">{pct}%</span>
                   </div>
@@ -474,6 +558,40 @@ export default function ProductoDetalle() {
           </div>
         </section>
 
+        {/* Related */}
+        {relacionados.length > 0 && (
+          <section className="mk-related">
+            <div>
+              <h2>Productos relacionados</h2>
+              <p className="mk-related-sub">Más {catNombre.toLowerCase()} que podrían gustarte.</p>
+            </div>
+            <div className="mk-rgrid">
+              {relacionados.map((r) => {
+                const p = calcularPrecios(r.precio)
+                const img = r.imagenes?.[0] ?? `https://picsum.photos/seed/${r.id}/600/600`
+                const rCat = CAT_BY_ID[r.categoria_id]?.nombre ?? ''
+                return (
+                  <Link key={r.id} href={`/productos/${r.id}`} className="mk-rcard mk-rcard-link">
+                    <div className="mk-rcard-media">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={img} alt={r.nombre} loading="lazy" />
+                      {r.ciudad && (
+                        <span className="mk-rcard-loc">
+                          <Icon name="mapPin" size={11} stroke={2} /> {r.ciudad}
+                        </span>
+                      )}
+                    </div>
+                    <div className="mk-rcard-body">
+                      <span className="mk-rcard-cat">{rCat}</span>
+                      <h3 className="mk-rcard-title">{r.nombre}</h3>
+                      <div className="mk-rcard-price">{fmt(p.total)}</div>
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+          </section>
+        )}
       </div>
     </>
   )

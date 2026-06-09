@@ -1,210 +1,354 @@
 'use client'
-import { useEffect, useState } from 'react'
+
+import { useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { fmt } from '@/lib/precios'
+import { calcularPrecios, fmt } from '@/lib/precios'
+import { Icon, type IconName } from '@/lib/icons'
+import { SiteTopnav, SiteFootnav } from '@/components/SiteShell'
 
 type Tienda = {
   id: string
   nombre: string | null
   descripcion: string | null
   logo_url: string | null
+  ciudad: string | null
+  reputacion: number | null
+  ventas_totales: number | null
 }
 
 type Producto = {
   id: string
   nombre: string
   precio: number
-  precio_oferta: number | null
-  categoria: string
-  condicion: string
+  precio_mayoreo: number | null
+  cantidad_minima_mayoreo: number | null
+  costo_envio: number | null
+  categoria_id: number
+  condicion: string | null
   stock: number
-  imagen_url: string | null
+  imagenes: string[] | null
+  ciudad: string | null
+  vistas: number | null
   estado: string
 }
 
-const ICONO_CATEGORIA: Record<string, string> = {
-  'Ropa y Moda':    '👗',
-  'Electrónicos':   '📱',
-  'Alimentos':      '🥗',
-  'Artesanías':     '🎨',
-  'Hogar':          '🛋️',
-  'Autos y Motos':  '🚗',
-  'Agrícola':       '🌾',
-  'Salud y Belleza':'💄',
-  'Deportes':       '⚽',
-  'Juguetes':       '🧸',
-  'Libros':         '📚',
-  'Otros':          '📦',
+type CatDef = { id: number; nombre: string; icon: IconName }
+
+const CATEGORIAS: CatDef[] = [
+  { id: 1, nombre: 'Ropa y moda',   icon: 'shirt' },
+  { id: 2, nombre: 'Electrónicos',  icon: 'smartphone' },
+  { id: 3, nombre: 'Alimentos',     icon: 'food' },
+  { id: 4, nombre: 'Artesanías',    icon: 'palette' },
+  { id: 5, nombre: 'Hogar',         icon: 'home' },
+  { id: 6, nombre: 'Autos y motos', icon: 'car' },
+  { id: 7, nombre: 'Agrícola',      icon: 'sprout' },
+  { id: 8, nombre: 'Otros',         icon: 'box' },
+]
+const CAT_BY_ID = Object.fromEntries(CATEGORIAS.map((c) => [c.id, c]))
+
+type SortKey = 'recientes' | 'vistos' | 'precio_asc' | 'precio_desc'
+const SORT_LABELS: Record<SortKey, string> = {
+  recientes: 'Más recientes',
+  vistos: 'Más vistos',
+  precio_asc: 'Precio: menor a mayor',
+  precio_desc: 'Precio: mayor a menor',
+}
+
+function iniciales(nombre: string | null | undefined): string {
+  const n = (nombre ?? 'M').trim()
+  const partes = n.split(/\s+/).filter(Boolean)
+  if (partes.length === 0) return 'M'
+  if (partes.length === 1) return partes[0].slice(0, 2).toUpperCase()
+  return (partes[0][0] + partes[1][0]).toUpperCase()
 }
 
 export default function TiendaPublicaPage() {
   const { id } = useParams<{ id: string }>()
 
-  const [tienda, setTienda]       = useState<Tienda | null>(null)
+  const [tienda, setTienda] = useState<Tienda | null>(null)
   const [productos, setProductos] = useState<Producto[]>([])
-  const [loading, setLoading]     = useState(true)
+  const [loading, setLoading] = useState(true)
+  const [busqueda, setBusqueda] = useState('')
+  const [categoria, setCategoria] = useState<number>(0)
+  const [sort, setSort] = useState<SortKey>('recientes')
 
   useEffect(() => {
     if (!id) return
-    let cancel = false
+    let cancelled = false
 
-    const cargar = async () => {
+    ;(async () => {
       setLoading(true)
-
-      // Tabla `tiendas` puede estar vacía (no se crea automáticamente al
-      // registrarse el vendedor). Siempre renderizamos la storefront y
-      // dejamos que la sección de productos muestre su propio estado vacío.
       const [tiendaRes, productosRes] = await Promise.all([
         supabase
           .from('tiendas')
-          .select('id, nombre, descripcion, logo_url')
-          .eq('id', id)
+          .select('id, nombre, descripcion, logo_url, ciudad, reputacion, ventas_totales')
+          .eq('vendedor_id', id)
           .maybeSingle(),
         supabase
           .from('productos')
-          .select('id, nombre, precio, precio_oferta, categoria, condicion, stock, imagen_url, estado')
+          .select(
+            'id, nombre, precio, precio_mayoreo, cantidad_minima_mayoreo, costo_envio, categoria_id, condicion, stock, imagenes, ciudad, vistas, estado',
+          )
           .eq('vendedor_id', id)
           .eq('estado', 'activo')
           .order('created_at', { ascending: false }),
       ])
-
-      if (cancel) return
-
-      setTienda(tiendaRes.data ?? { id, nombre: null, descripcion: null, logo_url: null })
-      setProductos(productosRes.data ?? [])
+      if (cancelled) return
+      setTienda(
+        (tiendaRes.data as Tienda | null) ??
+          { id, nombre: null, descripcion: null, logo_url: null, ciudad: null, reputacion: null, ventas_totales: null },
+      )
+      setProductos((productosRes.data ?? []) as Producto[])
       setLoading(false)
-    }
+    })()
 
-    cargar()
-    return () => { cancel = true }
+    return () => { cancelled = true }
   }, [id])
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#EAEDED] flex items-center justify-center">
-        <p className="text-gray-400 text-sm animate-pulse">Cargando tienda...</p>
-      </div>
-    )
-  }
-
   const nombreVisible = tienda?.nombre || 'Tienda en Merkao'
-  const inicial = (tienda?.nombre || 'M')[0].toUpperCase()
+  const ciudadVisible = tienda?.ciudad || (productos[0]?.ciudad ?? 'Perú')
+  const reputacion = tienda?.reputacion ?? 4.7
+  const ventasTotales = tienda?.ventas_totales ?? 0
+  const productosActivos = productos.length
+
+  const categoriasUsadas = useMemo(() => {
+    const set = new Set<number>()
+    productos.forEach((p) => set.add(p.categoria_id))
+    return CATEGORIAS.filter((c) => set.has(c.id))
+  }, [productos])
+
+  const filtrados = useMemo(() => {
+    const q = busqueda.trim().toLowerCase()
+    const items = productos.filter((p) => {
+      if (q && !p.nombre.toLowerCase().includes(q)) return false
+      if (categoria !== 0 && p.categoria_id !== categoria) return false
+      return true
+    })
+    if (sort === 'precio_asc') items.sort((a, b) => a.precio - b.precio)
+    else if (sort === 'precio_desc') items.sort((a, b) => b.precio - a.precio)
+    else if (sort === 'vistos') items.sort((a, b) => (b.vistas ?? 0) - (a.vistas ?? 0))
+    return items
+  }, [productos, busqueda, categoria, sort])
 
   return (
-    <div className="min-h-screen bg-[#EAEDED]" style={{ fontFamily: 'Inter, sans-serif' }}>
+    <>
+      <SiteTopnav active={null} />
 
-      {/* Header */}
-      <header className="sticky top-0 z-50 px-4 py-2.5 flex items-center gap-3" style={{ backgroundColor: '#131921' }}>
-        <a href="/" className="flex items-center gap-0.5 border-2 border-transparent hover:border-white rounded px-1 py-1 transition shrink-0">
-          <span className="text-white text-2xl font-black tracking-tight">merkao</span>
-          <span className="text-2xl font-black" style={{ color: '#FF9900' }}>.pe</span>
-        </a>
-        <div className="flex-1" />
-        <a href="/carrito" className="flex items-end gap-1 border-2 border-transparent hover:border-white rounded px-2 py-1 transition shrink-0">
-          <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M2.25 2.25a.75.75 0 000 1.5h1.386c.17 0 .318.114.362.278l2.558 9.592a3.752 3.752 0 00-2.806 3.63c0 .414.336.75.75.75h15.75a.75.75 0 000-1.5H5.378A2.25 2.25 0 017.5 15h11.218a.75.75 0 00.674-.421 60.358 60.358 0 002.96-7.228.75.75 0 00-.525-.965A60.864 60.864 0 005.68 4.509l-.232-.867A1.875 1.875 0 003.636 2.25H2.25zM3.75 20.25a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zM16.5 20.25a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0z" />
-          </svg>
-          <span className="text-white text-xs font-bold hidden sm:inline pb-0.5">Carrito</span>
-        </a>
-      </header>
+      <main className="mk-stf">
+        <nav className="mk-crumb-row" aria-label="Migas">
+          <Link href="/">Inicio</Link>
+          <Icon name="chevronRight" size={12} stroke={2} />
+          <span>Tiendas</span>
+          <Icon name="chevronRight" size={12} stroke={2} />
+          <span className="on">{nombreVisible}</span>
+        </nav>
 
-      {/* Breadcrumb */}
-      <div style={{ backgroundColor: '#232f3e' }}>
-        <div className="max-w-5xl mx-auto px-4 py-2 flex items-center gap-2 text-xs text-gray-400">
-          <a href="/" className="hover:text-white transition">Inicio</a>
-          <span>/</span>
-          <span className="text-white truncate">{nombreVisible}</span>
-        </div>
-      </div>
+        {/* Hero storefront */}
+        <section className="mk-stf-hero">
+          <div className="mk-stf-logo">
+            {tienda?.logo_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={tienda.logo_url} alt={nombreVisible} />
+            ) : (
+              <span>{iniciales(tienda?.nombre)}</span>
+            )}
+          </div>
 
-      <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
-
-        {/* Cabecera de la tienda */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <div className="flex items-start gap-5 flex-wrap">
-            <div className="shrink-0">
-              {tienda?.logo_url ? (
-                <img
-                  src={tienda.logo_url}
-                  alt={nombreVisible}
-                  className="w-24 h-24 rounded-2xl object-cover border-4 border-orange-100"
-                />
-              ) : (
-                <div
-                  className="w-24 h-24 rounded-2xl flex items-center justify-center text-4xl font-black text-white border-4 border-orange-100"
-                  style={{ backgroundColor: '#FF9900' }}
-                >
-                  {inicial}
-                </div>
-              )}
-            </div>
-
-            <div className="flex-1 min-w-0">
-              <h1 className="text-2xl font-black text-gray-900 leading-tight">{nombreVisible}</h1>
-              <p className="text-xs text-gray-400 mt-1">
-                {productos.length} producto{productos.length !== 1 ? 's' : ''} a la venta
+          <div className="mk-stf-id">
+            <h1>
+              {nombreVisible}
+              <span className="mk-stf-verif">
+                <Icon name="checkCircle" size={12} stroke={2} /> Verificado
+              </span>
+            </h1>
+            <span className="mk-stf-loc">
+              <Icon name="mapPin" size={13} stroke={2} /> {ciudadVisible}, Perú
+            </span>
+            {tienda?.descripcion ? (
+              <p className="mk-stf-desc" style={{ whiteSpace: 'pre-line' }}>{tienda.descripcion}</p>
+            ) : (
+              <p className="mk-stf-desc" style={{ color: 'var(--muted)' }}>
+                Tienda en Merkao con Pago Escrow protegido en cada compra.
               </p>
-              {tienda?.descripcion && (
-                <p className="text-sm text-gray-600 mt-3 whitespace-pre-line">
-                  {tienda.descripcion}
-                </p>
-              )}
+            )}
+            <div className="mk-stf-cta">
+              <Link href="/contacto" className="mk-btn mk-btn-ghost">
+                <Icon name="message" size={15} stroke={1.9} /> Contactar
+              </Link>
+              <Link href="/como-funciona-escrow" className="mk-btn mk-btn-ghost">
+                <Icon name="shield" size={15} stroke={1.9} /> Sobre el Pago Escrow
+              </Link>
             </div>
+          </div>
+
+          <div className="mk-stf-stats">
+            <div className="mk-stf-stat brand">
+              <div className="v">{productosActivos}</div>
+              <div className="l">Productos</div>
+            </div>
+            <div className="mk-stf-stat green">
+              <div className="v">{ventasTotales}</div>
+              <div className="l">Ventas</div>
+            </div>
+            <div className="mk-stf-stat">
+              <div className="v">
+                {reputacion.toFixed(1)}<small style={{ fontSize: 12, color: 'var(--muted-2)', fontWeight: 600 }}>/5</small>
+              </div>
+              <div className="l">Reputación</div>
+            </div>
+          </div>
+        </section>
+
+        {/* Reputación bar */}
+        <div className="mk-stf-rep">
+          <Icon name="star" size={16} className="mk-star on" />
+          <span>
+            <strong>Reputación del vendedor:</strong> {reputacion.toFixed(1)} de 5
+          </span>
+          <div className="mk-stf-rep-bar">
+            <div style={{ width: `${Math.min(100, (reputacion / 5) * 100)}%` }} />
           </div>
         </div>
 
-        {/* Productos */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-50">
-            <h2 className="text-base font-black text-gray-800">Productos de la tienda</h2>
+        {/* Toolbar productos */}
+        <div className="mk-stf-toolbar">
+          <h2>Productos de la tienda</h2>
+          <div className="mk-cat-search">
+            <Icon name="search" size={16} stroke={2} />
+            <input
+              type="search"
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              placeholder="Buscar en esta tienda…"
+            />
           </div>
-
-          {productos.length === 0 ? (
-            <div className="px-6 py-12 text-center">
-              <p className="text-4xl mb-3">📦</p>
-              <p className="text-gray-600 font-medium">Esta tienda aún no tiene productos activos.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
-              {productos.map((p) => (
-                <a
-                  key={p.id}
-                  href={`/productos/${p.id}`}
-                  className="bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-md transition group"
-                >
-                  <div className="aspect-square bg-gray-50 flex items-center justify-center overflow-hidden">
-                    {p.imagen_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={p.imagen_url}
-                        alt={p.nombre}
-                        className="w-full h-full object-cover group-hover:scale-105 transition"
-                      />
-                    ) : (
-                      <span className="text-5xl">{ICONO_CATEGORIA[p.categoria] || '📦'}</span>
-                    )}
-                  </div>
-                  <div className="p-3">
-                    <p className="text-sm font-bold text-gray-800 truncate">{p.nombre}</p>
-                    <p className="text-[11px] text-gray-400 mt-0.5">{p.categoria} · {p.condicion}</p>
-                    <div className="flex items-baseline gap-2 mt-1.5">
-                      <span className="text-base font-black text-orange-500">{fmt(p.precio)}</span>
-                      {p.precio_oferta && (
-                        <span className="text-xs text-gray-400 line-through">{fmt(p.precio_oferta)}</span>
-                      )}
-                    </div>
-                    {p.stock <= 0 && (
-                      <p className="text-[11px] text-red-500 font-bold mt-1">Agotado</p>
-                    )}
-                  </div>
-                </a>
-              ))}
+          {categoriasUsadas.length > 1 && (
+            <div className="mk-cat-sort">
+              <span>Categoría:</span>
+              <select value={categoria} onChange={(e) => setCategoria(Number(e.target.value))}>
+                <option value={0}>Todas</option>
+                {categoriasUsadas.map((c) => (
+                  <option key={c.id} value={c.id}>{c.nombre}</option>
+                ))}
+              </select>
             </div>
           )}
+          <div className="mk-cat-sort">
+            <span>Ordenar:</span>
+            <select value={sort} onChange={(e) => setSort(e.target.value as SortKey)}>
+              {(Object.keys(SORT_LABELS) as SortKey[]).map((k) => (
+                <option key={k} value={k}>{SORT_LABELS[k]}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
-      </div>
-    </div>
+        {/* Grid */}
+        {loading ? (
+          <div className="mk-prod-grid">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="mk-skel">
+                <div className="mk-skel-img" />
+                <div className="mk-skel-body">
+                  <div className="mk-skel-line w50" />
+                  <div className="mk-skel-line w90" />
+                  <div className="mk-skel-line w70" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : filtrados.length === 0 ? (
+          <div className="mk-stf-empty">
+            <Icon name="box" size={48} stroke={1.4} style={{ color: 'var(--muted-2)', margin: '0 auto 14px' }} />
+            <h3>
+              {productos.length === 0
+                ? 'Esta tienda aún no tiene productos activos'
+                : 'No encontramos productos con esos filtros'}
+            </h3>
+            <p>
+              {productos.length === 0
+                ? 'Vuelve más tarde para descubrir lo que el vendedor publique.'
+                : 'Prueba quitar la búsqueda o cambiar de categoría.'}
+            </p>
+            {productos.length > 0 && (
+              <button
+                type="button"
+                onClick={() => { setBusqueda(''); setCategoria(0); setSort('recientes') }}
+                className="mk-btn mk-btn-ghost"
+              >
+                Limpiar filtros
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="mk-prod-grid">
+            {filtrados.map((prod) => {
+              const p = calcularPrecios(prod.precio)
+              const img = prod.imagenes?.[0] ?? `https://picsum.photos/seed/${prod.id}/600/600`
+              const catNombre = CAT_BY_ID[prod.categoria_id]?.nombre ?? ''
+              const tieneMayoreo = !!(prod.precio_mayoreo && prod.cantidad_minima_mayoreo)
+              const sinStock = prod.stock <= 0
+              return (
+                <article key={prod.id} className="mk-card">
+                  <Link href={`/productos/${prod.id}`} className="mk-card-media">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={img} alt={prod.nombre} loading="lazy" />
+                    {!sinStock && prod.stock <= 5 && (
+                      <span className="mk-card-stock">¡Últimas {prod.stock}!</span>
+                    )}
+                    {prod.ciudad && (
+                      <span className="mk-card-loc">
+                        <Icon name="mapPin" size={12} stroke={2} /> {prod.ciudad}
+                      </span>
+                    )}
+                  </Link>
+                  <div className="mk-card-body">
+                    <span className="mk-card-cat">{catNombre}</span>
+                    <Link href={`/productos/${prod.id}`} className="mk-card-title-link">
+                      <h3 className="mk-card-title">{prod.nombre}</h3>
+                    </Link>
+                    <div className="mk-card-price">{fmt(p.total)}</div>
+                    <div className="mk-card-breakdown">
+                      <div className="mk-bd-row"><span>Base</span><span>{fmt(p.base)}</span></div>
+                      <div className="mk-bd-row"><span>+ IGV 18%</span><span>{fmt(p.igv)}</span></div>
+                      <div className="mk-bd-row"><span>+ Tarifa Merkao 3%</span><span>{fmt(p.tarifaServicio)}</span></div>
+                    </div>
+                    <div className="mk-card-ship">
+                      <Icon name="truck" size={14} stroke={1.8} />
+                      {prod.costo_envio == null || prod.costo_envio === 0
+                        ? 'Envío a acordar con vendedor'
+                        : `Envío: ${fmt(prod.costo_envio)}`}
+                    </div>
+                    {tieneMayoreo && (
+                      <div style={{ fontSize: 11.5, color: 'var(--green)', background: 'var(--green-tint)', borderRadius: 8, padding: '6px 10px', fontWeight: 700 }}>
+                        Desde {prod.cantidad_minima_mayoreo} uds: {fmt(prod.precio_mayoreo!)}
+                      </div>
+                    )}
+                    <div className="mk-card-actions">
+                      {sinStock ? (
+                        <button type="button" disabled className="mk-btn mk-btn-ghost" style={{ opacity: 0.55, cursor: 'not-allowed' }}>
+                          Sin stock
+                        </button>
+                      ) : (
+                        <Link href={`/checkout?id=${prod.id}`} className="mk-btn mk-btn-primary">
+                          Comprar ahora
+                        </Link>
+                      )}
+                      <Link href={`/productos/${prod.id}`} className="mk-btn mk-btn-ghost">
+                        <Icon name="eye" size={16} /> Ver detalle
+                      </Link>
+                    </div>
+                  </div>
+                </article>
+              )
+            })}
+          </div>
+        )}
+      </main>
+
+      <SiteFootnav />
+    </>
   )
 }
