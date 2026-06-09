@@ -2,15 +2,34 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 
-// ── Cliente admin (server-only) ─────────────────────────────────────
-// Usa SUPABASE_SERVICE_ROLE_KEY para bypassear RLS y poder INSERT a
-// pedidos/pedido_items DESPUÉS de que Culqi confirmó el cobro. La key
-// NO lleva prefijo NEXT_PUBLIC_ por lo que Next no la inyecta al
-// bundle del cliente — solo vive en el process server.
+// ── Dos clientes Supabase: anon (RLS-bounded) + admin (RLS bypass) ──
 //
-// Lazy init para que `next build` no rompa si la env no está presente
-// en el entorno de build (Vercel sí la inyecta en runtime). Si falta
-// en runtime, devolvemos 500 explícito con mensaje accionable.
+// anon: para LEER productos. Sigue las mismas políticas RLS que el
+// frontend, así que si un producto está pausado/borrado o RLS lo
+// oculta, este endpoint también lo ve oculto — comportamiento
+// correcto y consistente.
+//
+// admin: SOLO para los INSERT post-pago (pedidos + pedido_items)
+// DESPUÉS de que Culqi confirmó el cobro. Bypassea RLS porque la
+// autorización ya está validada en este server route (rate-limit +
+// input validation + Culqi cobró OK). La key NO lleva prefijo
+// NEXT_PUBLIC_ por lo que Next no la inyecta al bundle del cliente.
+//
+// Lazy init para que `next build` no rompa si la env no está
+// presente. Si falta en runtime, devolvemos 500 explícito.
+
+let _anon: SupabaseClient | null = null
+function getAnonClient(): SupabaseClient | null {
+  if (_anon) return _anon
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (!url || !anonKey) return null
+  _anon = createClient(url, anonKey, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+  })
+  return _anon
+}
+
 let _admin: SupabaseClient | null = null
 function getAdminClient(): SupabaseClient | null {
   if (_admin) return _admin
@@ -18,11 +37,7 @@ function getAdminClient(): SupabaseClient | null {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
   if (!url || !serviceKey) return null
   _admin = createClient(url, serviceKey, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-      detectSessionInUrl: false,
-    },
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
   })
   return _admin
 }
@@ -44,10 +59,15 @@ function clipString(v: unknown, max = MAX_TEXT): string | null {
 }
 
 export async function POST(req: NextRequest) {
-  // ── 0a. Guard: service-role key debe estar configurada ────────────
+  // ── 0a. Guard: ambas claves deben estar configuradas ──────────────
+  const anon = getAnonClient()
   const admin = getAdminClient()
-  if (!admin) {
-    console.error('[culqi-charge] SUPABASE_SERVICE_ROLE_KEY o NEXT_PUBLIC_SUPABASE_URL no configuradas')
+  if (!anon || !admin) {
+    console.error(
+      '[culqi-charge] envs faltantes:',
+      !anon ? 'NEXT_PUBLIC_SUPABASE_ANON_KEY' : '',
+      !admin ? 'SUPABASE_SERVICE_ROLE_KEY' : '',
+    )
     return NextResponse.json(
       { error: 'Servicio de pagos no disponible. Contacta soporte.' },
       { status: 500 },
@@ -170,9 +190,10 @@ export async function POST(req: NextRequest) {
 
   // ── 3a. Lookup producto: necesitamos vendedor_id (pedidos.vendedor_id es
   //       columna real) + snapshot de nombre/imagen para pedido_items.
-  //       Schema real de pedidos NO tiene producto_id — los items van en
-  //       la tabla pedido_items.
-  const { data: producto, error: eProducto } = await admin
+  //       Usa anon — respeta RLS. Si el producto está oculto para el
+  //       público (estado != activo / soft-delete), no permitimos cobrar
+  //       por él.
+  const { data: producto, error: eProducto } = await anon
     .from('productos')
     .select('id, nombre, vendedor_id, imagenes, precio')
     .eq('id', producto_id)
