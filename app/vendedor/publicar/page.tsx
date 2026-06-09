@@ -172,7 +172,7 @@ export default function PublicarProducto() {
                   const pct = getPct(parseInt(form.categoria_id, 10))
                   return (
                     <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 4 }}>
-                      <span className="mk-vbadge green">0% los primeros 3 meses</span>
+                      <span className="mk-vbadge green">0% los primeros 12 meses</span>
                       <span style={{ fontSize: 11, color: 'var(--muted-2)' }}>después {pct}%</span>
                     </div>
                   )

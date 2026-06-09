@@ -22,9 +22,9 @@ const FEATS: Record<Rol, { title: string; tag: string; lead: string; feats: Feat
     ],
   },
   vendedor: {
-    tag: '0% de comisión por lanzamiento',
+    tag: '0% de comisión por 12 meses',
     title: 'Convierte lo que haces en un <b>negocio nacional</b>.',
-    lead: 'Abre tu tienda gratis, vende a todo el Perú y recibe el 100% de tus ventas durante nuestro lanzamiento.',
+    lead: 'Abre tu tienda gratis, vende a todo el Perú y recibe el 100% de tus ventas durante los primeros 12 meses.',
     feats: [
       { icon: 'store', tone: 'brand', text: '0% de comisión — te quedas con todo' },
       { icon: 'shield', tone: 'green', text: 'Cobras seguro con Pago Escrow' },
@@ -168,7 +168,7 @@ function RegisterForm() {
             <div className="mk-role-promo">
               <Icon name="check" size={16} stroke={2.4} />
               <div>
-                <strong>0% comisión durante el lanzamiento</strong>
+                <strong>0% comisión durante 12 meses</strong>
                 Te quedas con el 100% de tus ventas. Merkao cobra 3% al comprador, no a ti.
               </div>
             </div>

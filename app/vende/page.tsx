@@ -6,7 +6,7 @@ import { SiteTopnav, SiteFootnav } from '@/components/SiteShell'
 export const metadata: Metadata = {
   title: 'Merkao — Vende en Merkao',
   description:
-    'Abre tu tienda gratis y vende a todo el Perú con pago protegido. 0% de comisión por lanzamiento.',
+    'Abre tu tienda gratis y vende a todo el Perú con pago protegido. 0% de comisión por 12 meses.',
 }
 
 const BARS = [42, 58, 38, 71, 88, 64, 100]
@@ -67,7 +67,7 @@ export default function VendePage() {
             </h1>
             <p>
               Abre tu tienda gratis y vende a todo el Perú con pago protegido.
-              Sin comisiones por lanzamiento, sin complicaciones.
+              Gratis para vendedores por 12 meses, sin complicaciones.
             </p>
             <div className="vd-hero-cta">
               <Link className="mk-btn mk-btn-primary mk-btn-lg" href={ctaHref}>
@@ -109,7 +109,7 @@ export default function VendePage() {
         <div className="vd-trust-inner">
           <div className="vd-trust-item">
             <div className="n"><b>0%</b></div>
-            <span>comisión por lanzamiento</span>
+            <span>comisión por 12 meses</span>
           </div>
           <div className="vd-trust-item">
             <div className="n">24 <b>regiones</b></div>
@@ -166,13 +166,13 @@ export default function VendePage() {
       <section className="vd-sec">
         <div className="vd-price">
           <div className="vd-price-card">
-            <span className="vd-price-tag">Promoción de lanzamiento</span>
+            <span className="vd-price-tag">Gratis por 12 meses</span>
             <div className="vd-price-num">
               0%<small> comisión</small>
             </div>
             <h3>Vende sin pagar comisiones</h3>
             <p>
-              Durante nuestro lanzamiento, te quedas con el 100% de tus ventas.
+              Durante los primeros 12 meses, te quedas con el 100% de tus ventas.
               Sin costos ocultos, sin mensualidad.
             </p>
             <div className="vd-price-list">

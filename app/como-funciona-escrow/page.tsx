@@ -52,7 +52,7 @@ const FAQ = [
   {
     open: false,
     q: '¿Tiene algún costo el Pago Escrow?',
-    a: 'Para el comprador es totalmente gratis. Para el vendedor, la comisión es de 0% durante nuestra promoción de lanzamiento.',
+    a: 'Para el comprador es totalmente gratis. Para el vendedor, la comisión es de 0% durante los primeros 12 meses.',
   },
   {
     open: false,
@@ -114,7 +114,7 @@ export default function ComoFuncionaEscrowPage() {
               </div>
               <div className="esc-mini-card">
                 <div className="n">0%</div>
-                <span>comisión por lanzamiento para vendedores</span>
+                <span>comisión por 12 meses para vendedores</span>
               </div>
             </div>
           </div>

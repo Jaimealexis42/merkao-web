@@ -1,9 +1,9 @@
 /**
  * Comisiones por categoría en Merkao.
- * Los primeros 3 meses son siempre 0 %.
+ * Los primeros 12 meses son siempre 0 %.
  */
 
-export const MESES_GRATIS = 3
+export const MESES_GRATIS = 12
 
 /** Tasa de comisión por categoria_id (0–1). */
 export const COMISIONES: Record<number, number> = {
@@ -31,7 +31,7 @@ export function comisionEfectiva(categoriaId: number, mesesActivo: number): numb
   return COMISIONES[categoriaId] ?? 0.05
 }
 
-/** Resumen legible: "3 %" o "Gratis (primeros 3 meses)". */
+/** Resumen legible: "3 %" o "Gratis (primeros 12 meses)". */
 export function labelComision(pct: number, esGratis = false): string {
   if (esGratis) return `0 % (primeros ${MESES_GRATIS} meses gratis)`
   return `${pct} %`

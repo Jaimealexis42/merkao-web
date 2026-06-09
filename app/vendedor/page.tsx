@@ -178,7 +178,7 @@ export default function VendedorDashboard() {
         </a>
       </div>
 
-      {/* Promo lanzamiento */}
+      {/* Promo 12 meses gratis */}
       <div className="mk-vpanel" style={{ background: 'linear-gradient(135deg, var(--green) 0%, #0E5F3A 100%)', color: '#fff', borderColor: 'transparent' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
           <Icon name="checkCircle" size={32} stroke={1.7} />
@@ -189,7 +189,7 @@ export default function VendedorDashboard() {
             </p>
           </div>
           <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '.12em', background: 'rgba(255,255,255,.18)', border: '1px solid rgba(255,255,255,.3)', borderRadius: 20, padding: '5px 11px' }}>
-            LANZAMIENTO
+12 MESES GRATIS
           </span>
         </div>
       </div>

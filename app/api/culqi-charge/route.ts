@@ -1,21 +1,59 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
 )
 
+// Validaciones puras (sin libs externas para evitar agregar zod ahora).
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+// Culqi devuelve tokens prefijo tkn_ + alfanuméricos. Validar formato evita
+// que un atacante use el endpoint con tokens vacíos o mal formados.
+const CULQI_TOKEN_RE = /^[A-Za-z0-9_-]{8,128}$/
+const MAX_MONTO_CENTIMOS = 5_000_000  // S/ 50,000 — techo razonable para una transacción
+const MIN_MONTO_CENTIMOS = 100        // S/ 1 — mínimo Culqi
+const MAX_TEXT = 500
+
+function clipString(v: unknown, max = MAX_TEXT): string | null {
+  if (typeof v !== 'string') return null
+  const trimmed = v.trim().slice(0, max)
+  return trimmed.length > 0 ? trimmed : null
+}
+
 export async function POST(req: NextRequest) {
-  const body = await req.json()
+  // ── 0. Rate limit por IP (5 cobros/min) ────────────────────────────
+  const ip = getClientIp(req)
+  const rl = checkRateLimit(`culqi:${ip}`)
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: 'Demasiados intentos. Espera un minuto antes de volver a intentar.' },
+      {
+        status: 429,
+        headers: {
+          'Retry-After': String(Math.max(1, Math.ceil((rl.resetAt - Date.now()) / 1000))),
+          'X-RateLimit-Remaining': '0',
+        },
+      },
+    )
+  }
+
+  let body: Record<string, unknown>
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'JSON inválido.' }, { status: 400 })
+  }
 
   const {
     token,
     monto,
     email,
-    producto_id,        // se usa para lookup del producto → vendedor_id + snapshot
-    cantidad,           // opcional, default 1
-    precio_unitario,    // opcional, snapshot del precio en el momento de la compra
+    producto_id,
+    cantidad,
+    precio_unitario,
     nombre_comprador,
     telefono,
     direccion,
@@ -24,15 +62,45 @@ export async function POST(req: NextRequest) {
     igv,
     arancel,
     metodo_pago,
-  } = body
+  } = body as Record<string, unknown>
 
-  // ── 1. Validar campos mínimos ──────────────────────────────────────
-  if (!token || !monto || !email || !producto_id) {
+  // ── 1. Validación estricta de inputs ──────────────────────────────
+  if (typeof token !== 'string' || !CULQI_TOKEN_RE.test(token)) {
+    return NextResponse.json({ error: 'Token de pago inválido.' }, { status: 400 })
+  }
+  const montoNum = typeof monto === 'number' ? monto : Number(monto)
+  if (!Number.isInteger(montoNum) || montoNum < MIN_MONTO_CENTIMOS || montoNum > MAX_MONTO_CENTIMOS) {
     return NextResponse.json(
-      { error: 'Faltan campos requeridos: token, monto, email, producto_id.' },
+      { error: `Monto fuera de rango (mín ${MIN_MONTO_CENTIMOS}, máx ${MAX_MONTO_CENTIMOS} céntimos).` },
       { status: 400 },
     )
   }
+  if (typeof email !== 'string' || !EMAIL_RE.test(email) || email.length > 254) {
+    return NextResponse.json({ error: 'Email inválido.' }, { status: 400 })
+  }
+  if (typeof producto_id !== 'string' || !UUID_RE.test(producto_id)) {
+    return NextResponse.json({ error: 'producto_id inválido (se espera UUID).' }, { status: 400 })
+  }
+  const cantidadNum = cantidad != null ? Number(cantidad) : 1
+  if (!Number.isInteger(cantidadNum) || cantidadNum < 1 || cantidadNum > 1000) {
+    return NextResponse.json({ error: 'Cantidad fuera de rango (1–1000).' }, { status: 400 })
+  }
+  const paisNorm = clipString(pais_comprador, 4) ?? 'PE'
+  if (!/^[A-Z]{2,3}$/.test(paisNorm)) {
+    return NextResponse.json({ error: 'pais_comprador inválido.' }, { status: 400 })
+  }
+  const metodoNorm = (clipString(metodo_pago, 24) ?? 'tarjeta').toLowerCase()
+  if (!['yape', 'plin', 'tarjeta', 'efectivo', 'transferencia'].includes(metodoNorm)) {
+    return NextResponse.json({ error: 'Método de pago inválido.' }, { status: 400 })
+  }
+  const igvNum = Math.max(0, Number(igv) || 0)
+  const arancelNum = Math.max(0, Number(arancel) || 0)
+  const precioSnapInput = precio_unitario != null ? Number(precio_unitario) : null
+
+  const nombreSafe = clipString(nombre_comprador, 120) ?? ''
+  const telefonoSafe = clipString(telefono, 32)
+  const direccionSafe = clipString(direccion, 300)
+  const notasSafe = clipString(notas, 1000)
 
   // ── 2. Cobrar con Culqi ────────────────────────────────────────────
   let culqiResponse: Response
@@ -46,11 +114,11 @@ export async function POST(req: NextRequest) {
         'Authorization': `Bearer ${process.env.CULQI_SECRET_KEY}`,
       },
       body: JSON.stringify({
-        amount:        monto,
+        amount:        montoNum,
         currency_code: 'PEN',
         email,
         source_id:     token,
-        description:   `Merkao – pedido de ${nombre_comprador ?? email}`,
+        description:   `Merkao – pedido de ${nombreSafe || email}`,
       }),
     })
 
@@ -93,16 +161,16 @@ export async function POST(req: NextRequest) {
     .from('pedidos')
     .insert([{
       vendedor_id:       producto.vendedor_id,
-      nombre_comprador:  nombre_comprador ?? '',
+      nombre_comprador:  nombreSafe,
       email_comprador:   email,
-      telefono:          telefono ?? null,
-      direccion_entrega: direccion ?? null,
-      notas:             notas ?? null,
-      pais_comprador:    pais_comprador ?? 'PE',
-      igv:               +(igv ?? 0),
-      arancel:           +(arancel ?? 0),
-      total:             +(monto / 100).toFixed(2),
-      metodo_pago:       metodo_pago ?? 'tarjeta',
+      telefono:          telefonoSafe,
+      direccion_entrega: direccionSafe,
+      notas:             notasSafe,
+      pais_comprador:    paisNorm,
+      igv:               igvNum,
+      arancel:           arancelNum,
+      total:             +(montoNum / 100).toFixed(2),
+      metodo_pago:       metodoNorm,
       estado:            'pagado',
       escrow_liberado:   false,
       culqi_charge_id:   culqiData.id as string,
@@ -121,16 +189,15 @@ export async function POST(req: NextRequest) {
 
   // ── 3c. Insertar snapshot del item en pedido_items.
   //       Si falla, no rompe al cliente: el pedido principal ya quedó.
-  const qty = Math.max(1, Number(cantidad) || 1)
-  const precioSnap = precio_unitario != null
-    ? +precio_unitario
+  const precioSnap = precioSnapInput != null && precioSnapInput > 0
+    ? precioSnapInput
     : +producto.precio || 0
   const { error: eItem } = await supabase
     .from('pedido_items')
     .insert([{
       pedido_id:       pedido.id,
       nombre_producto: producto.nombre,
-      cantidad:        qty,
+      cantidad:        cantidadNum,
       precio_unitario: precioSnap,
       imagen_url:      Array.isArray(producto.imagenes) ? (producto.imagenes[0] ?? null) : null,
     }])
