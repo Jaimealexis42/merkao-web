@@ -26,7 +26,6 @@ type Producto = {
   cantidad_minima_mayoreo: number | null
   costo_envio: number | null
   categoria_id: number
-  condicion: string | null
   stock: number
   imagenes: string[] | null
   ciudad: string | null
@@ -89,7 +88,7 @@ export default function TiendaPublicaPage() {
         supabase
           .from('productos')
           .select(
-            'id, nombre, precio, precio_mayoreo, cantidad_minima_mayoreo, costo_envio, categoria_id, condicion, stock, imagenes, ciudad, vistas, estado',
+            'id, nombre, precio, precio_mayoreo, cantidad_minima_mayoreo, costo_envio, categoria_id, stock, imagenes, ciudad, vistas, estado',
           )
           .eq('vendedor_id', id)
           .eq('estado', 'activo')

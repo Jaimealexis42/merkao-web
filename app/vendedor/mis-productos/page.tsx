@@ -13,7 +13,6 @@ type Producto = {
   categoria: string
   categoria_id: number | null
   stock: number
-  condicion: string
   estado: string
   created_at: string
   imagen_url?: string | null
@@ -196,7 +195,7 @@ export default function MisProductos() {
                           </div>
                           <div style={{ minWidth: 0 }}>
                             <div className="mk-vorder-prod">{p.nombre}</div>
-                            <div className="mk-vorder-date" style={{ fontSize: 11.5 }}>{p.categoria} · {p.condicion}</div>
+                            <div className="mk-vorder-date" style={{ fontSize: 11.5 }}>{p.categoria}</div>
                           </div>
                         </div>
                       </td>

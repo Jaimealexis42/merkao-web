@@ -42,7 +42,6 @@ export default function PublicarProducto() {
     ciudad: '',
     categoria: '',
     stock: '1',
-    condicion: 'nuevo',
   })
   const [loading, setLoading] = useState(false)
   const [exito, setExito]     = useState(false)
@@ -51,8 +50,6 @@ export default function PublicarProducto() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
-
-  const setSeg = (key: string, value: string) => setForm((p) => ({ ...p, [key]: value }))
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -74,7 +71,6 @@ export default function PublicarProducto() {
       categoria:                 form.categoria,
       categoria_id:              catObj?.id ?? null,
       stock:                     parseInt(form.stock),
-      condicion:                 form.condicion,
       estado:                    'activo',
       vendedor_id:               user?.id ?? null,
     }])
@@ -88,7 +84,7 @@ export default function PublicarProducto() {
       setForm({
         nombre: '', descripcion: '', precio: '', precio_oferta: '',
         precio_mayoreo: '', cantidad_minima_mayoreo: '', costo_envio: '0',
-        ciudad: '', categoria: '', stock: '1', condicion: 'nuevo',
+        ciudad: '', categoria: '', stock: '1',
       })
     }
   }
@@ -196,21 +192,6 @@ export default function PublicarProducto() {
                 </select>
               </div>
 
-              <div className="mk-vfield">
-                <label>Condición</label>
-                <div className="mk-vseg">
-                  {[['nuevo', 'Nuevo'], ['usado', 'Usado']].map(([v, l]) => (
-                    <button
-                      key={v}
-                      type="button"
-                      onClick={() => setSeg('condicion', v)}
-                      className={form.condicion === v ? 'on' : ''}
-                    >
-                      {l}
-                    </button>
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
         </div>

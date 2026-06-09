@@ -18,7 +18,6 @@ type Producto = {
   costo_envio: number | null
   ciudad: string | null
   categoria_id: number
-  condicion: string | null
   stock: number
   imagenes: string[] | null
   vendedor_id: string | null
@@ -35,7 +34,7 @@ type LoadErr = {
 // Si alguno de estos no existe en la DB, Supabase devuelve un 42703 que ahora
 // se loguea y se muestra en pantalla en vez de un genérico "no encontrado".
 const PRODUCTO_SELECT =
-  'id, nombre, descripcion, precio, precio_mayoreo, cantidad_minima_mayoreo, costo_envio, ciudad, categoria_id, condicion, stock, imagenes, vendedor_id, estado'
+  'id, nombre, descripcion, precio, precio_mayoreo, cantidad_minima_mayoreo, costo_envio, ciudad, categoria_id, stock, imagenes, vendedor_id, estado'
 
 type CatDef = { id: number; slug: string; nombre: string; icon: IconName }
 
@@ -241,8 +240,6 @@ export default function ProductoDetalle() {
     ? (imgs.length >= 4 ? imgs.slice(0, 4) : [...imgs, ...Array(4 - imgs.length).fill(null)])
     : [null, null, null, null]
   const stockBajo = producto.stock > 0 && producto.stock <= 5
-  const condicionLabel = (producto.condicion ?? 'nuevo').toLowerCase()
-  const esNuevo = condicionLabel === 'nuevo'
 
   const handleBuyNow = () => {
     router.push(`/checkout?id=${producto.id}&cantidad=${cantidad}`)
@@ -354,9 +351,6 @@ export default function ProductoDetalle() {
                   <Icon name="mapPin" size={13} stroke={2} /> {producto.ciudad}
                 </span>
               )}
-              <span className={'mk-gal-cond' + (esNuevo ? '' : ' usado')}>
-                {esNuevo ? 'Nuevo' : condicionLabel === 'reacondicionado' ? 'Reacondicionado' : 'Usado'}
-              </span>
             </div>
           </div>
 
@@ -506,7 +500,6 @@ export default function ProductoDetalle() {
               <h2>Especificaciones</h2>
               <div className="mk-spec-grid">
                 <div className="mk-spec-row"><span className="mk-spec-k">Categoría</span><span className="mk-spec-v">{catNombre}</span></div>
-                <div className="mk-spec-row"><span className="mk-spec-k">Condición</span><span className="mk-spec-v" style={{ textTransform: 'capitalize' }}>{condicionLabel}</span></div>
                 {producto.ciudad && (
                   <div className="mk-spec-row"><span className="mk-spec-k">Origen</span><span className="mk-spec-v">{producto.ciudad}, Perú</span></div>
                 )}

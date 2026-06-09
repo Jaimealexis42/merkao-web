@@ -36,7 +36,6 @@ type Producto = {
   imagenes: string[] | null
   estado: string
   ciudad: string | null
-  condicion: string | null
   vistas: number | null
 }
 
@@ -48,12 +47,6 @@ const SORT_LABELS: Record<SortKey, string> = {
   precio_desc: 'Precio: mayor a menor',
   recientes: 'Más recientes',
 }
-
-const CONDICIONES = [
-  { id: 'nuevo', label: 'Nuevo' },
-  { id: 'usado', label: 'Usado' },
-  { id: 'reacondicionado', label: 'Reacondicionado' },
-] as const
 
 function ratingFromId(id: string) {
   const n = id.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
@@ -108,7 +101,6 @@ export default function CategoriaPage() {
   const [precioMin, setPrecioMin] = useState<string>('')
   const [precioMax, setPrecioMax] = useState<string>('')
   const [ciudades, setCiudades] = useState<string[]>([])
-  const [condiciones, setCondiciones] = useState<string[]>([])
   const [sort, setSort] = useState<SortKey>('relevancia')
   const [showFilters, setShowFilters] = useState(false)
 
@@ -119,7 +111,7 @@ export default function CategoriaPage() {
     supabase
       .from('productos')
       .select(
-        'id, nombre, descripcion, precio, precio_mayoreo, cantidad_minima_mayoreo, costo_envio, stock, categoria_id, imagenes, estado, ciudad, condicion, vistas',
+        'id, nombre, descripcion, precio, precio_mayoreo, cantidad_minima_mayoreo, costo_envio, stock, categoria_id, imagenes, estado, ciudad, vistas',
       )
       .eq('estado', 'activo')
       .eq('categoria_id', cat.id)
@@ -155,10 +147,6 @@ export default function CategoriaPage() {
       if (q && !p.nombre.toLowerCase().includes(q)) return false
       if (p.precio < min || p.precio > max) return false
       if (ciudades.length > 0 && (!p.ciudad || !ciudades.includes(p.ciudad))) return false
-      if (condiciones.length > 0) {
-        const cond = (p.condicion ?? 'nuevo').toLowerCase()
-        if (!condiciones.includes(cond)) return false
-      }
       return true
     })
 
@@ -166,7 +154,7 @@ export default function CategoriaPage() {
     else if (sort === 'precio_desc') items.sort((a, b) => b.precio - a.precio)
     else if (sort === 'recientes') items.reverse() // ya vienen por vistas desc; recientes ~ inverso
     return items
-  }, [productos, busqueda, precioMin, precioMax, ciudades, condiciones, sort])
+  }, [productos, busqueda, precioMin, precioMax, ciudades, sort])
 
   const activeChips = useMemo(() => {
     const chips: { key: string; label: string; clear: () => void }[] = []
@@ -179,19 +167,14 @@ export default function CategoriaPage() {
     ciudades.forEach((c) =>
       chips.push({ key: 'ciu-' + c, label: c, clear: () => setCiudades((arr) => arr.filter((x) => x !== c)) }),
     )
-    condiciones.forEach((c) => {
-      const label = CONDICIONES.find((x) => x.id === c)?.label ?? c
-      chips.push({ key: 'cond-' + c, label, clear: () => setCondiciones((arr) => arr.filter((x) => x !== c)) })
-    })
     return chips
-  }, [precioMin, precioMax, ciudades, condiciones])
+  }, [precioMin, precioMax, ciudades])
 
   const clearAll = () => {
     setBusqueda('')
     setPrecioMin('')
     setPrecioMax('')
     setCiudades([])
-    setCondiciones([])
   }
 
   if (!cat) {
@@ -290,22 +273,6 @@ export default function CategoriaPage() {
                   ))}
                 </div>
               )}
-            </div>
-
-            <div className="mk-filter-grp">
-              <span className="mk-filter-grp-title">Condición</span>
-              <div className="mk-filter-chips">
-                {CONDICIONES.map((c) => (
-                  <label key={c.id} className="mk-filter-chip">
-                    <input
-                      type="checkbox"
-                      checked={condiciones.includes(c.id)}
-                      onChange={() => setCondiciones((arr) => toggleArr(arr, c.id))}
-                    />
-                    <span>{c.label}</span>
-                  </label>
-                ))}
-              </div>
             </div>
 
             <div className="mk-filter-grp">
