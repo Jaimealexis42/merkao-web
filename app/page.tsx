@@ -1,10 +1,11 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import { calcularPrecios, fmt, ARANCELES } from '@/lib/precios'
 import { useAuth } from '@/lib/useAuth'
 import { T, CAT_NAMES, type Lang } from '@/lib/translations'
 import { useCarritoStore } from '@/src/store/carritoStore'
+import { Icon, type IconName } from '@/lib/icons'
 
 /* ─────────────────────────── CONSTANTES ─────────────────────────── */
 
@@ -16,16 +17,17 @@ const DEPARTAMENTOS_PERU = [
   'Tumbes', 'Ucayali',
 ]
 
-const CATEGORIAS = [
-  { id: 0, icono: '🏠' },
-  { id: 1, icono: '👗' },
-  { id: 2, icono: '📱' },
-  { id: 3, icono: '🥗' },
-  { id: 4, icono: '🎨' },
-  { id: 5, icono: '🛋️' },
-  { id: 6, icono: '🚗' },
-  { id: 7, icono: '🌾' },
-  { id: 8, icono: '📦' },
+type CatDef = { id: number; icon: IconName; accent?: boolean }
+
+const CATEGORIAS: CatDef[] = [
+  { id: 1, icon: 'shirt' },
+  { id: 2, icon: 'smartphone' },
+  { id: 3, icon: 'food' },
+  { id: 4, icon: 'palette' },
+  { id: 5, icon: 'home' },
+  { id: 6, icon: 'car' },
+  { id: 7, icon: 'sprout' },
+  { id: 8, icon: 'box' },
 ]
 
 const CAT_SLUG: Record<number, string> = {
@@ -39,68 +41,150 @@ const CAT_SLUG: Record<number, string> = {
   8: 'otros',
 }
 
-// Slogan de marca peruano — persistente en el hero, no traducible (es identidad).
-const MERKAO_SLOGAN = 'Vende desde tu pueblo, llega a todo el Perú'
-
-type BannerLang = Record<Lang, string>
-type Banner = {
-  titulo: BannerLang; subtitulo: BannerLang; cta: BannerLang; bg: string
-  badge: BannerLang; emoji: string
-  bgImage: string         // Unsplash CDN URL (paisaje peruano por categoría)
-  categoria_id: number    // categoria_id de DB que matchea este banner
+type HeroTheme = 'terra' | 'stone' | 'jungle' | 'gold' | 'desert'
+type Slide = {
+  id: string
+  theme: HeroTheme
+  tag: Record<Lang, string>
+  region: string
+  title: Record<Lang, string[]> // líneas
+  sub: Record<Lang, string>
+  body: Record<Lang, string>
+  cta: Record<Lang, string>
+  img: string
+  categoriaId: number // para filtrar productos cuando el usuario hace click en el CTA
 }
 
-const BANNERS: Banner[] = [
+const SLIDES: Slide[] = [
   {
-    titulo:    { es: 'Mega Oferta en Electrónicos',       en: 'Electronics Mega Sale',             pt: 'Mega Oferta em Eletrônicos' },
-    subtitulo: { es: 'Hasta 40% de descuento en laptops, celulares y más', en: 'Up to 40% off laptops, phones and more', pt: 'Até 40% de desconto em laptops e celulares' },
-    cta:       { es: 'Ver ofertas',     en: 'See deals',      pt: 'Ver ofertas' },
-    bg: 'from-[#131921] via-[#1a2a3a] to-[#0f3460]',
-    badge:     { es: '🔥 OFERTA DEL DÍA', en: '🔥 DAILY DEAL',   pt: '🔥 OFERTA DO DIA' },
-    emoji: '💻',
-    bgImage: 'https://images.unsplash.com/photo-1597170427571-c47f1503bf46?w=1920&q=80&auto=format&fit=crop',
-    categoria_id: 2,  // Electrónicos → Lima cityscape
+    id: 'moda',
+    theme: 'terra',
+    tag: { es: 'MODA & TURISMO', en: 'FASHION & TRAVEL', pt: 'MODA E TURISMO' },
+    region: 'Barranco, Lima',
+    title: {
+      es: ['Viste el Perú,', 'descubre el Perú'],
+      en: ['Wear Peru,', 'discover Peru'],
+      pt: ['Vista o Peru,', 'descubra o Peru'],
+    },
+    sub: {
+      es: 'De los murales de Barranco al mundo',
+      en: "From Barranco's murals to the world",
+      pt: 'Dos murais de Barranco para o mundo',
+    },
+    body: {
+      es: 'Moda peruana que te invita a viajar por cada rincón del país.',
+      en: 'Peruvian fashion that invites you to travel every corner of the country.',
+      pt: 'Moda peruana que te convida a viajar por todos os cantos do país.',
+    },
+    cta: { es: 'Explorar moda', en: 'Explore fashion', pt: 'Explorar moda' },
+    img: 'https://images.unsplash.com/photo-1660521844005-015733ce411e?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 1,
   },
   {
-    titulo:    { es: 'Moda Peruana para todos',           en: 'Peruvian Fashion for Everyone',     pt: 'Moda Peruana para Todos' },
-    subtitulo: { es: 'Las mejores marcas y diseñadores peruanos', en: 'The best Peruvian brands and designers', pt: 'As melhores marcas e designers peruanos' },
-    cta:       { es: 'Explorar moda',   en: 'Explore fashion', pt: 'Explorar moda' },
-    bg: 'from-[#4a0080] via-[#6b0fa0] to-[#8b1cc8]',
-    badge:     { es: '✨ NUEVO',         en: '✨ NEW',           pt: '✨ NOVO' },
-    emoji: '👗',
-    bgImage: 'https://images.unsplash.com/photo-1660521844005-015733ce411e?w=1920&q=80&auto=format&fit=crop',
-    categoria_id: 1,  // Moda → Lima Miraflores
+    id: 'andes',
+    theme: 'stone',
+    tag: { es: 'HECHO A MANO', en: 'HANDMADE', pt: 'FEITO À MÃO' },
+    region: 'Cusco · Andes',
+    title: {
+      es: ['Artesanía que', 'cuenta historias'],
+      en: ['Crafts that', 'tell stories'],
+      pt: ['Artesanato que', 'conta histórias'],
+    },
+    sub: {
+      es: 'Directo de los Andes a tu casa',
+      en: 'Straight from the Andes to your home',
+      pt: 'Direto dos Andes para a sua casa',
+    },
+    body: {
+      es: 'Cada pieza guarda el trabajo de manos peruanas.',
+      en: 'Each piece holds the work of Peruvian hands.',
+      pt: 'Cada peça guarda o trabalho de mãos peruanas.',
+    },
+    cta: { es: 'Ver artesanías', en: 'See crafts', pt: 'Ver artesanato' },
+    img: 'https://images.unsplash.com/photo-1574333360968-50e1fc6035b8?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 4,
   },
   {
-    titulo:    { es: 'Alimentos Orgánicos del Perú',      en: 'Organic Foods from Peru',           pt: 'Alimentos Orgânicos do Peru' },
-    subtitulo: { es: 'Directo del campo a tu mesa. Quinua, cacao, café y más', en: 'From farm to your table. Quinoa, cacao, coffee and more', pt: 'Direto do campo à sua mesa. Quinoa, cacau, café e mais' },
-    cta:       { es: 'Comprar ahora',   en: 'Shop now',        pt: 'Comprar agora' },
-    bg: 'from-[#1a4a1a] via-[#2d6a2d] to-[#3d8b3d]',
-    badge:     { es: '🌱 ORGÁNICO',     en: '🌱 ORGANIC',      pt: '🌱 ORGÂNICO' },
-    emoji: '🥭',
-    bgImage: 'https://images.unsplash.com/photo-1701091490268-2ae3de5f5f2f?w=1920&q=80&auto=format&fit=crop',
-    categoria_id: 3,  // Alimentos → selva Amazonas
+    id: 'selva',
+    theme: 'jungle',
+    tag: { es: 'HECHO EN LA SELVA', en: 'MADE IN THE RAINFOREST', pt: 'FEITO NA FLORESTA' },
+    region: 'Amazonía peruana',
+    title: {
+      es: ['Detrás de cada', 'producto, una familia'],
+      en: ['Behind every', 'product, a family'],
+      pt: ['Por trás de cada', 'produto, uma família'],
+    },
+    sub: {
+      es: 'Comunidades de la Amazonía',
+      en: 'Amazon rainforest communities',
+      pt: 'Comunidades da Amazônia',
+    },
+    body: {
+      es: 'Compra directo a las familias que cultivan y crean con orgullo.',
+      en: 'Buy directly from the families who farm and craft with pride.',
+      pt: 'Compre diretamente das famílias que cultivam e criam com orgulho.',
+    },
+    cta: { es: 'Productos de la selva', en: 'Rainforest products', pt: 'Produtos da floresta' },
+    img: 'https://images.unsplash.com/photo-1701091490268-2ae3de5f5f2f?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 3,
   },
   {
-    titulo:    { es: 'Artesanías Únicas del Perú',        en: 'Unique Peruvian Crafts',            pt: 'Artesanato Único do Peru' },
-    subtitulo: { es: 'Tejidos, cerámicas y arte hecho a mano por artesanos peruanos', en: 'Weavings, ceramics and handmade art by Peruvian artisans', pt: 'Tecidos, cerâmicas e arte feita à mão por artesãos peruanos' },
-    cta:       { es: 'Ver artesanías',  en: 'See crafts',      pt: 'Ver artesanato' },
-    bg: 'from-[#7a2500] via-[#a33500] to-[#c94a00]',
-    badge:     { es: '🇵🇪 HECHO EN PERÚ', en: '🇵🇪 MADE IN PERU', pt: '🇵🇪 FEITO NO PERU' },
-    emoji: '🎨',
-    bgImage: 'https://images.unsplash.com/photo-1587595431973-160d0d94add1?w=1920&q=80&auto=format&fit=crop',
-    categoria_id: 4,  // Artesanías → Machu Picchu / Cusco
+    id: 'campo',
+    theme: 'gold',
+    tag: { es: 'DEL CAMPO', en: 'FROM THE FARM', pt: 'DO CAMPO' },
+    region: 'Sierra y valles',
+    title: {
+      es: ['Del campo peruano', 'a tu mesa'],
+      en: ['From the Peruvian', 'farm to your table'],
+      pt: ['Do campo peruano', 'à sua mesa'],
+    },
+    sub: {
+      es: 'Frescura de cada región',
+      en: 'Freshness from every region',
+      pt: 'Frescor de cada região',
+    },
+    body: {
+      es: 'Café, miel, cacao y granos andinos, directo del productor.',
+      en: 'Coffee, honey, cocoa and Andean grains, straight from the producer.',
+      pt: 'Café, mel, cacau e grãos andinos, direto do produtor.',
+    },
+    cta: { es: 'Ver alimentos', en: 'See food', pt: 'Ver alimentos' },
+    img: 'https://images.unsplash.com/photo-1586095516671-d085ff58cdd4?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 7,
   },
   {
-    titulo:    { es: 'Equipos Agrícolas al Mejor Precio', en: 'Farm Equipment at Best Price',      pt: 'Equipamentos Agrícolas no Melhor Preço' },
-    subtitulo: { es: 'Tractores, herramientas y semillas para el campo peruano', en: 'Tractors, tools and seeds for the Peruvian farm', pt: 'Tratores, ferramentas e sementes para o campo peruano' },
-    cta:       { es: 'Ver equipos',     en: 'See equipment',   pt: 'Ver equipamentos' },
-    bg: 'from-[#004d40] via-[#00695c] to-[#00897b]',
-    badge:     { es: '🚜 PARA EL CAMPO', en: '🚜 FOR THE FARM',  pt: '🚜 PARA O CAMPO' },
-    emoji: '🌾',
-    bgImage: 'https://images.unsplash.com/photo-1586095516671-d085ff58cdd4?w=1920&q=80&auto=format&fit=crop',
-    categoria_id: 7,  // Agrícola → plantación café/cacao selva alta
+    id: 'maravillas',
+    theme: 'desert',
+    tag: { es: 'DESCUBRE EL PERÚ', en: 'DISCOVER PERU', pt: 'DESCUBRA O PERU' },
+    region: 'Líneas de Nazca',
+    title: {
+      es: ['Un país lleno de', 'maravillas'],
+      en: ['A country full of', 'wonders'],
+      pt: ['Um país cheio de', 'maravilhas'],
+    },
+    sub: {
+      es: 'De las Líneas de Nazca a Machu Picchu',
+      en: 'From the Nazca Lines to Machu Picchu',
+      pt: 'Das Linhas de Nazca a Machu Picchu',
+    },
+    body: {
+      es: 'Vende y compra en el país de los mil destinos.',
+      en: 'Sell and buy in the country of a thousand destinations.',
+      pt: 'Venda e compre no país dos mil destinos.',
+    },
+    cta: { es: 'Conoce el Perú', en: 'Discover Peru', pt: 'Conheça o Peru' },
+    img: 'https://images.unsplash.com/photo-1587595431973-160d0d94add1?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 0,
   },
+]
+
+type EscrowStep = { icon: IconName; labelKey: 'step_pays' | 'step_hold' | 'step_ships' | 'step_confirm' | 'step_release' }
+const ESCROW_STEPS: EscrowStep[] = [
+  { icon: 'card',        labelKey: 'step_pays' },
+  { icon: 'lock',        labelKey: 'step_hold' },
+  { icon: 'truck',       labelKey: 'step_ships' },
+  { icon: 'checkCircle', labelKey: 'step_confirm' },
+  { icon: 'wallet',      labelKey: 'step_release' },
 ]
 
 /* ─────────────────────────── TIPOS ─────────────────────────── */
@@ -123,38 +207,37 @@ type Producto = {
 
 /* ─────────────────────────── HELPERS ─────────────────────────── */
 
-function getRating(id: string) {
+function ratingFromId(id: string) {
   const n = id.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
   return Math.round((4.0 + (n % 11) / 10) * 10) / 10
 }
-function getReviews(id: string) {
+function reviewsFromId(id: string) {
   const n = id.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
   return 50 + (n % 950)
 }
 
-function Estrellas({ rating }: { rating: number }) {
+function Stars({ value, count }: { value: number; count?: number }) {
+  const full = Math.round(value)
   return (
-    <div className="flex items-center gap-0.5">
-      {[1, 2, 3, 4, 5].map((i) => (
-        <svg key={i} className={`w-3.5 h-3.5 ${i <= Math.round(rating) ? 'text-[#FFA41C]' : 'text-gray-300'}`} fill="currentColor" viewBox="0 0 20 20">
-          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-        </svg>
-      ))}
+    <div className="mk-stars" aria-label={`${value} de 5`}>
+      <div className="mk-stars-track">
+        {[0, 1, 2, 3, 4].map((i) => (
+          <Icon key={i} name="star" size={14} stroke={1.5} className={i < full ? 'mk-star on' : 'mk-star off'} />
+        ))}
+      </div>
+      {count != null && <span className="mk-stars-count">({count})</span>}
     </div>
   )
 }
 
 function SkeletonCard() {
   return (
-    <div className="bg-white rounded-xl border border-gray-100 overflow-hidden animate-pulse">
-      <div className="bg-gray-200 h-44 w-full" />
-      <div className="p-3 space-y-2">
-        <div className="bg-gray-200 h-3 rounded w-full" />
-        <div className="bg-gray-200 h-3 rounded w-2/3" />
-        <div className="bg-gray-200 h-4 rounded w-1/2" />
-        <div className="bg-gray-200 h-3 rounded w-full" />
-        <div className="bg-gray-200 h-3 rounded w-3/4" />
-        <div className="bg-gray-200 h-8 rounded w-full mt-1" />
+    <div className="mk-skel">
+      <div className="mk-skel-img" />
+      <div className="mk-skel-body">
+        <div className="mk-skel-line w50" />
+        <div className="mk-skel-line w90" />
+        <div className="mk-skel-line w70" />
       </div>
     </div>
   )
@@ -163,8 +246,8 @@ function SkeletonCard() {
 /* ─────────────────────────── PÁGINA ─────────────────────────── */
 
 export default function Home() {
-  const [bannerActual, setBannerActual]       = useState(0)
-  const [bannerLocked, setBannerLocked]       = useState(false)
+  const [slideIdx, setSlideIdx]               = useState(0)
+  const [slideLocked, setSlideLocked]         = useState(false)
   const [busqueda, setBusqueda]               = useState('')
   const [categoriaSearch, setCategoriaSearch] = useState(0)
   const [categoriaFiltro, setCategoriaFiltro] = useState(0)
@@ -176,12 +259,15 @@ export default function Home() {
   const [error, setError]                     = useState('')
   const [pais, setPais]                       = useState('PE')
   const [lang, setLang]                       = useState<Lang>('es')
+  const [favoritos, setFavoritos]             = useState<Set<string>>(new Set())
+  const [toast, setToast]                     = useState('')
+  const toastRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const { user } = useAuth()
-  const tr       = T[lang]
-  const catNames = CAT_NAMES[lang]
+  const { user }  = useAuth()
+  const tr        = T[lang]
+  const catNames  = CAT_NAMES[lang]
 
-  // ── Cargar idioma persistido ──
+  // ── Idioma persistido ──
   useEffect(() => {
     const saved = localStorage.getItem('merkao_lang') as Lang | null
     if (saved && ['es', 'en', 'pt'].includes(saved)) setLang(saved)
@@ -192,7 +278,7 @@ export default function Home() {
     localStorage.setItem('merkao_lang', l)
   }
 
-  // ── Detectar país ──
+  // ── País por IP ──
   useEffect(() => {
     fetch('https://ipapi.co/json/')
       .then((r) => r.json())
@@ -201,15 +287,15 @@ export default function Home() {
   }, [])
 
   // ── Carousel ──
-  const siguiente = useCallback(() => setBannerActual((p) => (p + 1) % BANNERS.length), [])
-  const anterior  = useCallback(() => setBannerActual((p) => (p - 1 + BANNERS.length) % BANNERS.length), [])
+  const siguiente = useCallback(() => setSlideIdx((p) => (p + 1) % SLIDES.length), [])
+  const anterior  = useCallback(() => setSlideIdx((p) => (p - 1 + SLIDES.length) % SLIDES.length), [])
   useEffect(() => {
-    if (bannerLocked) return            // lock activo → no auto-rota
-    const t = setInterval(siguiente, 5000)
+    if (slideLocked) return
+    const t = setInterval(siguiente, 6500)
     return () => clearInterval(t)
-  }, [siguiente, bannerLocked])
+  }, [siguiente, slideLocked])
 
-  // ── Detectar categoría dominante y lockear el hero en ese banner ──
+  // ── Auto-lock hero en slide cuya categoría sea la dominante ──
   useEffect(() => {
     let cancel = false
     async function detectar() {
@@ -223,10 +309,10 @@ export default function Home() {
       for (const row of data) counts.set(row.categoria_id, (counts.get(row.categoria_id) || 0) + 1)
       let topCat = 0, topCount = 0
       for (const [cat, n] of counts) if (n > topCount) { topCount = n; topCat = cat }
-      const idx = BANNERS.findIndex((b) => b.categoria_id === topCat)
+      const idx = SLIDES.findIndex((s) => s.categoriaId === topCat)
       if (idx >= 0) {
-        setBannerActual(idx)
-        setBannerLocked(true)
+        setSlideIdx(idx)
+        setSlideLocked(true)
       }
     }
     detectar()
@@ -246,21 +332,45 @@ export default function Home() {
       if (categoriaFiltro !== 0) q = q.eq('categoria_id', categoriaFiltro)
       if (ciudadFiltro)          q = q.eq('ciudad', ciudadFiltro)
       const { data, error: e } = await q
-      if (e) setError('No se pudieron cargar los productos.')
+      if (e) setError(lang === 'en' ? 'Could not load products.' : lang === 'pt' ? 'Não foi possível carregar os produtos.' : 'No se pudieron cargar los productos.')
       else setProductos(data || [])
       setLoading(false)
     }
     cargar()
-  }, [categoriaFiltro, ciudadFiltro])
+  }, [categoriaFiltro, ciudadFiltro, lang])
+
+  const showToast = (msg: string) => {
+    setToast(msg)
+    if (toastRef.current) clearTimeout(toastRef.current)
+    toastRef.current = setTimeout(() => setToast(''), 1900)
+  }
 
   const agregarAlCarrito = (id: string) => {
     setAgregarAnim(id)
     setTimeout(() => setAgregarAnim(null), 700)
+    showToast(lang === 'en' ? 'Added to cart' : lang === 'pt' ? 'Adicionado ao carrinho' : 'Producto agregado al carrito')
+  }
+
+  const toggleFav = (id: string) => {
+    setFavoritos((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id); else next.add(id)
+      return next
+    })
   }
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
     window.location.reload()
+  }
+
+  const goToShop = (catId: number) => {
+    setCategoriaFiltro(catId)
+    setSlideLocked(true)
+    setTimeout(() => {
+      const el = document.getElementById('mk-shop')
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 50)
   }
 
   const productosFiltrados = busqueda.trim()
@@ -269,230 +379,218 @@ export default function Home() {
 
   const arancelInfo = ARANCELES[pais]
   const userLabel   = user?.email ? user.email.split('@')[0] : null
+  const cartCount   = totalItems()
 
   return (
-    <div className="min-h-screen bg-[#EAEDED]" style={{ fontFamily: 'Inter, sans-serif' }}>
-
+    <>
       {/* ══════════════════ HEADER ══════════════════ */}
-      <header className="sticky top-0 z-50" style={{ backgroundColor: '#131921' }}>
-        <div className="px-4 py-2.5 flex items-center gap-3">
+      <header className="mk-hdr">
+        <div className="mk-hdr-top">
+          <div className="mk-hdr-inner">
+            <a className="mk-logo" href="/">merkao<span className="mk-logo-dot">.pe</span></a>
 
-          {/* Logo */}
-          <a href="/" className="shrink-0 flex items-center gap-0.5 border-2 border-transparent hover:border-white rounded px-1 py-1 transition">
-            <span className="text-white text-2xl font-black tracking-tight">merkao</span>
-            <span className="text-2xl font-black" style={{ color: '#FF9900' }}>.pe</span>
-          </a>
+            <div className="mk-ship-from">
+              <span className="mk-ship-label">{tr.delivering_from}</span>
+              <span className="mk-ship-where">
+                {arancelInfo ? `${arancelInfo.bandera} ${arancelInfo.pais}` : '🇵🇪 Perú'}
+              </span>
+            </div>
 
-          {/* País detectado */}
-          <div className="hidden lg:flex flex-col shrink-0 border-2 border-transparent hover:border-white rounded px-2 py-1 cursor-pointer transition">
-            <span className="text-gray-400 text-[11px]">{tr.delivering_from}</span>
-            <span className="text-white text-xs font-bold">
-              {arancelInfo ? `${arancelInfo.bandera} ${arancelInfo.pais}` : '🇵🇪 Perú'}
-            </span>
-          </div>
-
-          {/* Barra de búsqueda */}
-          <div className="flex-1 flex rounded-lg overflow-hidden h-10 max-w-3xl">
-            <select
-              value={categoriaSearch}
-              onChange={(e) => setCategoriaSearch(Number(e.target.value))}
-              className="hidden md:block bg-gray-100 text-gray-700 text-xs px-2 border-r border-gray-300 outline-none cursor-pointer shrink-0 max-w-[130px]"
-            >
-              {CATEGORIAS.map((c) => (
-                <option key={c.id} value={c.id}>{catNames[c.id]}</option>
-              ))}
-            </select>
-            <input
-              type="text"
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-              placeholder={tr.search_placeholder}
-              className="flex-1 px-4 text-sm text-gray-800 outline-none"
-            />
-            <button className="px-4 flex items-center justify-center hover:brightness-110 transition shrink-0" style={{ backgroundColor: '#FF9900' }}>
-              <svg className="w-5 h-5 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </button>
-          </div>
-
-          {/* Selector de país */}
-          <select
-            value={pais}
-            onChange={(e) => setPais(e.target.value)}
-            className="hidden xl:block text-xs px-2 py-1 rounded border-2 border-gray-600 bg-transparent text-white outline-none cursor-pointer"
-            title="Cambiar país"
-          >
-            <option value="PE">🇵🇪 Perú</option>
-            {Object.entries(ARANCELES).map(([code, info]) => (
-              <option key={code} value={code}>{info.bandera} {info.pais}</option>
-            ))}
-          </select>
-
-          {/* Selector de idioma */}
-          <div className="hidden sm:flex items-center border-2 border-gray-600 rounded overflow-hidden">
-            {(['es', 'en', 'pt'] as Lang[]).map((l) => (
-              <button
-                key={l}
-                onClick={() => cambiarIdioma(l)}
-                className={`text-[11px] font-black px-2 py-1.5 transition ${lang === l ? 'text-gray-900' : 'text-gray-400 hover:text-gray-200'}`}
-                style={lang === l ? { backgroundColor: '#FF9900' } : {}}
+            <div className="mk-searchbar">
+              <select
+                className="mk-search-cat"
+                value={categoriaSearch}
+                onChange={(e) => setCategoriaSearch(Number(e.target.value))}
+                aria-label="Categoría"
               >
-                {l.toUpperCase()}
+                <option value={0}>{catNames[0]}</option>
+                {CATEGORIAS.map((c) => (
+                  <option key={c.id} value={c.id}>{catNames[c.id]}</option>
+                ))}
+              </select>
+              <input
+                className="mk-search-input"
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                placeholder={tr.search_placeholder}
+              />
+              <button className="mk-search-btn" aria-label="Buscar">
+                <Icon name="search" size={20} />
               </button>
-            ))}
-          </div>
-
-          {/* Cuenta */}
-          {userLabel ? (
-            <div className="hidden sm:flex flex-col shrink-0 border-2 border-transparent hover:border-white rounded px-2 py-1 transition cursor-pointer group relative">
-              <span className="text-gray-400 text-[11px]">{tr.hello_user} {userLabel}</span>
-              <span className="text-white text-xs font-bold">{tr.account}</span>
-              <div className="absolute top-full right-0 bg-white shadow-lg rounded-xl py-2 hidden group-hover:block min-w-[150px] z-50 border border-gray-100">
-                <a href="/perfil" className="block px-4 py-2 text-xs text-gray-700 hover:bg-gray-50">👤 Mi perfil</a>
-                <a href="/vendedor" className="block px-4 py-2 text-xs text-gray-700 hover:bg-gray-50">🏪 {tr.vendor_panel}</a>
-                <button onClick={handleSignOut} className="w-full text-left px-4 py-2 text-xs text-gray-700 hover:bg-gray-50">🚪 {tr.sign_out}</button>
-              </div>
             </div>
-          ) : (
-            <a href="/login" className="hidden sm:flex flex-col shrink-0 border-2 border-transparent hover:border-white rounded px-2 py-1 transition">
-              <span className="text-gray-400 text-[11px]">{tr.hello_sign_in}</span>
-              <span className="text-white text-xs font-bold">{tr.account}</span>
-            </a>
-          )}
 
-          {/* Pedidos */}
-          <a href="/pedidos" className="hidden lg:flex flex-col shrink-0 border-2 border-transparent hover:border-white rounded px-2 py-1 transition">
-            <span className="text-gray-400 text-[11px]">{tr.my_orders_label}</span>
-            <span className="text-white text-xs font-bold">{tr.my_orders}</span>
-          </a>
+            <div className="mk-lang">
+              {(['es', 'en', 'pt'] as Lang[]).map((l) => (
+                <button
+                  key={l}
+                  className={'mk-lang-btn' + (lang === l ? ' on' : '')}
+                  onClick={() => cambiarIdioma(l)}
+                >
+                  {l.toUpperCase()}
+                </button>
+              ))}
+            </div>
 
-          {/* Carrito */}
-          <a href="/carrito" className="relative flex items-end gap-1 border-2 border-transparent hover:border-white rounded px-2 py-1 transition shrink-0">
-            <div className="relative">
-              <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M2.25 2.25a.75.75 0 000 1.5h1.386c.17 0 .318.114.362.278l2.558 9.592a3.752 3.752 0 00-2.806 3.63c0 .414.336.75.75.75h15.75a.75.75 0 000-1.5H5.378A2.25 2.25 0 017.5 15h11.218a.75.75 0 00.674-.421 60.358 60.358 0 002.96-7.228.75.75 0 00-.525-.965A60.864 60.864 0 005.68 4.509l-.232-.867A1.875 1.875 0 003.636 2.25H2.25zM3.75 20.25a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zM16.5 20.25a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0z" />
-              </svg>
-              {totalItems() > 0 && (
-                <span className="absolute -top-1 -right-1 text-xs font-black w-5 h-5 rounded-full flex items-center justify-center bg-red-500 text-white">
-                  {totalItems() > 99 ? '99+' : totalItems()}
+            {userLabel ? (
+              <a className="mk-hdr-link mk-account" href="/perfil">
+                <Icon name="user" size={22} stroke={1.8} />
+                <span className="mk-hdr-link-txt">
+                  <small>{tr.hello_user} {userLabel}</small>
+                  <strong>{tr.account.replace('▾', '').trim()} <Icon name="chevronDown" size={12} /></strong>
                 </span>
-              )}
-            </div>
-            <span className="text-white text-xs font-bold hidden sm:inline pb-1">{tr.cart}</span>
-          </a>
+              </a>
+            ) : (
+              <a className="mk-hdr-link mk-account" href="/login">
+                <Icon name="user" size={22} stroke={1.8} />
+                <span className="mk-hdr-link-txt">
+                  <small>{tr.hello_sign_in}</small>
+                  <strong>{tr.account.replace('▾', '').trim()} <Icon name="chevronDown" size={12} /></strong>
+                </span>
+              </a>
+            )}
+
+            <a className="mk-hdr-link" href="/pedidos">
+              <span className="mk-hdr-link-txt right">
+                <small>{tr.my_orders_label}</small>
+                <strong>{tr.my_orders}</strong>
+              </span>
+            </a>
+
+            <a className="mk-cart-btn" href="/carrito">
+              <span className="mk-cart-ico">
+                <Icon name="cart" size={24} stroke={1.8} />
+                {cartCount > 0 && <span className="mk-cart-badge">{cartCount > 99 ? '99+' : cartCount}</span>}
+              </span>
+              <strong>{tr.cart}</strong>
+            </a>
+          </div>
         </div>
 
-        {/* Aviso de arancel */}
         {arancelInfo && (
-          <div className="bg-amber-500 text-amber-950 text-xs font-bold py-1.5 px-4 text-center">
-            {arancelInfo.bandera} {tr.delivering_from} <strong>{arancelInfo.pais}</strong> — Arancel de importación: <strong>{Math.round(arancelInfo.tasa * 100)}%</strong>
-            <button onClick={() => setPais('PE')} className="ml-3 underline hover:no-underline opacity-70">{tr.change_to_peru}</button>
+          <div className="mk-arancel">
+            {arancelInfo.bandera} {tr.delivering_from} <strong>{arancelInfo.pais}</strong> —{' '}
+            {lang === 'en' ? 'import duty' : lang === 'pt' ? 'tarifa de importação' : 'arancel de importación'}: <strong>{Math.round(arancelInfo.tasa * 100)}%</strong>
+            <button onClick={() => setPais('PE')}>{tr.change_to_peru}</button>
           </div>
         )}
 
-        {/* Barra de categorías */}
-        <div style={{ backgroundColor: '#232f3e' }}>
-          <div className="px-4 flex items-center gap-1 overflow-x-auto py-1 scrollbar-none">
-            <button className="flex items-center gap-1.5 text-white text-xs font-bold px-3 py-2 rounded hover:bg-white/10 transition shrink-0">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-              {tr.all}
+        <nav className="mk-hdr-nav">
+          <div className="mk-hdr-inner">
+            <button className="mk-nav-all">
+              <Icon name="menu" size={18} />
+              {lang === 'en' ? 'All categories' : lang === 'pt' ? 'Todas as categorias' : 'Todas las categorías'}
             </button>
-            <button onClick={() => setCategoriaFiltro(0)} className="text-xs font-bold px-3 py-2 rounded hover:bg-white/10 transition shrink-0 whitespace-nowrap" style={{ color: '#FF9900' }}>
-              {tr.daily_deals}
-            </button>
-            {CATEGORIAS.slice(1).map((cat) => (
-              <a
-                key={cat.id}
-                href={`/categorias/${CAT_SLUG[cat.id]}`}
-                className="text-gray-300 text-xs px-3 py-2 rounded hover:bg-white/10 transition shrink-0 whitespace-nowrap"
-              >
-                {cat.icono} {catNames[cat.id]}
-              </a>
-            ))}
-            <a href="/vendedor" className="text-gray-300 text-xs px-3 py-2 rounded hover:bg-white/10 transition shrink-0 whitespace-nowrap ml-auto">
-              {tr.sell_on_merkao}
+            <div className="mk-nav-cats">
+              <button onClick={() => goToShop(0)} className="mk-nav-cat accent">
+                <Icon name="flame" size={16} stroke={1.8} />
+                {lang === 'en' ? 'Daily deals' : lang === 'pt' ? 'Ofertas do dia' : 'Ofertas del día'}
+              </button>
+              {CATEGORIAS.map((c) => (
+                <a key={c.id} href={`/categorias/${CAT_SLUG[c.id]}`} className="mk-nav-cat">
+                  <Icon name={c.icon} size={16} stroke={1.8} /> {catNames[c.id]}
+                </a>
+              ))}
+            </div>
+            <a className="mk-nav-sell" href="/vendedor">
+              <Icon name="store" size={17} stroke={1.8} />
+              {lang === 'en' ? 'Sell on Merkao' : lang === 'pt' ? 'Vender no Merkao' : 'Vende en Merkao'}
             </a>
           </div>
-        </div>
+        </nav>
       </header>
 
-      {/* ══════════════════ HERO CAROUSEL ══════════════════ */}
-      <div className="relative overflow-hidden" style={{ height: '400px' }}>
-        {BANNERS.map((banner, i) => (
-          <div key={i} className={`absolute inset-0 transition-opacity duration-700 ${i === bannerActual ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>
-            {/* 1) Fallback de gradiente sólido (visible mientras carga la imagen) */}
-            <div className={`absolute inset-0 bg-gradient-to-r ${banner.bg}`} />
-            {/* 2) Imagen de Unsplash (paisaje peruano por categoría) */}
-            <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url('${banner.bgImage}')` }} />
-            {/* 3) Overlay oscuro lateral para legibilidad del texto */}
-            <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-black/20" />
-            <div className="relative max-w-screen-xl mx-auto px-8 h-full flex items-center justify-between">
-              <div className="max-w-xl">
-                <span className="inline-block text-xs font-black tracking-widest mb-3 px-3 py-1 rounded-full" style={{ backgroundColor: '#FF9900', color: '#131921' }}>
-                  {banner.badge[lang]}
-                </span>
-                <h2 className="text-4xl md:text-5xl font-black text-white leading-tight mb-2">{banner.titulo[lang]}</h2>
-                <p
-                  className="text-[#FFD699] text-sm md:text-base italic font-semibold tracking-wide mb-4"
-                  style={{ textShadow: '0 1px 4px rgba(0,0,0,0.7)' }}
-                >
-                  {MERKAO_SLOGAN}
-                </p>
-                <p className="text-white/80 text-base mb-6">{banner.subtitulo[lang]}</p>
-                <button
-                  onClick={() => { setCategoriaFiltro(i + 1); window.scrollTo({ top: 600, behavior: 'smooth' }) }}
-                  className="inline-block font-bold px-7 py-3 rounded-lg text-sm transition hover:brightness-110"
-                  style={{ backgroundColor: '#FF9900', color: '#131921' }}
-                >
-                  {banner.cta[lang]} →
+      {/* ══════════════════ MAIN ══════════════════ */}
+      <main className="mk-main">
+
+        {/* HERO carousel */}
+        <section
+          className="mk-hero"
+          onMouseEnter={() => setSlideLocked(true)}
+          onMouseLeave={() => setSlideLocked(false)}
+        >
+          {SLIDES.map((sl, k) => (
+            <div key={sl.id} className={`mk-hslide mk-theme-${sl.theme}${k === slideIdx ? ' on' : ''}`}>
+              <div className="mk-hslide-copy">
+                <span className="mk-hero-tag"><Icon name="zap" size={13} /> {sl.tag[lang]}</span>
+                <h1 className="mk-hero-title">
+                  {sl.title[lang].map((line, j) => <span key={j}>{line}</span>)}
+                </h1>
+                <p className="mk-hero-sub">{sl.sub[lang]}</p>
+                <p className="mk-hero-body">{sl.body[lang]}</p>
+                <button className="mk-hero-cta" onClick={() => goToShop(sl.categoriaId)}>
+                  {sl.cta[lang]} <Icon name="arrowRight" size={18} />
                 </button>
               </div>
-              <div className="hidden md:flex text-9xl select-none">{banner.emoji}</div>
+              <div className="mk-hslide-media">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={sl.img} alt={sl.region} loading={k === 0 ? 'eager' : 'lazy'} />
+                <span className="mk-hslide-region">
+                  <Icon name="mapPin" size={13} stroke={2} /> {sl.region}
+                </span>
+              </div>
+            </div>
+          ))}
+          <button className="mk-hero-arrow left" onClick={anterior} aria-label="Anterior"><Icon name="chevronLeft" size={26} /></button>
+          <button className="mk-hero-arrow right" onClick={siguiente} aria-label="Siguiente"><Icon name="chevronRight" size={26} /></button>
+          <div className="mk-hero-dots">
+            {SLIDES.map((s, k) => (
+              <button
+                key={s.id}
+                className={'mk-dot' + (k === slideIdx ? ' on' : '')}
+                onClick={() => setSlideIdx(k)}
+                aria-label={`Slide ${k + 1}`}
+              />
+            ))}
+          </div>
+        </section>
+
+        {/* ESCROW strip */}
+        <a className="mk-escrow" href="#escrow-info">
+          <div className="mk-escrow-lead">
+            <span className="mk-escrow-ico"><Icon name="shield" size={26} stroke={1.7} /></span>
+            <div>
+              <h3>{tr.escrow_title}</h3>
+              <p>{tr.escrow_desc}</p>
             </div>
           </div>
-        ))}
-        <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-black/30 to-transparent z-20 pointer-events-none" />
-        <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-black/30 to-transparent z-20 pointer-events-none" />
-        <button onClick={anterior} className="absolute left-3 top-1/2 -translate-y-1/2 z-30 w-10 h-16 bg-white/90 hover:bg-white rounded flex items-center justify-center text-2xl shadow transition">‹</button>
-        <button onClick={siguiente} className="absolute right-3 top-1/2 -translate-y-1/2 z-30 w-10 h-16 bg-white/90 hover:bg-white rounded flex items-center justify-center text-2xl shadow transition">›</button>
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex gap-2">
-          {BANNERS.map((_, i) => (
-            <button key={i} onClick={() => setBannerActual(i)} className={`rounded-full transition-all ${i === bannerActual ? 'w-6 h-2.5 bg-[#FF9900]' : 'w-2.5 h-2.5 bg-white/50 hover:bg-white/80'}`} />
-          ))}
-        </div>
-      </div>
+          <div className="mk-escrow-steps">
+            {ESCROW_STEPS.map((s, k) => (
+              <span key={s.labelKey} style={{ display: 'contents' }}>
+                <div className="mk-escrow-step">
+                  <span className="mk-escrow-step-ico"><Icon name={s.icon} size={20} stroke={1.8} /></span>
+                  <span className="mk-escrow-step-label">{tr[s.labelKey]}</span>
+                </div>
+                {k < ESCROW_STEPS.length - 1 && (
+                  <span className="mk-escrow-sep"><Icon name="chevronRight" size={14} /></span>
+                )}
+              </span>
+            ))}
+          </div>
+        </a>
 
-      {/* ══════════════════ CONTENIDO ══════════════════ */}
-      <div className="max-w-screen-xl mx-auto px-4 py-6 space-y-8">
-
-        {/* Categorías rápidas */}
-        <section className="bg-white rounded-xl shadow-sm p-5">
-          <h2 className="text-base font-bold text-gray-800 mb-4">{tr.buy_by_category}</h2>
-          <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
-            {CATEGORIAS.slice(1).map((cat) => (
-              <a
-                key={cat.id}
-                href={`/categorias/${CAT_SLUG[cat.id]}`}
-                className="flex flex-col items-center gap-2 p-3 rounded-xl transition group hover:bg-orange-50"
-              >
-                <span className="text-3xl">{cat.icono}</span>
-                <span className="text-xs text-center font-medium leading-tight text-gray-600 group-hover:text-orange-600">
-                  {catNames[cat.id]}
-                </span>
+        {/* CATEGORÍAS */}
+        <section className="mk-block">
+          <div className="mk-block-head">
+            <h2>{tr.buy_by_category}</h2>
+          </div>
+          <div className="mk-cat-grid">
+            {CATEGORIAS.map((c) => (
+              <a key={c.id} href={`/categorias/${CAT_SLUG[c.id]}`} className="mk-cat-tile">
+                <span className="mk-cat-tile-ico"><Icon name={c.icon} size={26} stroke={1.6} /></span>
+                <span className="mk-cat-tile-label">{catNames[c.id]}</span>
               </a>
             ))}
           </div>
         </section>
 
-        {/* Filtro por departamento */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-          <span className="text-xs font-bold text-gray-500 shrink-0">📍 {tr.filter_by_city}:</span>
+        {/* FILTROS DE CIUDAD */}
+        <div className="mk-city-row" role="tablist" aria-label={tr.filter_by_city}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12.5, fontWeight: 700, color: 'var(--muted)', flexShrink: 0 }}>
+            <Icon name="mapPin" size={14} stroke={2} /> {tr.filter_by_city}:
+          </span>
           <button
             onClick={() => setCiudadFiltro('')}
-            className={`shrink-0 text-xs px-3 py-1.5 rounded-full border transition font-medium ${!ciudadFiltro ? 'bg-orange-500 text-white border-orange-500' : 'border-gray-300 text-gray-600 hover:border-orange-400 bg-white'}`}
+            className={'mk-city-chip' + (!ciudadFiltro ? ' on' : '')}
           >
             {tr.all_cities}
           </button>
@@ -500,338 +598,280 @@ export default function Home() {
             <button
               key={dep}
               onClick={() => setCiudadFiltro(dep === ciudadFiltro ? '' : dep)}
-              className={`shrink-0 text-xs px-3 py-1.5 rounded-full border transition whitespace-nowrap font-medium ${ciudadFiltro === dep ? 'bg-orange-500 text-white border-orange-500' : 'border-gray-300 text-gray-600 hover:border-orange-400 bg-white'}`}
+              className={'mk-city-chip' + (ciudadFiltro === dep ? ' on' : '')}
             >
               {dep}
             </button>
           ))}
         </div>
 
-        {/* Explicación escrow */}
-        <section className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex flex-wrap gap-4 items-center">
-          <div className="text-3xl">🔒</div>
-          <div className="flex-1 min-w-[200px]">
-            <p className="text-sm font-bold text-blue-800">{tr.escrow_title}</p>
-            <p className="text-xs text-blue-600 mt-0.5">{tr.escrow_desc}</p>
-          </div>
-          <div className="flex gap-6 text-xs text-blue-700 flex-wrap">
-            {[['💳', tr.step_pays], ['🔒', tr.step_hold], ['📦', tr.step_ships], ['✅', tr.step_confirm], ['💸', tr.step_release]].map(([icono, label]) => (
-              <div key={label as string} className="flex flex-col items-center gap-1">
-                <span className="text-xl">{icono}</span>
-                <span className="font-medium">{label}</span>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Grid de productos */}
-        <section>
-          <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-            <div>
-              <h2 className="text-xl font-black text-gray-800 flex items-center gap-2 flex-wrap">
-                {categoriaFiltro === 0 ? tr.all_products : `${CATEGORIAS.find(c => c.id === categoriaFiltro)?.icono} ${catNames[categoriaFiltro]}`}
-                {ciudadFiltro && <span className="text-sm font-medium text-orange-500 bg-orange-50 px-2 py-0.5 rounded-full">📍 {ciudadFiltro}</span>}
+        {/* SHOP: products grid + AdRail */}
+        <section id="mk-shop" className="mk-shop">
+          <div className="mk-shop-main">
+            <div className="mk-block-head">
+              <h2>
+                {categoriaFiltro === 0
+                  ? tr.all_products
+                  : catNames[categoriaFiltro]}
+                {ciudadFiltro && (
+                  <span style={{ marginLeft: 12, fontSize: 14, fontWeight: 600, color: 'var(--brand-700)' }}>
+                    · {ciudadFiltro}
+                  </span>
+                )}
               </h2>
-              {busqueda && <p className="text-sm text-gray-500 mt-0.5">{productosFiltrados.length} {tr.results_for} "<strong>{busqueda}</strong>"</p>}
+              {(categoriaFiltro !== 0 || ciudadFiltro || busqueda) && (
+                <button
+                  className="mk-block-link"
+                  onClick={() => { setCategoriaFiltro(0); setCiudadFiltro(''); setBusqueda('') }}
+                >
+                  {tr.see_all}
+                </button>
+              )}
             </div>
-            {(categoriaFiltro !== 0 || ciudadFiltro) && (
-              <button onClick={() => { setCategoriaFiltro(0); setCiudadFiltro('') }} className="text-sm font-medium hover:underline" style={{ color: '#007185' }}>
-                {tr.see_all}
-              </button>
+
+            {busqueda && (
+              <p style={{ fontSize: 13, color: 'var(--muted)', margin: 0 }}>
+                {productosFiltrados.length} {tr.results_for} &ldquo;<strong>{busqueda}</strong>&rdquo;
+              </p>
             )}
-          </div>
 
-          {error && <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-600 text-center mb-4">⚠️ {error}</div>}
+            {error && (
+              <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 12, padding: 14, color: '#B91C1C', fontSize: 14 }}>
+                ⚠️ {error}
+              </div>
+            )}
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+            <div className="mk-prod-grid">
+              {loading && Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
 
-            {loading && Array.from({ length: 12 }).map((_, i) => <SkeletonCard key={i} />)}
+              {!loading && productosFiltrados.map((prod) => {
+                const rating  = ratingFromId(prod.id)
+                const reviews = reviewsFromId(prod.id)
+                const imagen  = prod.imagenes?.[0] ?? `https://picsum.photos/seed/${prod.id}/600/600`
+                const enCarrito = agregarAnim === prod.id
+                const p = calcularPrecios(prod.precio, pais)
+                const tieneMayoreo = prod.precio_mayoreo && prod.cantidad_minima_mayoreo
+                const fav = favoritos.has(prod.id)
 
-            {!loading && productosFiltrados.map((prod) => {
-              const rating    = getRating(prod.id)
-              const reviews   = getReviews(prod.id)
-              const imagen    = prod.imagenes?.[0] ?? `https://picsum.photos/seed/${prod.id}/400/400`
-              const enCarrito = agregarAnim === prod.id
-              const p         = calcularPrecios(prod.precio, pais)
-              const tieneMayoreo = prod.precio_mayoreo && prod.cantidad_minima_mayoreo
+                return (
+                  <article key={prod.id} className="mk-card">
+                    <a href={`/productos/${prod.id}`} className="mk-card-media">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={imagen} alt={prod.nombre} loading="lazy" />
+                      {prod.stock > 0 && prod.stock <= 5 && (
+                        <span className="mk-card-stock">
+                          {lang === 'en' ? `Only ${prod.stock} left` : lang === 'pt' ? `Restam ${prod.stock}` : `¡Últimas ${prod.stock}!`}
+                        </span>
+                      )}
+                      {prod.ciudad && (
+                        <span className="mk-card-loc">
+                          <Icon name="mapPin" size={12} stroke={2} /> {prod.ciudad}
+                        </span>
+                      )}
+                      <button
+                        className={'mk-card-fav' + (fav ? ' on' : '')}
+                        onClick={(e) => { e.preventDefault(); toggleFav(prod.id) }}
+                        aria-label="Guardar"
+                        aria-pressed={fav}
+                      >
+                        <Icon name="heart" size={17} stroke={2} />
+                      </button>
+                    </a>
 
-              return (
-                <div key={prod.id} className="bg-white rounded-xl shadow-sm hover:shadow-lg transition border border-gray-100 overflow-hidden group flex flex-col">
-
-                  {/* Imagen */}
-                  <a href={`/productos/${prod.id}`} className="relative overflow-hidden bg-gray-50 h-40 block">
-                    <img src={imagen} alt={prod.nombre} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
-                    {prod.stock <= 5 && prod.stock > 0 && (
-                      <span className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">¡Últimas {prod.stock}!</span>
-                    )}
-                    {prod.ciudad && (
-                      <span className="absolute bottom-0 left-0 right-0 text-center text-[10px] text-white bg-black/40 py-0.5">📍 {prod.ciudad}</span>
-                    )}
-                  </a>
-
-                  {/* Info */}
-                  <div className="p-3 flex flex-col flex-1">
-                    <p className="text-[10px] text-gray-400 mb-0.5">{catNames[prod.categoria_id] ?? ''}</p>
-                    <a href={`/productos/${prod.id}`} className="text-xs text-gray-700 line-clamp-2 leading-snug mb-2 flex-1 hover:text-orange-600 transition">{prod.nombre}</a>
-
-                    {/* Estrellas */}
-                    <div className="flex items-center gap-1 mb-2">
-                      <Estrellas rating={rating} />
-                      <span className="text-[11px] text-[#007185]">({reviews})</span>
-                    </div>
-
-                    {/* Precio con IGV + arancel */}
-                    <div className="mb-1.5">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-lg font-black" style={{ color: '#B12704' }}>{fmt(p.total)}</span>
-                        {p.paisInfo && (
-                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">
-                            {p.paisInfo.bandera} +{Math.round(p.tasaArancel * 100)}%
-                          </span>
-                        )}
-                      </div>
-                      <div className="mt-0.5 text-[10px] text-gray-400 leading-relaxed">
-                        <div className="flex justify-between">
-                          <span>Base</span><span>{fmt(p.base)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>+ IGV 18%</span><span>{fmt(p.igv)}</span>
-                        </div>
-                        {p.arancel > 0 && (
-                          <div className="flex justify-between font-medium text-amber-600">
-                            <span>+ Arancel {Math.round(p.tasaArancel * 100)}%</span>
+                    <div className="mk-card-body">
+                      <span className="mk-card-cat">{catNames[prod.categoria_id] ?? ''}</span>
+                      <a href={`/productos/${prod.id}`} className="mk-card-title-link">
+                        <h3 className="mk-card-title">{prod.nombre}</h3>
+                      </a>
+                      <Stars value={rating} count={reviews} />
+                      <div className="mk-card-price">{fmt(p.total)}</div>
+                      <div className="mk-card-breakdown">
+                        <div className="mk-bd-row"><span>{lang === 'en' ? 'Base price' : lang === 'pt' ? 'Preço base' : 'Base'}</span><span>{fmt(p.base)}</span></div>
+                        <div className="mk-bd-row"><span>+ IGV 18%</span><span>{fmt(p.igv)}</span></div>
+                        {p.arancel > 0 && p.paisInfo && (
+                          <div className="mk-bd-row amber">
+                            <span>+ {p.paisInfo.bandera} {Math.round(p.tasaArancel * 100)}%</span>
                             <span>{fmt(p.arancel)}</span>
                           </div>
                         )}
+                        <div className="mk-bd-row">
+                          <span>+ {lang === 'en' ? 'Merkao service 3%' : lang === 'pt' ? 'Taxa Merkao 3%' : 'Tarifa Merkao 3%'}</span>
+                          <span>{fmt(p.tarifaServicio)}</span>
+                        </div>
+                      </div>
+                      <div className="mk-card-ship">
+                        <Icon name="truck" size={14} stroke={1.8} />
+                        {prod.costo_envio === 0 || prod.costo_envio == null
+                          ? tr.agree_shipping
+                          : `${tr.shipping_prefix}${fmt(prod.costo_envio)}`}
+                      </div>
+                      {tieneMayoreo && (
+                        <div style={{ fontSize: 11.5, color: 'var(--green)', background: 'var(--green-tint)', borderRadius: 8, padding: '6px 10px', fontWeight: 700 }}>
+                          {tr.wholesale_from} {prod.cantidad_minima_mayoreo} {tr.units}: {fmt(prod.precio_mayoreo!)}
+                        </div>
+                      )}
+                      <div className="mk-card-actions">
+                        <a href={`/checkout?id=${prod.id}`} className="mk-btn mk-btn-primary">
+                          {tr.buy_now}
+                        </a>
+                        <button
+                          onClick={() => agregarAlCarrito(prod.id)}
+                          className="mk-btn mk-btn-ghost"
+                          style={enCarrito ? { background: 'var(--green-tint)', borderColor: 'var(--green)', color: 'var(--green)' } : undefined}
+                        >
+                          <Icon name="plus" size={16} /> {enCarrito ? tr.added : tr.add_to_cart}
+                        </button>
                       </div>
                     </div>
+                  </article>
+                )
+              })}
 
-                    {/* Mayoreo */}
-                    {tieneMayoreo && (
-                      <div className="text-[10px] bg-green-50 text-green-700 border border-green-100 rounded px-2 py-1 mb-1.5">
-                        📦 {tr.wholesale_from} {prod.cantidad_minima_mayoreo} {tr.units}: <strong>{fmt(prod.precio_mayoreo!)}</strong>
-                      </div>
-                    )}
-
-                    {/* Flete */}
-                    <div className="text-[10px] mb-2">
-                      {prod.costo_envio === 0 || prod.costo_envio === null || prod.costo_envio === undefined
-                        ? <span className="text-blue-500">🚚 {tr.agree_shipping}</span>
-                        : <span className="text-gray-500">🚚 {tr.shipping_prefix}{fmt(prod.costo_envio)}</span>
-                      }
-                    </div>
-
-                    {/* Botones */}
-                    <div className="flex flex-col gap-1.5">
-                      <a
-                        href={`/checkout?id=${prod.id}`}
-                        className="w-full text-xs font-bold py-2 rounded-lg text-center transition hover:brightness-95 text-gray-900"
-                        style={{ backgroundColor: '#FF9900' }}
-                      >
-                        {tr.buy_now}
-                      </a>
-                      <button
-                        onClick={() => agregarAlCarrito(prod.id)}
-                        className={`w-full text-xs font-bold py-1.5 rounded-lg border transition-all ${enCarrito ? 'bg-green-500 text-white border-green-500 scale-95' : 'border-gray-300 text-gray-700 hover:border-gray-400 bg-white'}`}
-                      >
-                        {enCarrito ? tr.added : tr.add_to_cart}
-                      </button>
-                    </div>
-                  </div>
+              {!loading && !error && productosFiltrados.length === 0 && (
+                <div style={{ gridColumn: '1/-1', padding: '64px 16px', textAlign: 'center', background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 14 }}>
+                  <Icon name="search" size={40} stroke={1.5} style={{ color: 'var(--muted-2)', margin: '0 auto 12px' }} />
+                  <p style={{ fontSize: 16, fontWeight: 700, color: 'var(--ink)' }}>{tr.no_products}</p>
+                  <button
+                    onClick={() => { setBusqueda(''); setCategoriaFiltro(0); setCiudadFiltro('') }}
+                    className="mk-btn mk-btn-ghost"
+                    style={{ marginTop: 16 }}
+                  >
+                    {tr.see_all}
+                  </button>
                 </div>
-              )
-            })}
-
-            {!loading && !error && productosFiltrados.length === 0 && (
-              <div className="col-span-full py-16 text-center">
-                <p className="text-4xl mb-3">🔍</p>
-                <p className="text-gray-600 font-bold">{tr.no_products}</p>
-                <button onClick={() => { setBusqueda(''); setCategoriaFiltro(0); setCiudadFiltro('') }} className="mt-3 text-sm underline" style={{ color: '#007185' }}>
-                  {tr.see_all}
-                </button>
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* Banner vendedor */}
-        <section className="rounded-2xl p-8 flex flex-col md:flex-row items-start justify-between gap-8" style={{ background: 'linear-gradient(135deg, #131921 0%, #1a2a3a 100%)' }}>
-          <div className="flex-1">
-            <p className="text-xs font-black tracking-widest mb-2" style={{ color: '#FF9900' }}>{tr.want_to_sell}</p>
-            <h3 className="text-2xl font-black text-white mb-3">{tr.start_store}</h3>
-
-            {/* Promo de lanzamiento */}
-            <div className="inline-flex items-center gap-2 mb-4 bg-emerald-500/15 border border-emerald-400/40 rounded-full px-3 py-1">
-              <span className="text-emerald-300 text-[11px] font-black tracking-wider">🚀 {lang === 'en' ? 'LAUNCH' : lang === 'pt' ? 'LANÇAMENTO' : 'LANZAMIENTO'}</span>
-              <span className="text-white/90 text-xs">
-                {lang === 'en'
-                  ? 'Launch promo rates — join now'
-                  : lang === 'pt'
-                  ? 'Tarifas promocionais de lançamento — junte-se agora'
-                  : 'Tarifas promocionales de lanzamiento — únete ahora'}
-              </span>
-            </div>
-
-            {/* Badge 0% comisión */}
-            <div className="flex flex-wrap items-center gap-3 mb-3">
-              <span className="inline-flex items-center gap-2 bg-emerald-500 text-white text-sm font-black px-4 py-2 rounded-full shadow-md">
-                ✅ {lang === 'en' ? '0% commission for sellers' : lang === 'pt' ? '0% de comissão para vendedores' : '0% comisión para vendedores'}
-              </span>
-            </div>
-
-            {/* Explicación del modelo */}
-            <p className="text-gray-300 text-sm leading-relaxed max-w-xl">
-              {lang === 'en' ? (
-                <>Sellers keep <strong className="text-white">100% of their price</strong>. Merkao charges a small <strong className="text-white">3% service fee</strong> to the buyer.</>
-              ) : lang === 'pt' ? (
-                <>O vendedor recebe <strong className="text-white">100% do seu preço</strong>. Merkao cobra uma pequena <strong className="text-white">taxa de serviço de 3%</strong> ao comprador.</>
-              ) : (
-                <>El vendedor recibe el <strong className="text-white">100% de su precio</strong>. Merkao cobra una pequeña <strong className="text-white">tarifa de servicio del 3%</strong> al comprador.</>
               )}
-            </p>
+            </div>
           </div>
 
-          <a href="/vendedor" className="shrink-0 font-bold px-8 py-3 rounded-xl text-sm transition hover:brightness-110 whitespace-nowrap self-center" style={{ backgroundColor: '#FF9900', color: '#131921' }}>
-            {tr.create_store}
-          </a>
+          {/* AdRail: PresupIA Web + DevNova + Vende en Merkao */}
+          <aside className="mk-ad-rail">
+            <a href="https://presupia-web.vercel.app" target="_blank" rel="noopener noreferrer" className="mk-ad mk-ad-presupia">
+              <span className="mk-ad-label">Ad</span>
+              <span className="mk-ad-pill"><Icon name="zap" size={12} stroke={2} /> PresupIA</span>
+              <h3 className="mk-ad-head">
+                {lang === 'en' ? 'Build in Peru? Generate your budget with AI' : lang === 'pt' ? 'Constrói no Peru? Gere seu orçamento com IA' : '¿Construyes en Perú? Genera tu presupuesto con IA'}
+              </h3>
+              <p className="mk-ad-sub">
+                {lang === 'en' ? 'Upload your plan and get a budget in seconds.' : lang === 'pt' ? 'Envie seu projeto e obtenha um orçamento em segundos.' : 'Sube tu plano y obtén presupuesto en segundos.'}
+              </p>
+              <span className="mk-ad-cta mk-ad-cta-blue">
+                {lang === 'en' ? 'Try free' : lang === 'pt' ? 'Testar grátis' : 'Probar gratis'} <Icon name="arrowRight" size={14} />
+              </span>
+            </a>
+
+            <a href="https://devnovaai.com" target="_blank" rel="noopener noreferrer" className="mk-ad mk-ad-devnova">
+              <span className="mk-ad-label">Ad</span>
+              <span className="mk-ad-pill"><Icon name="zap" size={12} stroke={2} /> DevNova AI</span>
+              <h3 className="mk-ad-head">
+                {lang === 'en' ? 'Got an app or web idea? We build it' : lang === 'pt' ? 'Tem uma ideia de app ou web? A gente faz' : '¿Tienes una idea de app o web? Te la construimos'}
+              </h3>
+              <p className="mk-ad-sub">
+                {lang === 'en' ? 'Mobile apps, websites and software with AI · devnovaai.com' : lang === 'pt' ? 'Apps, sites e software com IA · devnovaai.com' : 'Apps móviles, webs y software con IA · devnovaai.com'}
+              </p>
+              <span className="mk-ad-cta mk-ad-cta-mint">
+                {lang === 'en' ? 'Get a quote' : lang === 'pt' ? 'Solicitar orçamento' : 'Cotizar proyecto'} <Icon name="arrowRight" size={14} />
+              </span>
+            </a>
+
+            <a href="/vendedor" className="mk-ad mk-ad-sell">
+              <span className="mk-ad-pill"><Icon name="store" size={12} stroke={2} /> {tr.want_to_sell.replace('¿', '').replace('?', '').replace('¡', '')}</span>
+              <h3 className="mk-ad-head">{tr.start_store}</h3>
+              <p className="mk-ad-sub">
+                {lang === 'en'
+                  ? 'Seller keeps 100% of the price. Merkao charges 3% to the buyer.'
+                  : lang === 'pt'
+                  ? 'O vendedor recebe 100%. Merkao cobra 3% ao comprador.'
+                  : 'El vendedor recibe el 100% de su precio. Merkao cobra 3% al comprador.'}
+              </p>
+              <span className="mk-ad-cta mk-ad-cta-orange">
+                {tr.create_store} <Icon name="arrowRight" size={14} />
+              </span>
+            </a>
+          </aside>
         </section>
-
-        {/* ══════════════════ NUESTROS PRODUCTOS (banners promocionales) ══════════════════ */}
-        <section>
-          <h2 className="text-lg md:text-xl font-black tracking-tight mb-4 px-1" style={{ color: '#131921' }}>
-            {lang === 'en' ? 'Our products' : lang === 'pt' ? 'Nossos produtos' : 'Nuestros productos'}
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-            {/* PresupIA Web — naranja Merkao */}
-            <a
-              href="https://presupia-web.vercel.app"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group block rounded-2xl p-6 shadow-sm hover:shadow-xl transition transform hover:-translate-y-0.5"
-              style={{ background: 'linear-gradient(135deg, #FF9900 0%, #FF6F00 100%)' }}
-            >
-              <div className="text-4xl mb-3" aria-hidden>🏗️</div>
-              <h3 className="text-white font-black text-base md:text-[17px] leading-snug mb-2">
-                ¿Construyes en Perú? Genera tu presupuesto con IA
-              </h3>
-              <p className="text-white/90 text-sm mb-4 leading-snug">
-                Sube tu plano y obtén presupuesto en segundos
-              </p>
-              <span className="inline-block bg-white text-[#D35400] font-bold text-sm px-4 py-1.5 rounded-lg group-hover:bg-[#131921] group-hover:text-white transition">
-                Probar gratis →
-              </span>
-            </a>
-
-            {/* PresupIA Mobile — navy tech */}
-            <a
-              href="https://play.google.com/store/apps/details?id=com.presupia.app"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group block rounded-2xl p-6 shadow-sm hover:shadow-xl transition transform hover:-translate-y-0.5"
-              style={{ background: 'linear-gradient(135deg, #0F2C4D 0%, #1E4670 100%)' }}
-            >
-              <div className="text-4xl mb-3" aria-hidden>🤖</div>
-              <h3 className="text-white font-black text-base md:text-[17px] leading-snug mb-2">
-                PresupIA App — presupuestos desde tu celular
-              </h3>
-              <p className="text-white/80 text-sm mb-4 leading-snug">
-                Disponible en Google Play
-              </p>
-              <span className="inline-block bg-white text-[#0F2C4D] font-bold text-sm px-4 py-1.5 rounded-lg group-hover:bg-[#3DDC84] group-hover:text-[#0F2C4D] transition">
-                Descargar →
-              </span>
-            </a>
-
-            {/* DevNova AI — verde corporativo */}
-            <a
-              href="https://devnovaai.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group block rounded-2xl p-6 shadow-sm hover:shadow-xl transition transform hover:-translate-y-0.5"
-              style={{ background: 'linear-gradient(135deg, #00C896 0%, #00876B 100%)' }}
-            >
-              <div className="text-4xl mb-3" aria-hidden>💡</div>
-              <h3 className="text-white font-black text-base md:text-[17px] leading-snug mb-2">
-                ¿Tienes una idea de app o web? Te la construimos
-              </h3>
-              <p className="text-white/90 text-sm mb-4 leading-snug">
-                Apps móviles, webs y software con IA · devnovaai.com
-              </p>
-              <span className="inline-block bg-white text-[#006B57] font-bold text-sm px-4 py-1.5 rounded-lg group-hover:bg-[#131921] group-hover:text-white transition">
-                Cotizar proyecto →
-              </span>
-            </a>
-
-          </div>
-        </section>
-      </div>
+      </main>
 
       {/* ══════════════════ FOOTER ══════════════════ */}
-      <footer>
-        <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="w-full py-3 text-sm font-medium text-white hover:brightness-110 transition" style={{ backgroundColor: '#37475A' }}>
-          {tr.back_to_top}
-        </button>
-        <div style={{ backgroundColor: '#232f3e' }} className="py-10 px-4">
-          <div className="max-w-screen-xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
-            {([
-              { titulo: 'Conócenos',    links: [
-                { label: 'Sobre Merkao', href: '#' },
-                { label: 'Trabaja con nosotros', href: '#' },
-                { label: 'Prensa', href: '#' },
-                { label: 'Responsabilidad social', href: '#' },
-              ] },
-              { titulo: 'Monetiza',     links: [
-                { label: 'Vende en Merkao', href: '/vendedor' },
-                { label: 'Programa de afiliados', href: '#' },
-                { label: 'Publica con nosotros', href: '#' },
-                { label: 'Anúnciate', href: '#' },
-              ] },
-              { titulo: 'Pago y envío', links: [
-                { label: 'Yape y Plin', href: '#' },
-                { label: 'Tarjetas de crédito', href: '#' },
-                { label: 'Contra entrega', href: '#' },
-                { label: 'Envíos a provincias', href: '#' },
-                { label: 'Devoluciones', href: '#' },
-              ] },
-              { titulo: 'Ayuda',        links: [
-                { label: 'Centro de ayuda', href: '#' },
-                { label: 'Mis pedidos', href: '#' },
-                { label: 'Contacto', href: '/contacto' },
-                { label: 'Reportar un problema', href: '/contacto' },
-                { label: 'Términos y condiciones', href: '#' },
-                { label: 'Privacidad', href: '#' },
-              ] },
-            ] as const).map((col) => (
-              <div key={col.titulo}>
-                <h4 className="text-white font-bold mb-4 text-sm">{col.titulo}</h4>
-                <ul className="space-y-2">
-                  {col.links.map((l) => (
-                    <li key={l.label}>
-                      <a href={l.href} className="text-gray-400 text-xs hover:text-white transition">{l.label}</a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+      <footer className="mk-footer">
+        <div className="mk-footer-inner">
+          <div className="mk-footer-brand">
+            <a className="mk-logo mk-logo-foot" href="/">merkao<span className="mk-logo-dot">.pe</span></a>
+            <p>
+              {lang === 'en'
+                ? 'The Peruvian marketplace. Buy and sell across Peru with protected payment.'
+                : lang === 'pt'
+                ? 'O marketplace peruano. Compre e venda em todo o Peru com pagamento protegido.'
+                : 'El marketplace peruano. Compra y vende en todo el Perú con pago protegido.'}
+            </p>
+            <span className="mk-footer-trust"><Icon name="shield" size={16} /> {tr.escrow_title}</span>
           </div>
-        </div>
-        <div style={{ backgroundColor: '#37475A' }} className="h-px" />
-        <div style={{ backgroundColor: '#232f3e' }} className="py-6 px-4">
-          <div className="max-w-screen-xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-            <a href="/" className="flex items-center gap-0.5">
-              <span className="text-white text-xl font-black">merkao</span>
-              <span className="text-xl font-black" style={{ color: '#FF9900' }}>.pe</span>
-            </a>
-            <div className="flex gap-4 text-xs text-gray-500">
-              <a href="#" className="hover:text-white transition">Condiciones de uso</a>
-              <a href="#" className="hover:text-white transition">Aviso de privacidad</a>
-              <a href="#" className="hover:text-white transition">Cookies</a>
+
+          {([
+            {
+              h: lang === 'en' ? 'Buy' : lang === 'pt' ? 'Comprar' : 'Comprar',
+              items: [
+                { label: lang === 'en' ? 'Daily deals' : lang === 'pt' ? 'Ofertas do dia' : 'Ofertas del día', href: '#' },
+                { label: tr.buy_by_category, href: '#' },
+                { label: lang === 'en' ? 'How to buy' : lang === 'pt' ? 'Como comprar' : 'Cómo comprar', href: '#' },
+                { label: tr.escrow_title, href: '#' },
+              ],
+            },
+            {
+              h: lang === 'en' ? 'Sell' : lang === 'pt' ? 'Vender' : 'Vender',
+              items: [
+                { label: lang === 'en' ? 'Sell on Merkao' : lang === 'pt' ? 'Vender no Merkao' : 'Vende en Merkao', href: '/vendedor' },
+                { label: lang === 'en' ? 'Publish product' : lang === 'pt' ? 'Publicar produto' : 'Publicar producto', href: '/vendedor/publicar' },
+                { label: lang === 'en' ? 'Fees & commissions' : lang === 'pt' ? 'Tarifas e comissões' : 'Tarifas y comisiones', href: '#' },
+                { label: lang === 'en' ? 'Seller center' : lang === 'pt' ? 'Centro de vendedores' : 'Centro de vendedores', href: '/vendedor' },
+              ],
+            },
+            {
+              h: lang === 'en' ? 'Help' : lang === 'pt' ? 'Ajuda' : 'Ayuda',
+              items: [
+                { label: lang === 'en' ? 'Help center' : lang === 'pt' ? 'Central de ajuda' : 'Centro de ayuda', href: '#' },
+                { label: lang === 'en' ? 'Shipping & delivery' : lang === 'pt' ? 'Envios e entregas' : 'Envíos y entregas', href: '#' },
+                { label: lang === 'en' ? 'Returns' : lang === 'pt' ? 'Devoluções' : 'Devoluciones', href: '#' },
+                { label: lang === 'en' ? 'Contact' : lang === 'pt' ? 'Contato' : 'Contacto', href: '/contacto' },
+              ],
+            },
+            {
+              h: 'Merkao',
+              items: [
+                { label: lang === 'en' ? 'About us' : lang === 'pt' ? 'Sobre nós' : 'Sobre nosotros', href: '#' },
+                { label: lang === 'en' ? 'Made in Peru' : lang === 'pt' ? 'Feito no Peru' : 'Hecho en Perú', href: '#' },
+                { label: lang === 'en' ? 'Careers' : lang === 'pt' ? 'Trabalhe conosco' : 'Trabaja con nosotros', href: '#' },
+                { label: lang === 'en' ? 'Terms & privacy' : lang === 'pt' ? 'Termos e privacidade' : 'Términos y privacidad', href: '#' },
+              ],
+            },
+          ] as const).map((col) => (
+            <div key={col.h} className="mk-footer-col">
+              <h4>{col.h}</h4>
+              <ul>
+                {col.items.map((it) => (
+                  <li key={it.label}><a href={it.href}>{it.label}</a></li>
+                ))}
+              </ul>
             </div>
-            <p className="text-gray-500 text-xs">© 2026 Merkao.pe — Hecho en Perú 🇵🇪</p>
-          </div>
+          ))}
+        </div>
+
+        <div className="mk-footer-bar">
+          <span>© 2026 Merkao · {lang === 'en' ? 'Made in Peru' : lang === 'pt' ? 'Feito no Peru' : 'Hecho en Perú'}</span>
+          <span>
+            {lang === 'en' ? 'We accept' : lang === 'pt' ? 'Aceitamos' : 'Aceptamos'}: Yape · Plin · Visa · Mastercard · {lang === 'en' ? 'Transfer' : lang === 'pt' ? 'Transferência' : 'Transferencia'}
+          </span>
         </div>
       </footer>
-    </div>
+
+      {/* TOAST */}
+      {toast && (
+        <div className="mk-toast">
+          <Icon name="checkCircle" size={18} /> {toast}
+        </div>
+      )}
+
+      {/* signOut helper invisible para no romper hooks anteriores */}
+      <button onClick={handleSignOut} style={{ display: 'none' }} aria-hidden tabIndex={-1} />
+    </>
   )
 }

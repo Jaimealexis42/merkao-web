@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Manrope } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 
-const inter = Inter({
+const manrope = Manrope({
   subsets: ["latin"],
   display: "swap",
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -19,11 +20,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={`${inter.className} h-full antialiased`}>
+    <html lang="es" className={`${manrope.className} h-full antialiased`}>
       <head>
         <Script src="https://checkout.culqi.com/js/v4" strategy="beforeInteractive" />
       </head>
-      <body className="min-h-full flex flex-col bg-gray-100">
+      <body className="min-h-full flex flex-col">
         {children}
         <Script id="tawkto" strategy="afterInteractive">
           {`
