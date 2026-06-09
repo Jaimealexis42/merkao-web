@@ -1,11 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-)
+// ── Cliente admin (server-only) ─────────────────────────────────────
+// Usa SUPABASE_SERVICE_ROLE_KEY para bypassear RLS y poder INSERT a
+// pedidos/pedido_items DESPUÉS de que Culqi confirmó el cobro. La key
+// NO lleva prefijo NEXT_PUBLIC_ por lo que Next no la inyecta al
+// bundle del cliente — solo vive en el process server.
+//
+// Lazy init para que `next build` no rompa si la env no está presente
+// en el entorno de build (Vercel sí la inyecta en runtime). Si falta
+// en runtime, devolvemos 500 explícito con mensaje accionable.
+let _admin: SupabaseClient | null = null
+function getAdminClient(): SupabaseClient | null {
+  if (_admin) return _admin
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !serviceKey) return null
+  _admin = createClient(url, serviceKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+  })
+  return _admin
+}
 
 // Validaciones puras (sin libs externas para evitar agregar zod ahora).
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
@@ -24,7 +44,17 @@ function clipString(v: unknown, max = MAX_TEXT): string | null {
 }
 
 export async function POST(req: NextRequest) {
-  // ── 0. Rate limit por IP (5 cobros/min) ────────────────────────────
+  // ── 0a. Guard: service-role key debe estar configurada ────────────
+  const admin = getAdminClient()
+  if (!admin) {
+    console.error('[culqi-charge] SUPABASE_SERVICE_ROLE_KEY o NEXT_PUBLIC_SUPABASE_URL no configuradas')
+    return NextResponse.json(
+      { error: 'Servicio de pagos no disponible. Contacta soporte.' },
+      { status: 500 },
+    )
+  }
+
+  // ── 0b. Rate limit por IP (5 cobros/min) ──────────────────────────
   const ip = getClientIp(req)
   const rl = checkRateLimit(`culqi:${ip}`)
   if (!rl.ok) {
@@ -142,7 +172,7 @@ export async function POST(req: NextRequest) {
   //       columna real) + snapshot de nombre/imagen para pedido_items.
   //       Schema real de pedidos NO tiene producto_id — los items van en
   //       la tabla pedido_items.
-  const { data: producto, error: eProducto } = await supabase
+  const { data: producto, error: eProducto } = await admin
     .from('productos')
     .select('id, nombre, vendedor_id, imagenes, precio')
     .eq('id', producto_id)
@@ -157,7 +187,7 @@ export async function POST(req: NextRequest) {
   }
 
   // ── 3b. Insertar pedido (schema real: total, igv, arancel, direccion_entrega) ──
-  const { data: pedido, error: sbError } = await supabase
+  const { data: pedido, error: sbError } = await admin
     .from('pedidos')
     .insert([{
       vendedor_id:       producto.vendedor_id,
@@ -192,7 +222,7 @@ export async function POST(req: NextRequest) {
   const precioSnap = precioSnapInput != null && precioSnapInput > 0
     ? precioSnapInput
     : +producto.precio || 0
-  const { error: eItem } = await supabase
+  const { error: eItem } = await admin
     .from('pedido_items')
     .insert([{
       pedido_id:       pedido.id,
