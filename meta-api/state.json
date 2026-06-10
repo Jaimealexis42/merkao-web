@@ -1,7 +1,7 @@
 {
-  "lastIndex": 4,
-  "lastPostedDate": "2026-06-09",
-  "totalPosts": 4,
+  "lastIndex": 5,
+  "lastPostedDate": "2026-06-10",
+  "totalPosts": 5,
   "history": [
     {
       "fecha": "2026-06-07T15:23:06.606Z",
@@ -62,6 +62,26 @@
         "photographer": "Sheila C",
         "photographer_url": "https://unsplash.com/@qld_traveller",
         "alt": "Woman selling colorful textiles at a market stall."
+      }
+    },
+    {
+      "fecha": "2026-06-10T16:36:31.782Z",
+      "fechaPeru": "2026-06-10",
+      "variantIndex": 5,
+      "variantId": 6,
+      "enfoque": "Tip de venta + mención natural",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122110498275345830",
+      "fbPhotoId": "122110498227345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122110498275345830",
+      "image": {
+        "query": "cafe peru plantacion",
+        "theme": "cafe",
+        "photo_id": "KU7C4W330CY",
+        "photo_url": "https://images.unsplash.com/photo-1722962884239-ae1583767578?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxMHx8Y2FmZSUyMHBlcnUlMjBwbGFudGFjaW9ufGVufDF8MHx8fDE3ODExMDkzODZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Shelby Murphy Figueroa",
+        "photographer_url": "https://unsplash.com/@shelbyfigueroa",
+        "alt": "A person picking berries from a bush in a forest"
       }
     }
   ]
