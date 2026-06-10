@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
 import Script from "next/script";
+import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -25,6 +26,7 @@ export default function RootLayout({
         <Script src="https://checkout.culqi.com/js/v4" strategy="beforeInteractive" />
       </head>
       <body className="min-h-full flex flex-col">
+        <GoogleAnalytics />
         {children}
         <Script id="tawkto" strategy="afterInteractive">
           {`
