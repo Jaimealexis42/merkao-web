@@ -38,6 +38,8 @@ type ComisionRow = {
   monto_vendedor: number
   estado: 'pendiente' | 'liberado'
   created_at: string
+  pagado_a_vendedor: boolean | null
+  pagado_at: string | null
   pedidos: { vendedor_id: string | null; nombre_comprador: string | null } | null
 }
 
@@ -52,6 +54,8 @@ type ComisionOut = {
   monto_vendedor: number
   estado: 'pendiente' | 'liberado'
   created_at: string
+  pagado_a_vendedor: boolean
+  pagado_at: string | null
 }
 
 export async function GET(req: NextRequest) {
@@ -82,7 +86,7 @@ export async function GET(req: NextRequest) {
   const { data: comisiones, error: eC } = await admin
     .from('comisiones_merkao')
     .select(
-      'id, pedido_id, monto_total, monto_merkao, monto_vendedor, estado, created_at, pedidos(vendedor_id, nombre_comprador)',
+      'id, pedido_id, monto_total, monto_merkao, monto_vendedor, estado, created_at, pagado_a_vendedor, pagado_at, pedidos(vendedor_id, nombre_comprador)',
     )
     .order('created_at', { ascending: false })
 
@@ -121,29 +125,51 @@ export async function GET(req: NextRequest) {
     monto_vendedor: Number(r.monto_vendedor),
     estado: r.estado,
     created_at: r.created_at,
+    pagado_a_vendedor: !!r.pagado_a_vendedor,
+    pagado_at: r.pagado_at,
   }))
 
   // Agregados.
   let totalMerkaoPendiente = 0
   let totalMerkaoLiberado = 0
+  let totalVendedorPagado = 0
+  let totalVendedorPendientePagar = 0
   const porVendedor = new Map<
     string,
-    { vendedor_id: string; vendedor_nombre: string; pendiente: number; liberado: number }
+    {
+      vendedor_id: string
+      vendedor_nombre: string
+      pendiente: number       // pedido todavía no liberado
+      por_pagar: number       // liberado pero no transferido al vendedor
+      pagado: number          // ya transferido off-platform
+    }
   >()
 
   for (const it of items) {
     if (it.estado === 'pendiente') totalMerkaoPendiente += it.monto_merkao
     else totalMerkaoLiberado += it.monto_merkao
 
+    // Vendedor: pagado vs por_pagar solo aplica a liberadas.
+    if (it.estado === 'liberado') {
+      if (it.pagado_a_vendedor) totalVendedorPagado += it.monto_vendedor
+      else totalVendedorPendientePagar += it.monto_vendedor
+    }
+
     const key = it.vendedor_id ?? '__sin_vendedor__'
     const existing = porVendedor.get(key) ?? {
       vendedor_id: it.vendedor_id ?? '',
       vendedor_nombre: it.vendedor_nombre,
       pendiente: 0,
-      liberado: 0,
+      por_pagar: 0,
+      pagado: 0,
     }
-    if (it.estado === 'pendiente') existing.pendiente += it.monto_vendedor
-    else existing.liberado += it.monto_vendedor
+    if (it.estado === 'pendiente') {
+      existing.pendiente += it.monto_vendedor
+    } else if (it.pagado_a_vendedor) {
+      existing.pagado += it.monto_vendedor
+    } else {
+      existing.por_pagar += it.monto_vendedor
+    }
     porVendedor.set(key, existing)
   }
 
@@ -152,13 +178,16 @@ export async function GET(req: NextRequest) {
     totales: {
       merkao_pendiente: +totalMerkaoPendiente.toFixed(2),
       merkao_liberado: +totalMerkaoLiberado.toFixed(2),
+      vendedor_pagado: +totalVendedorPagado.toFixed(2),
+      vendedor_pendiente_pagar: +totalVendedorPendientePagar.toFixed(2),
     },
     por_vendedor: Array.from(porVendedor.values())
       .map((v) => ({
         ...v,
         pendiente: +v.pendiente.toFixed(2),
-        liberado: +v.liberado.toFixed(2),
+        por_pagar: +v.por_pagar.toFixed(2),
+        pagado: +v.pagado.toFixed(2),
       }))
-      .sort((a, b) => b.pendiente - a.pendiente),
+      .sort((a, b) => b.por_pagar - a.por_pagar),
   })
 }
