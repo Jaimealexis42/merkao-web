@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
+import { comisionEfectiva, MESES_GRATIS } from '@/lib/comisiones'
 
 // ── Dos clientes Supabase: anon (RLS-bounded) + admin (RLS bypass) ──
 //
@@ -195,7 +196,7 @@ export async function POST(req: NextRequest) {
   //       por él.
   const { data: producto, error: eProducto } = await anon
     .from('productos')
-    .select('id, nombre, vendedor_id, imagenes, precio')
+    .select('id, nombre, vendedor_id, imagenes, precio, categoria_id')
     .eq('id', producto_id)
     .single()
 
@@ -254,6 +255,52 @@ export async function POST(req: NextRequest) {
     }])
   if (eItem) {
     console.error('[culqi-charge] Pedido OK pero pedido_items falló:', eItem.message)
+  }
+
+  // ── 3d. Ledger de split: registrar la comisión Merkao + monto vendedor.
+  //       Tasa = comisionEfectiva(categoria, meses_activo_vendedor):
+  //       - 0% durante los primeros MESES_GRATIS meses de la tienda
+  //       - luego 3/5/7% según categoría (ver lib/comisiones.ts)
+  //       Si falla, NO rompemos la respuesta: el cobro ya se hizo,
+  //       solo logueamos para reconciliación manual.
+  const montoTotal = +(montoNum / 100).toFixed(2)
+  const categoriaId = typeof producto.categoria_id === 'number' ? producto.categoria_id : 0
+
+  const { data: tienda } = await admin
+    .from('tiendas')
+    .select('created_at')
+    .eq('id', producto.vendedor_id)
+    .maybeSingle()
+
+  const mesesActivo = tienda?.created_at
+    ? Math.floor(
+        (Date.now() - new Date(tienda.created_at as string).getTime()) /
+          (1000 * 60 * 60 * 24 * 30),
+      )
+    : 0
+  // Vendedor sin fila en `tiendas` aún → mesesActivo = 0 → cae en los MESES_GRATIS.
+  void MESES_GRATIS // referencia documental: la lógica de gratis vive en comisionEfectiva
+
+  const tasa = comisionEfectiva(categoriaId, mesesActivo) // 0..1
+  const montoMerkao = +(montoTotal * tasa).toFixed(2)
+  const montoVendedor = +(montoTotal - montoMerkao).toFixed(2) // resta evita drift de redondeo
+
+  const { error: eComision } = await admin
+    .from('comisiones_merkao')
+    .insert([{
+      pedido_id:      pedido.id,
+      monto_total:    montoTotal,
+      monto_merkao:   montoMerkao,
+      monto_vendedor: montoVendedor,
+      estado:         'pendiente',
+    }])
+  if (eComision) {
+    console.error(
+      '[culqi-charge] Pedido OK pero comisiones_merkao falló:',
+      eComision.message,
+      'pedido_id:', pedido.id,
+      'culqi_charge_id:', culqiData.id,
+    )
   }
 
   return NextResponse.json({ success: true, pedido_id: pedido.id })

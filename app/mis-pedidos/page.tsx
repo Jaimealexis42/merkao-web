@@ -230,14 +230,37 @@ export default function MisPedidosPage() {
   const liberar = async (row: Row) => {
     if (submitting) return
     setSubmitting(true)
-    const { error } = await supabase
-      .from('pedidos')
-      .update({ estado: 'liberado', escrow_liberado: true })
-      .eq('id', row.pedido.id)
 
-    if (error) {
-      setToast('No se pudo liberar el pago. Intenta de nuevo.')
+    // Vamos por /api/confirmar-entrega: actualiza pedidos + comisiones_merkao
+    // en una sola operación server-side. La comision tiene RLS sin policy
+    // para anon, así que el client no puede tocarla directamente.
+    const { data: { session } } = await supabase.auth.getSession()
+    const token = session?.access_token
+
+    let ok = false
+    if (!token) {
+      setToast('Tu sesión expiró. Recarga la página e intenta de nuevo.')
     } else {
+      try {
+        const res = await fetch('/api/confirmar-entrega', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ pedido_id: row.pedido.id }),
+        })
+        ok = res.ok
+        if (!ok) {
+          const j = (await res.json().catch(() => ({}))) as { error?: string }
+          setToast(j.error ?? 'No se pudo liberar el pago. Intenta de nuevo.')
+        }
+      } catch {
+        setToast('No se pudo liberar el pago. Revisa tu conexión.')
+      }
+    }
+
+    if (ok) {
       setRows((rs) =>
         rs.map((r) =>
           r.pedido.id === row.pedido.id
