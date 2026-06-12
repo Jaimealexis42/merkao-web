@@ -1,7 +1,7 @@
 {
-  "lastIndex": 6,
-  "lastPostedDate": "2026-06-11",
-  "totalPosts": 6,
+  "lastIndex": 0,
+  "lastPostedDate": "2026-06-12",
+  "totalPosts": 7,
   "history": [
     {
       "fecha": "2026-06-07T15:23:06.606Z",
@@ -102,6 +102,26 @@
         "photographer": "Neto Torres",
         "photographer_url": "https://unsplash.com/@torres82",
         "alt": "a man riding a bike with a colorful blanket on the back of it"
+      }
+    },
+    {
+      "fecha": "2026-06-12T16:21:22.082Z",
+      "fechaPeru": "2026-06-12",
+      "variantIndex": 0,
+      "variantId": 1,
+      "enfoque": "Comparativa con números",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122112815691345830",
+      "fbPhotoId": "122112815661345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122112815691345830",
+      "image": {
+        "query": "paisaje peru",
+        "theme": "general",
+        "photo_id": "9dmycbFE7mQ",
+        "photo_url": "https://images.unsplash.com/photo-1497106636505-e4fd6e16d74c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwyfHxwYWlzYWplJTIwcGVydXxlbnwxfDB8fHwxNzgxMjgxMjc3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Jeremiah Berman",
+        "photographer_url": "https://unsplash.com/@calibre9001",
+        "alt": "Machu Picchu"
       }
     }
   ]
