@@ -1,7 +1,7 @@
 {
-  "lastIndex": 0,
-  "lastPostedDate": "2026-06-12",
-  "totalPosts": 7,
+  "lastIndex": 1,
+  "lastPostedDate": "2026-06-13",
+  "totalPosts": 8,
   "history": [
     {
       "fecha": "2026-06-07T15:23:06.606Z",
@@ -122,6 +122,26 @@
         "photographer": "Jeremiah Berman",
         "photographer_url": "https://unsplash.com/@calibre9001",
         "alt": "Machu Picchu"
+      }
+    },
+    {
+      "fecha": "2026-06-13T15:03:05.220Z",
+      "fechaPeru": "2026-06-13",
+      "variantIndex": 1,
+      "variantId": 2,
+      "enfoque": "Para la que recién empieza",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122114051685345830",
+      "fbPhotoId": "122114051655345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122114051685345830",
+      "image": {
+        "query": "paisaje peru",
+        "theme": "general",
+        "photo_id": "fqqGUuEodc8",
+        "photo_url": "https://images.unsplash.com/photo-1739210856310-b50baecfa9f1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxOHx8cGFpc2FqZSUyMHBlcnV8ZW58MXwwfHx8MTc4MTI4MTI3N3ww&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Anyela Málaga Lazarte",
+        "photographer_url": "https://unsplash.com/@capturando_maravillas",
+        "alt": "A large body of water with a mountain in the background"
       }
     }
   ]
