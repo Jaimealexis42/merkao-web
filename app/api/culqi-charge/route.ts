@@ -3,6 +3,27 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 import { comisionEfectiva, MESES_GRATIS } from '@/lib/comisiones'
 
+// CORS abierto: el endpoint ya está protegido por rate-limit + validación de
+// inputs + verificación de cobro Culqi server-side. El navegador/app móvil
+// necesita estos headers para que la tokenización + cargo funcione desde
+// orígenes que no son merkao.org (Expo web localhost, builds nativos, etc).
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Max-Age': '86400',
+} as const
+
+function json(body: unknown, init?: ResponseInit): NextResponse {
+  const res = NextResponse.json(body, init)
+  for (const [k, v] of Object.entries(CORS_HEADERS)) res.headers.set(k, v)
+  return res
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: CORS_HEADERS })
+}
+
 // ── Dos clientes Supabase: anon (RLS-bounded) + admin (RLS bypass) ──
 //
 // anon: para LEER productos. Sigue las mismas políticas RLS que el
@@ -69,7 +90,7 @@ export async function POST(req: NextRequest) {
       !anon ? 'NEXT_PUBLIC_SUPABASE_ANON_KEY' : '',
       !admin ? 'SUPABASE_SERVICE_ROLE_KEY' : '',
     )
-    return NextResponse.json(
+    return json(
       { error: 'Servicio de pagos no disponible. Contacta soporte.' },
       { status: 500 },
     )
@@ -79,7 +100,7 @@ export async function POST(req: NextRequest) {
   const ip = getClientIp(req)
   const rl = checkRateLimit(`culqi:${ip}`)
   if (!rl.ok) {
-    return NextResponse.json(
+    return json(
       { error: 'Demasiados intentos. Espera un minuto antes de volver a intentar.' },
       {
         status: 429,
@@ -95,7 +116,7 @@ export async function POST(req: NextRequest) {
   try {
     body = await req.json()
   } catch {
-    return NextResponse.json({ error: 'JSON inválido.' }, { status: 400 })
+    return json({ error: 'JSON inválido.' }, { status: 400 })
   }
 
   const {
@@ -117,32 +138,32 @@ export async function POST(req: NextRequest) {
 
   // ── 1. Validación estricta de inputs ──────────────────────────────
   if (typeof token !== 'string' || !CULQI_TOKEN_RE.test(token)) {
-    return NextResponse.json({ error: 'Token de pago inválido.' }, { status: 400 })
+    return json({ error: 'Token de pago inválido.' }, { status: 400 })
   }
   const montoNum = typeof monto === 'number' ? monto : Number(monto)
   if (!Number.isInteger(montoNum) || montoNum < MIN_MONTO_CENTIMOS || montoNum > MAX_MONTO_CENTIMOS) {
-    return NextResponse.json(
+    return json(
       { error: `Monto fuera de rango (mín ${MIN_MONTO_CENTIMOS}, máx ${MAX_MONTO_CENTIMOS} céntimos).` },
       { status: 400 },
     )
   }
   if (typeof email !== 'string' || !EMAIL_RE.test(email) || email.length > 254) {
-    return NextResponse.json({ error: 'Email inválido.' }, { status: 400 })
+    return json({ error: 'Email inválido.' }, { status: 400 })
   }
   if (typeof producto_id !== 'string' || !UUID_RE.test(producto_id)) {
-    return NextResponse.json({ error: 'producto_id inválido (se espera UUID).' }, { status: 400 })
+    return json({ error: 'producto_id inválido (se espera UUID).' }, { status: 400 })
   }
   const cantidadNum = cantidad != null ? Number(cantidad) : 1
   if (!Number.isInteger(cantidadNum) || cantidadNum < 1 || cantidadNum > 1000) {
-    return NextResponse.json({ error: 'Cantidad fuera de rango (1–1000).' }, { status: 400 })
+    return json({ error: 'Cantidad fuera de rango (1–1000).' }, { status: 400 })
   }
   const paisNorm = clipString(pais_comprador, 4) ?? 'PE'
   if (!/^[A-Z]{2,3}$/.test(paisNorm)) {
-    return NextResponse.json({ error: 'pais_comprador inválido.' }, { status: 400 })
+    return json({ error: 'pais_comprador inválido.' }, { status: 400 })
   }
   const metodoNorm = (clipString(metodo_pago, 24) ?? 'tarjeta').toLowerCase()
   if (!['yape', 'plin', 'tarjeta', 'efectivo', 'transferencia'].includes(metodoNorm)) {
-    return NextResponse.json({ error: 'Método de pago inválido.' }, { status: 400 })
+    return json({ error: 'Método de pago inválido.' }, { status: 400 })
   }
   const igvNum = Math.max(0, Number(igv) || 0)
   const arancelNum = Math.max(0, Number(arancel) || 0)
@@ -175,7 +196,7 @@ export async function POST(req: NextRequest) {
 
     culqiData = await culqiResponse.json()
   } catch {
-    return NextResponse.json(
+    return json(
       { error: 'No se pudo conectar con el proveedor de pagos.' },
       { status: 502 },
     )
@@ -186,7 +207,7 @@ export async function POST(req: NextRequest) {
       (culqiData.user_message as string) ??
       (culqiData.merchant_message as string) ??
       'El cobro fue rechazado.'
-    return NextResponse.json({ error: mensaje }, { status: 402 })
+    return json({ error: mensaje }, { status: 402 })
   }
 
   // ── 3a. Lookup producto: necesitamos vendedor_id (pedidos.vendedor_id es
@@ -202,7 +223,7 @@ export async function POST(req: NextRequest) {
 
   if (eProducto || !producto) {
     console.error('[culqi-charge] Producto no encontrado:', producto_id, eProducto?.message)
-    return NextResponse.json(
+    return json(
       { error: 'Pago aceptado pero el producto ya no existe. Contacta soporte con ID: ' + culqiData.id },
       { status: 500 },
     )
@@ -233,7 +254,7 @@ export async function POST(req: NextRequest) {
   if (sbError) {
     // El cobro ya fue exitoso — registrar el error pero no fallar al cliente
     console.error('[culqi-charge] Error insertando pedido:', sbError.message)
-    return NextResponse.json(
+    return json(
       { error: 'Pago aceptado pero no se pudo registrar el pedido. Contacta soporte con el ID: ' + culqiData.id },
       { status: 500 },
     )
@@ -303,5 +324,5 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  return NextResponse.json({ success: true, pedido_id: pedido.id })
+  return json({ success: true, pedido_id: pedido.id })
 }
