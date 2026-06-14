@@ -1,7 +1,7 @@
 {
-  "lastIndex": 2,
+  "lastIndex": 3,
   "lastPostedDate": "2026-06-14",
-  "totalPosts": 9,
+  "totalPosts": 10,
   "history": [
     {
       "fecha": "2026-06-07T15:23:06.606Z",
@@ -164,6 +164,32 @@
         "alt": "woman sitting near shelf"
       },
       "ig": null
+    },
+    {
+      "fecha": "2026-06-14T15:30:28.091Z",
+      "fechaPeru": "2026-06-14",
+      "variantIndex": 3,
+      "variantId": 4,
+      "enfoque": "Pregunta abierta a la comunidad",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122114478327345830",
+      "fbPhotoId": "122114478303345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122114478327345830",
+      "image": {
+        "query": "paisaje peru",
+        "theme": "general",
+        "photo_id": "sQHSqHC3yl8",
+        "photo_url": "https://images.unsplash.com/photo-1580530719779-9492fd167363?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHw3fHxwYWlzYWplJTIwcGVydXxlbnwxfDB8fHwxNzgxNDUxMDE0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Eduardo Garcia",
+        "photographer_url": "https://unsplash.com/@eduardoxxvlll",
+        "alt": "silhouette of mountain under blue sky and white clouds during daytime"
+      },
+      "ig": {
+        "mediaId": "18116422549867324",
+        "containerId": "18125605024564725",
+        "permalink": "https://www.instagram.com/p/DZkkZ9iERKW/",
+        "elapsedMs": 8958
+      }
     }
   ]
 }
