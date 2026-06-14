@@ -64,6 +64,33 @@ const VIDEO_DURATION = 15
 const IG_HASHTAGS = '#merkao #marketplaceperuano #hechoenperu #emprendedoresperuanos #peruano'
 const MAX_IMAGES_PER_REEL = 4 // 4 × 3.75s = 15s con xfade 0.5s
 const XFADE_DUR = 0.5
+// Constants para cleanProductName/buildUnsplashQueryChain — declaradas acá
+// arriba (no abajo con los helpers) para evitar TDZ desde el top-level await.
+const STOP_WORDS = new Set([
+  'de','con','para','y','o','el','la','los','las','un','una','del','al',
+  'en','tela','sin','por','que','su','sus','este','esta',
+])
+const ES_EN_MAP = {
+  chompa: 'sweater',
+  vestido: 'dress',
+  polo: 'tshirt',
+  quinua: 'quinoa',
+  cafe: 'coffee',
+  café: 'coffee',
+  laptop: 'laptop',
+  llantas: 'tires',
+  cuadro: 'painting',
+  sofa: 'sofa',
+  sofá: 'sofa',
+  mesa: 'table',
+  silla: 'chair',
+  zapatos: 'shoes',
+  cocina: 'kitchen',
+  bicicleta: 'bicycle',
+  reloj: 'watch',
+  pisco: 'pisco',
+  ceviche: 'ceviche',
+}
 
 // ── 1. Args ───────────────────────────────────────────────────
 const args = process.argv.slice(2)
@@ -112,52 +139,99 @@ let imagePath = null
 let tmpDir = null
 
 let imagePaths = []
+let voicePath = null
+let unsplashMeta = null
+
 if (preExistingVideo) {
   if (!existsSync(preExistingVideo)) bail(`--video file no existe: ${preExistingVideo}`)
   console.log(`[reel] usando video pre-existente: ${preExistingVideo}`)
   product = { id: null, nombre: 'Merkao', ciudad: null, precio: null, imagenes: [] }
 } else {
-  console.log('[reel] (1/5) Productos candidatos de Supabase…')
+  console.log('[reel] (1/6) Productos candidatos de Supabase…')
   const candidates = await fetchProductCandidates(SUPABASE_URL, SUPABASE_KEY)
-  if (candidates.length === 0) bail('Sin productos activos con imágenes en Supabase')
+  if (candidates.length === 0) bail('Sin productos activos en Supabase')
   console.log(`[reel]     ${candidates.length} candidatos shuffled`)
 
-  // Probamos productos en orden hasta encontrar uno cuyas imágenes descargan.
-  // Esto resuelve el bug donde la imagen elegida no matcheaba al producto
-  // porque venía de un seed roto: ahora si ninguna imagen del producto carga,
-  // cambiamos de producto en vez de usar placeholder.
   tmpDir = resolve(tmpdir(), 'merkao-reel-' + Date.now())
   mkdirSync(tmpDir, { recursive: true })
 
-  console.log('[reel] (2/5) Descargando imágenes del producto seleccionado…')
+  // Estrategia v2: las imágenes de Supabase son placeholders (picsum) que NO
+  // matchean al producto. Buscamos en Unsplash con queries derivados del nombre
+  // del producto + ciudad. Caemos en fallback chain si la query específica no
+  // tiene resultados. Si Unsplash falla del todo, usamos las imágenes Supabase
+  // como último recurso.
+  const UNSPLASH_KEY = process.env.UNSPLASH_ACCESS_KEY?.trim()
+  console.log('[reel] (2/6) Buscando imágenes temáticas en Unsplash…')
+
   for (let attempt = 0; attempt < Math.min(candidates.length, 5); attempt++) {
     const cand = candidates[attempt]
     console.log(
       `[reel]   intento ${attempt + 1}: "${cand.nombre}"` +
-        (cand.ciudad ? ` · ${cand.ciudad}` : '') +
-        ` · ${cand.imagenes.length} img(s)`,
+        (cand.ciudad ? ` · ${cand.ciudad}` : ''),
     )
-    const paths = await downloadProductImages(cand, tmpDir)
+
+    // (a) Intento Unsplash con fallback chain
+    let paths = []
+    if (UNSPLASH_KEY) {
+      try {
+        const found = await findUnsplashImagesForProduct(cand, UNSPLASH_KEY, 3)
+        if (found && found.photos.length > 0) {
+          paths = await downloadUnsplashPhotos(found.photos, tmpDir)
+          unsplashMeta = {
+            query: found.query,
+            photo_ids: found.photos.map((p) => p.id),
+            photographers: found.photos.map((p) => p.user?.name || null),
+          }
+          console.log(
+            `[reel]     ✓ Unsplash "${found.query}" → ${paths.length}/${found.photos.length} imgs descargadas`,
+          )
+        } else {
+          console.log('[reel]     ⚠ Unsplash sin resultados en ninguna query')
+        }
+      } catch (e) {
+        console.warn(`[reel]     ⚠ Unsplash falló: ${e.message}`)
+      }
+    }
+
+    // (b) Fallback: imagenes Supabase del producto (aunque sean placeholders)
+    if (paths.length === 0) {
+      console.log('[reel]     fallback a imágenes Supabase del producto…')
+      paths = await downloadProductImages(cand, tmpDir)
+    }
+
     if (paths.length > 0) {
       product = cand
       imagePaths = paths
       break
     }
-    console.log(`[reel]   ✗ ninguna imagen cargó, probando siguiente producto…`)
+    console.log('[reel]   ✗ sin imágenes utilizables, probando siguiente producto…')
   }
-  if (!product) bail('Ningún producto tuvo imágenes descargables tras 5 intentos')
+  if (!product) bail('Ningún producto resultó en imágenes utilizables tras 5 intentos')
 
   console.log(
     `[reel]     ✓ producto final: "${product.nombre}"` +
       (product.ciudad ? ` · ${product.ciudad}` : '') +
       ` · S/ ${product.precio?.toFixed(2) ?? '?'}` +
-      ` · ${imagePaths.length} imagen(es) usada(s)`,
+      ` · ${imagePaths.length} imagen(es)`,
   )
 
+  // (3) Voz: TTS del anuncio del producto
+  console.log('[reel] (3/6) Generando voz del anuncio…')
+  voicePath = join(tmpDir, 'voice.mp3')
+  const voiceText = buildVoiceoverText(product)
+  console.log(`[reel]     texto (${voiceText.length} chars): "${voiceText.slice(0, 70)}…"`)
+  try {
+    const provider = await generateVoiceover(voiceText, voicePath)
+    console.log(`[reel]     ✓ voz generada (${provider}, ${statSync(voicePath).size} bytes)`)
+  } catch (e) {
+    console.warn(`[reel]     ⚠ TTS falló: ${e.message} — sigo sin voz`)
+    voicePath = null
+  }
+
   videoPath = join(tmpDir, 'reel.mp4')
-  console.log(`[reel] (3/5) ffmpeg → ${videoPath}`)
+  console.log(`[reel] (4/6) ffmpeg → ${videoPath}`)
   const t0 = Date.now()
-  await generateReel({ imagePaths, videoPath, product, tmpDir })
+  await generateReel({ imagePaths, voicePath, videoPath, product, tmpDir })
   console.log(`[reel]     ✓ ${statSync(videoPath).size} bytes en ${Date.now() - t0}ms`)
 }
 
@@ -170,12 +244,12 @@ if (dryRun) {
 // ── 6. IG Reel ─────────────────────────────────────────────────
 let igResult = null
 if (noIg) {
-  console.log('[reel] (4/5) IG --no-instagram → skip')
+  console.log('[reel] (5/6) IG --no-instagram → skip')
 } else if (!IG_USER || !IG_TOKEN) {
-  console.log('[reel] (4/5) IG: META_IG_USER_ID/ACCESS_TOKEN no seteadas → skip')
+  console.log('[reel] (5/6) IG: META_IG_USER_ID/ACCESS_TOKEN no seteadas → skip')
 } else {
   const caption = buildCaption(product, { hashtags: true })
-  console.log(`[reel] (4/5) IG: subiendo ${statSync(videoPath).size} bytes como REEL…`)
+  console.log(`[reel] (5/6) IG: subiendo ${statSync(videoPath).size} bytes como REEL…`)
   try {
     igResult = await publishIgReel({
       userId: IG_USER,
@@ -198,12 +272,12 @@ if (noIg) {
 // ── 7. FB Reel ─────────────────────────────────────────────────
 let fbResult = null
 if (noFb) {
-  console.log('[reel] (5/5) FB --no-facebook → skip')
+  console.log('[reel] (6/6) FB --no-facebook → skip')
 } else if (!PAGE_ID || !PAGE_TOKEN) {
-  console.log('[reel] (5/5) FB: META_PAGE_ID/ACCESS_TOKEN no seteadas → skip')
+  console.log('[reel] (6/6) FB: META_PAGE_ID/ACCESS_TOKEN no seteadas → skip')
 } else {
   const description = buildCaption(product, { hashtags: false })
-  console.log(`[reel] (5/5) FB: subiendo ${statSync(videoPath).size} bytes como Reel…`)
+  console.log(`[reel] (6/6) FB: subiendo ${statSync(videoPath).size} bytes como Reel…`)
   try {
     fbResult = await publishFbReel({
       pageId: PAGE_ID,
@@ -246,6 +320,7 @@ writeFileSync(STATE_PATH, JSON.stringify(newState, null, 2), 'utf8')
 if (!keepVideo && tmpDir) {
   try {
     if (videoPath && existsSync(videoPath)) unlinkSync(videoPath)
+    if (voicePath && existsSync(voicePath)) unlinkSync(voicePath)
     for (const p of imagePaths) if (existsSync(p)) unlinkSync(p)
   } catch {}
 }
@@ -423,7 +498,7 @@ async function downloadProductImages(product, tmpDir) {
 //   - Bottom band (1500..1920): #16202B 90% opacity, ciudad + precio
 //   - Logo (si existe): 140x140 esquina top-right
 //   - Audio: bgm.mp3 looped si existe, sino anullsrc (silencio)
-async function generateReel({ imagePaths, videoPath, product, tmpDir }) {
+async function generateReel({ imagePaths, voicePath, videoPath, product, tmpDir }) {
   const fontReg = findFont(false)
   const fontBold = findFont(true)
 
@@ -459,6 +534,7 @@ async function generateReel({ imagePaths, videoPath, product, tmpDir }) {
 
   const hasLogo = existsSync(LOGO_PATH)
   const hasBgm = existsSync(BGM_PATH)
+  const hasVoice = voicePath && existsSync(voicePath)
 
   if (hasLogo) {
     inputs.push('-i', LOGO_PATH)
@@ -466,7 +542,7 @@ async function generateReel({ imagePaths, videoPath, product, tmpDir }) {
   }
   if (hasBgm) {
     inputs.push('-stream_loop', '-1', '-t', String(VIDEO_DURATION), '-i', BGM_PATH)
-    idx.audio = nextIdx++
+    idx.bgm = nextIdx++
   } else {
     inputs.push(
       '-f',
@@ -476,7 +552,11 @@ async function generateReel({ imagePaths, videoPath, product, tmpDir }) {
       '-i',
       'anullsrc=channel_layout=stereo:sample_rate=44100',
     )
-    idx.audio = nextIdx++
+    idx.bgm = nextIdx++
+  }
+  if (hasVoice) {
+    inputs.push('-i', voicePath)
+    idx.voice = nextIdx++
   }
 
   // ── Filter chain ─────────────────────────────────────────────
@@ -586,6 +666,22 @@ async function generateReel({ imagePaths, videoPath, product, tmpDir }) {
     finalV = 'outv'
   }
 
+  // ── Audio mix ────────────────────────────────────────────────
+  // Sin voz: usar bgm directo (mapeo simple, sin filter graph)
+  // Con voz: bajar bgm a 0.18, voz a 1.3, delay voz 0.8s (deja intro de música),
+  //          amix de los dos y trim a 15s.
+  let audioMap
+  if (hasVoice) {
+    chain.push(`[${idx.bgm}:a]volume=0.18[bgmlow]`)
+    chain.push(`[${idx.voice}:a]volume=1.3,adelay=800|800[vodel]`)
+    chain.push(
+      `[bgmlow][vodel]amix=inputs=2:duration=longest:dropout_transition=0,atrim=duration=${VIDEO_DURATION}[aout]`,
+    )
+    audioMap = '[aout]'
+  } else {
+    audioMap = `${idx.bgm}:a`
+  }
+
   const filterFile = join(tmpDir, 'filter.txt')
   writeFileSync(filterFile, chain.join(';\n'), 'utf8')
 
@@ -596,7 +692,7 @@ async function generateReel({ imagePaths, videoPath, product, tmpDir }) {
     '-map',
     '[outv]',
     '-map',
-    `${idx.audio}:a`,
+    audioMap,
     '-c:v',
     'libx264',
     '-preset',
@@ -856,4 +952,206 @@ async function publishFbReel({ pageId, token, videoPath, description }) {
 
 function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms))
+}
+
+// ══════════════════════════════════════════════════════════════
+//                    UNSPLASH PRODUCT IMAGES
+// ══════════════════════════════════════════════════════════════
+// Las imágenes Supabase son placeholders picsum.photos que NO corresponden
+// al producto. Buscamos en Unsplash con queries derivados del nombre del
+// producto + ciudad, con fallback chain de más específico a más genérico.
+
+function cleanProductName(s) {
+  return s
+    .split('—')[0].split(',')[0]
+    .replace(/\([^)]*\)/g, '')
+    .replace(/\b\d+\s*(kg|g|ml|l|cm|m|mm|gb|tb|pack)\b/gi, '')
+    .replace(/\bx\s*\d+\b/gi, '')
+    .replace(/[\d/"']/g, ' ')
+    .toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .split(/\s+/).filter((w) => w && !STOP_WORDS.has(w))
+    .join(' ')
+}
+
+// Devuelve array de queries en orden de relevancia descendente.
+// Estrategia: probar primero queries con sesgo peruano (mejor match para
+// productos artesanales/tradicionales), luego queries sin "peru" (mejor para
+// tech/marcas internacionales donde "peru" puebla con paisajes irrelevantes).
+function buildUnsplashQueryChain(product) {
+  const words = cleanProductName(product.nombre).split(/\s+/).filter(Boolean)
+  const w1 = words[0] || 'peru'
+  const w1en = ES_EN_MAP[w1] || null
+  const ciudad = product.ciudad ? product.ciudad.toLowerCase() : null
+  const chain = []
+
+  // 1) Top 3 + ciudad + peru (más específico, ideal para artesanías)
+  if (ciudad) chain.push([...words.slice(0, 3), ciudad, 'peru'].join(' '))
+  // 2) Top 3 + peru
+  chain.push([...words.slice(0, 3), 'peru'].join(' '))
+  // 3) Top 3 sin peru (para tech / marcas donde "peru" empeora resultados)
+  chain.push(words.slice(0, 3).join(' '))
+  // 4) Top 2 + peru
+  if (words.length >= 2) chain.push([...words.slice(0, 2), 'peru'].join(' '))
+  // 5) Top 2 sin peru
+  if (words.length >= 2) chain.push(words.slice(0, 2).join(' '))
+  // 6) primera palabra inglés (catálogo Unsplash es EN-tilt) — sin peru primero
+  //    porque "tires peru" devuelve paisajes peruanos, no neumáticos.
+  if (w1en) chain.push(w1en)
+  if (w1en) chain.push(w1en + ' peru')
+  // 7) primera palabra + peru / sola
+  chain.push(w1 + ' peru')
+  chain.push(w1)
+
+  return [...new Set(chain)]
+}
+
+async function findUnsplashImagesForProduct(product, accessKey, count) {
+  const chain = buildUnsplashQueryChain(product)
+  for (const query of chain) {
+    const u = new URL('https://api.unsplash.com/search/photos')
+    u.searchParams.set('query', query)
+    u.searchParams.set('per_page', String(Math.min(count * 4, 12)))
+    u.searchParams.set('orientation', 'portrait') // mejor para 1080x1920
+    u.searchParams.set('content_filter', 'high')
+    const r = await fetch(u, {
+      headers: { Authorization: `Client-ID ${accessKey}`, 'Accept-Version': 'v1' },
+    })
+    if (!r.ok) {
+      const body = await r.text().catch(() => '')
+      throw new Error(`unsplash ${r.status}: ${body.slice(0, 200)}`)
+    }
+    const j = await r.json()
+    const results = Array.isArray(j?.results) ? j.results : []
+    if (results.length > 0) {
+      // shuffle y tomar `count` — variedad visual
+      const shuffled = [...results].sort(() => Math.random() - 0.5)
+      return { query, photos: shuffled.slice(0, count) }
+    }
+    console.log(`[reel]     query "${query}" → 0 resultados`)
+  }
+  return null
+}
+
+async function downloadUnsplashPhotos(photos, tmpDir) {
+  const paths = []
+  for (let i = 0; i < photos.length; i++) {
+    const p = join(tmpDir, `unsplash-${i}.jpg`)
+    try {
+      await downloadTo(photos[i].urls.regular, p)
+      paths.push(p)
+    } catch (e) {
+      console.warn(`[reel]     ⚠ unsplash imagen ${i + 1} falló: ${e.message}`)
+    }
+  }
+  return paths
+}
+
+// ══════════════════════════════════════════════════════════════
+//                    VOICEOVER (TTS)
+// ══════════════════════════════════════════════════════════════
+// Genera el voz anuncio del producto. Provider:
+//   1) ElevenLabs si ELEVENLABS_API_KEY está seteada (mejor calidad, voz natural)
+//   2) Google Translate TTS si no (gratis, sin auth, ~200 char por request)
+// Texto cleanup: reemplaza chars que TTS pronuncia mal (—, /, ", etc.)
+
+function buildVoiceoverText(product) {
+  // Limpieza para TTS — el em-dash y caracteres especiales no se pronuncian
+  const nombreLimpio = product.nombre
+    .replace(/—/g, ',')
+    .replace(/\//g, ' ')
+    .replace(/"/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+  const ciudad = product.ciudad || 'Perú'
+  const precio = product.precio != null ? Math.round(product.precio) : null
+  const precioFrase = precio != null ? `Precio: ${precio} soles. ` : ''
+  return (
+    `¡Descubre ${nombreLimpio} de ${ciudad} en Merkao punto org! ` +
+    `${precioFrase}` +
+    `Compra segura con pago Escrow. ` +
+    `Entra a Merkao punto org y encuentra lo mejor del Perú.`
+  )
+}
+
+async function generateVoiceover(text, outPath) {
+  const elevenKey = process.env.ELEVENLABS_API_KEY?.trim()
+  if (elevenKey) {
+    await ttsElevenLabs(text, outPath, elevenKey)
+    return 'elevenlabs'
+  }
+  await ttsGoogleTranslate(text, outPath)
+  return 'gtts'
+}
+
+// ElevenLabs Multilingual v2 hace excelente español. Voz por defecto: "Rachel"
+// (21m00Tcm4TlvDq8ikWAM) que con multilingual_v2 suena natural en español.
+// Override con ELEVENLABS_VOICE_ID.
+async function ttsElevenLabs(text, outPath, apiKey) {
+  const voiceId = process.env.ELEVENLABS_VOICE_ID?.trim() || '21m00Tcm4TlvDq8ikWAM'
+  const r = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+    method: 'POST',
+    headers: {
+      'xi-api-key': apiKey,
+      'Content-Type': 'application/json',
+      Accept: 'audio/mpeg',
+    },
+    body: JSON.stringify({
+      text,
+      model_id: 'eleven_multilingual_v2',
+      voice_settings: { stability: 0.55, similarity_boost: 0.8, style: 0.3, use_speaker_boost: true },
+    }),
+  })
+  if (!r.ok) {
+    const body = await r.text().catch(() => '')
+    throw new Error(`elevenlabs ${r.status}: ${body.slice(0, 200)}`)
+  }
+  const buf = Buffer.from(await r.arrayBuffer())
+  writeFileSync(outPath, buf)
+}
+
+// Google Translate TTS undocumented endpoint. Límite ~200 chars por request.
+// Para textos más largos, se divide por oraciones y se concatenan los MP3.
+// Concatenar MP3 binarios funciona porque MP3 es chunkeable (ID3 al inicio
+// y luego frames independientes); el resultado se reproduce como un solo audio.
+async function ttsGoogleTranslate(text, outPath) {
+  const chunks = chunkSentences(text, 195)
+  const buffers = []
+  for (const chunk of chunks) {
+    const u = new URL('https://translate.google.com/translate_tts')
+    u.searchParams.set('ie', 'UTF-8')
+    u.searchParams.set('q', chunk)
+    u.searchParams.set('tl', 'es')
+    u.searchParams.set('client', 'tw-ob')
+    const r = await fetch(u, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        Referer: 'https://translate.google.com/',
+      },
+    })
+    if (!r.ok) {
+      throw new Error(`gtts ${r.status}: chunk="${chunk.slice(0, 40)}…"`)
+    }
+    const buf = Buffer.from(await r.arrayBuffer())
+    if (buf.length < 500) throw new Error(`gtts body too small (${buf.length}B)`)
+    buffers.push(buf)
+  }
+  writeFileSync(outPath, Buffer.concat(buffers))
+}
+
+function chunkSentences(text, maxLen) {
+  if (text.length <= maxLen) return [text]
+  const sentences = text.split(/(?<=[.!?])\s+/)
+  const out = []
+  let cur = ''
+  for (const s of sentences) {
+    if ((cur + ' ' + s).trim().length > maxLen) {
+      if (cur) out.push(cur)
+      cur = s
+    } else {
+      cur = (cur + ' ' + s).trim()
+    }
+  }
+  if (cur) out.push(cur)
+  return out
 }

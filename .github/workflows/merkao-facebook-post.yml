@@ -24,7 +24,9 @@ name: Merkao Facebook + Instagram daily (post + reel)
 #                                    refrescar con GET /refresh_access_token antes de expirar)
 #   SUPABASE_URL                    (opcional — usa productos reales en vez de Unsplash)
 #   SUPABASE_ANON_KEY               (opcional — anon JWT del proyecto)
-#   UNSPLASH_ACCESS_KEY             (opcional — fallback si Supabase no devuelve productos)
+#   UNSPLASH_ACCESS_KEY             (opcional — busca imágenes temáticas en el reel)
+#   ELEVENLABS_API_KEY              (opcional — TTS de mejor calidad. Sin esto, gTTS gratis)
+#   ELEVENLABS_VOICE_ID             (opcional — voice id. Default: Rachel 21m00...WAM)
 #   ANTHROPIC_API_KEY               (para futura regeneración de variantes)
 
 on:
@@ -110,6 +112,9 @@ jobs:
           META_IG_ACCESS_TOKEN: ${{ secrets.META_IG_ACCESS_TOKEN }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          ELEVENLABS_VOICE_ID: ${{ secrets.ELEVENLABS_VOICE_ID }}
         run: |
           ARGS=""
           if [ "${{ github.event.inputs.force }}" = "true" ]; then ARGS="$ARGS --force"; fi
