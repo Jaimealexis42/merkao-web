@@ -136,12 +136,15 @@ if (existsSync(ENV_PATH)) {
   const env = parseEnv(readFileSync(ENV_PATH, 'utf8'))
   for (const k of Object.keys(env)) if (!process.env[k]) process.env[k] = env[k]
 }
-const SUPABASE_URL = process.env.SUPABASE_URL?.trim()
-const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY?.trim()
-const PAGE_ID = process.env.META_PAGE_ID?.trim()
-const PAGE_TOKEN = process.env.META_PAGE_ACCESS_TOKEN?.trim()
-const IG_USER = process.env.META_IG_USER_ID?.trim()
-const IG_TOKEN = process.env.META_IG_ACCESS_TOKEN?.trim()
+// Strip ALL whitespace (incluyendo \r\n embebidos) — pasa cuando un secret
+// se pegó con line break en la UI de GitHub. Headers de fetch rechazan CR/LF.
+const stripWs = (v) => v?.replace(/\s+/g, '') || undefined
+const SUPABASE_URL = stripWs(process.env.SUPABASE_URL)
+const SUPABASE_KEY = stripWs(process.env.SUPABASE_ANON_KEY)
+const PAGE_ID = stripWs(process.env.META_PAGE_ID)
+const PAGE_TOKEN = stripWs(process.env.META_PAGE_ACCESS_TOKEN)
+const IG_USER = stripWs(process.env.META_IG_USER_ID)
+const IG_TOKEN = stripWs(process.env.META_IG_ACCESS_TOKEN)
 if (!preExistingVideo && (!SUPABASE_URL || !SUPABASE_KEY)) {
   bail('Faltan SUPABASE_URL o SUPABASE_ANON_KEY (necesarias para elegir producto)')
 }
@@ -189,7 +192,7 @@ if (preExistingVideo) {
   // del producto + ciudad. Caemos en fallback chain si la query específica no
   // tiene resultados. Si Unsplash falla del todo, usamos las imágenes Supabase
   // como último recurso.
-  const UNSPLASH_KEY = process.env.UNSPLASH_ACCESS_KEY?.trim()
+  const UNSPLASH_KEY = stripWs(process.env.UNSPLASH_ACCESS_KEY)
   console.log('[reel] (2/6) Buscando imágenes temáticas en Unsplash…')
 
   for (let attempt = 0; attempt < Math.min(candidates.length, 5); attempt++) {
@@ -1112,7 +1115,7 @@ function buildVoiceoverText(product) {
 }
 
 async function generateVoiceover(text, outPath) {
-  const elevenKey = process.env.ELEVENLABS_API_KEY?.trim()
+  const elevenKey = stripWs(process.env.ELEVENLABS_API_KEY)
   if (elevenKey) {
     await ttsElevenLabs(text, outPath, elevenKey)
     return 'elevenlabs'
@@ -1125,7 +1128,7 @@ async function generateVoiceover(text, outPath) {
 // (21m00Tcm4TlvDq8ikWAM) que con multilingual_v2 suena natural en español.
 // Override con ELEVENLABS_VOICE_ID.
 async function ttsElevenLabs(text, outPath, apiKey) {
-  const voiceId = process.env.ELEVENLABS_VOICE_ID?.trim() || '21m00Tcm4TlvDq8ikWAM'
+  const voiceId = stripWs(process.env.ELEVENLABS_VOICE_ID) || '21m00Tcm4TlvDq8ikWAM'
   const r = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
     method: 'POST',
     headers: {
