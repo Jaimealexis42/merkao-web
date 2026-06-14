@@ -1,0 +1,24 @@
+{
+  "lastReelDate": "2026-06-14",
+  "totalReels": 1,
+  "history": [
+    {
+      "fecha": "2026-06-14T17:13:17.318Z",
+      "fechaPeru": "2026-06-14",
+      "product": {
+        "id": "c9ff34e4-23c2-479d-8fe7-e93c669838bc",
+        "nombre": "Samsung Galaxy A54 5G 128GB — Negro",
+        "ciudad": "Lima",
+        "precio": 1199
+      },
+      "ig": {
+        "error": "ig container 400: The parameter video_url is required"
+      },
+      "fb": {
+        "videoId": "2467181697057454",
+        "permalink": "https://www.facebook.com/reel/2467181697057454",
+        "elapsedMs": 7831
+      }
+    }
+  ]
+}
