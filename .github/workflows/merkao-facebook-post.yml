@@ -11,8 +11,11 @@ name: Merkao Facebook + Instagram daily post
 #
 # Secrets requeridos en Settings → Secrets and variables → Actions:
 #   META_PAGE_ID                    (FB Page ID de Merkao)
-#   META_PAGE_ACCESS_TOKEN          (long-lived Page Access Token; sirve para FB e IG)
-#   META_IG_BUSINESS_ACCOUNT_ID     (opcional; si falta se publica solo en FB)
+#   META_PAGE_ACCESS_TOKEN          (long-lived Page Access Token de FB)
+#   META_IG_USER_ID                 (opcional — IG Business user id, p.ej. 27211757875141091)
+#   META_IG_ACCESS_TOKEN            (opcional — long-lived IG token de graph.instagram.com,
+#                                    flujo "Instagram API with Instagram Login". Dura 60d:
+#                                    refrescar con GET /refresh_access_token antes de expirar)
 #   UNSPLASH_ACCESS_KEY             (opcional; sin esto FB queda text-only e IG se salta)
 #   ANTHROPIC_API_KEY               (para futura regeneración de variantes)
 
@@ -64,7 +67,8 @@ jobs:
         env:
           META_PAGE_ID: ${{ secrets.META_PAGE_ID }}
           META_PAGE_ACCESS_TOKEN: ${{ secrets.META_PAGE_ACCESS_TOKEN }}
-          META_IG_BUSINESS_ACCOUNT_ID: ${{ secrets.META_IG_BUSINESS_ACCOUNT_ID }}
+          META_IG_USER_ID: ${{ secrets.META_IG_USER_ID }}
+          META_IG_ACCESS_TOKEN: ${{ secrets.META_IG_ACCESS_TOKEN }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
         run: |

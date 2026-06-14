@@ -39,6 +39,9 @@ const LOG_PATH = resolve(__dirname, 'fb-posts.log')
 const VARIANTS_PATH = resolve(__dirname, '..', 'posts', 'variants.json')
 
 const API_VERSION = 'v21.0'
+// IG usa graph.instagram.com (Instagram API with Instagram Login) y va un
+// release adelante de la Graph API de FB en algunas features → versión propia.
+const IG_API_VERSION = 'v22.0'
 const TIMEZONE = 'America/Lima'
 
 // ── Mapeo de variante → tema visual ──────────────────────────
@@ -90,7 +93,10 @@ if (existsSync(ENV_PATH)) {
 }
 const PAGE_ID = process.env.META_PAGE_ID?.trim()
 const PAGE_TOKEN = process.env.META_PAGE_ACCESS_TOKEN?.trim()
-const IG_USER_ID = process.env.META_IG_BUSINESS_ACCOUNT_ID?.trim() || null
+// Instagram: usamos "Instagram API with Instagram Login" → graph.instagram.com
+// con un IG access token PROPIO (no el Page Access Token de FB).
+const IG_USER_ID = process.env.META_IG_USER_ID?.trim() || null
+const IG_ACCESS_TOKEN = process.env.META_IG_ACCESS_TOKEN?.trim() || null
 if (!PAGE_ID || !PAGE_TOKEN) {
   bail(
     'Faltan META_PAGE_ID o META_PAGE_ACCESS_TOKEN en .env. Corré primero: node get-token.mjs',
@@ -233,8 +239,8 @@ console.log(`[fb]   url: ${postUrl}`)
 let igResult = null
 if (noInstagram) {
   console.log('[ig] --no-instagram activo → skip')
-} else if (!IG_USER_ID) {
-  console.log('[ig] META_IG_BUSINESS_ACCOUNT_ID no seteada → skip')
+} else if (!IG_USER_ID || !IG_ACCESS_TOKEN) {
+  console.log('[ig] META_IG_USER_ID o META_IG_ACCESS_TOKEN no seteadas → skip')
 } else if (!imageMeta) {
   console.log('[ig] sin imagen disponible → IG requiere imagen, skip')
 } else {
@@ -244,7 +250,7 @@ if (noInstagram) {
   try {
     igResult = await postToInstagram({
       igUserId: IG_USER_ID,
-      pageToken: PAGE_TOKEN,
+      accessToken: IG_ACCESS_TOKEN,
       imageUrl: imageMeta.photo_url,
       caption: igCaption,
     })
@@ -363,21 +369,23 @@ async function downloadImage(url) {
   return Buffer.from(ab)
 }
 
-// Publica una imagen en Instagram via Graph API en 2 pasos:
+// Publica una imagen en Instagram via "Instagram API with Instagram Login"
+// (graph.instagram.com, NO graph.facebook.com). 3 pasos:
 //   1) POST /{ig_user}/media con image_url + caption → creation_id (container)
-//   2) Poll del container hasta status_code=FINISHED (suele tardar <2s para
-//      imágenes; carrouseles y videos pueden tardar más).
+//   2) Poll del container hasta status_code=FINISHED (suele <2s para imágenes;
+//      carrouseles y videos pueden tardar más).
 //   3) POST /{ig_user}/media_publish con creation_id → media id final.
 // Devuelve { mediaId, containerId, permalink, elapsedMs }. Throws en error.
-// Docs: https://developers.facebook.com/docs/instagram-api/guides/content-publishing
-async function postToInstagram({ igUserId, pageToken, imageUrl, caption }) {
+// Docs: https://developers.facebook.com/docs/instagram-platform/instagram-api-with-instagram-login/content-publishing
+async function postToInstagram({ igUserId, accessToken, imageUrl, caption }) {
   const t0 = Date.now()
+  const IG_BASE = `https://graph.instagram.com/${IG_API_VERSION}`
 
   // (1) Crear container
-  const containerUrl = new URL(`https://graph.facebook.com/${API_VERSION}/${igUserId}/media`)
+  const containerUrl = new URL(`${IG_BASE}/${igUserId}/media`)
   containerUrl.searchParams.set('image_url', imageUrl)
   containerUrl.searchParams.set('caption', caption)
-  containerUrl.searchParams.set('access_token', pageToken)
+  containerUrl.searchParams.set('access_token', accessToken)
   const containerRes = await fetch(containerUrl, { method: 'POST' })
   const containerData = await containerRes.json().catch(() => ({}))
   if (!containerRes.ok || !containerData.id) {
@@ -387,12 +395,12 @@ async function postToInstagram({ igUserId, pageToken, imageUrl, caption }) {
   const containerId = containerData.id
 
   // (2) Esperar status_code=FINISHED (recomendado por docs antes de publish)
-  await waitForIgContainerReady(containerId, pageToken)
+  await waitForIgContainerReady(containerId, accessToken)
 
   // (3) Publicar
-  const publishUrl = new URL(`https://graph.facebook.com/${API_VERSION}/${igUserId}/media_publish`)
+  const publishUrl = new URL(`${IG_BASE}/${igUserId}/media_publish`)
   publishUrl.searchParams.set('creation_id', containerId)
-  publishUrl.searchParams.set('access_token', pageToken)
+  publishUrl.searchParams.set('access_token', accessToken)
   const publishRes = await fetch(publishUrl, { method: 'POST' })
   const publishData = await publishRes.json().catch(() => ({}))
   if (!publishRes.ok || !publishData.id) {
@@ -404,9 +412,9 @@ async function postToInstagram({ igUserId, pageToken, imageUrl, caption }) {
   // Permalink es opcional; si falla no rompemos.
   let permalink = null
   try {
-    const permUrl = new URL(`https://graph.facebook.com/${API_VERSION}/${mediaId}`)
+    const permUrl = new URL(`${IG_BASE}/${mediaId}`)
     permUrl.searchParams.set('fields', 'permalink')
-    permUrl.searchParams.set('access_token', pageToken)
+    permUrl.searchParams.set('access_token', accessToken)
     const r = await fetch(permUrl)
     const j = await r.json()
     if (r.ok && j.permalink) permalink = j.permalink
@@ -421,11 +429,12 @@ async function postToInstagram({ igUserId, pageToken, imageUrl, caption }) {
 // suele estar listo en el primer poll; carrouseles/videos pueden tardar.
 // Docs recomiendan no más de 5 polls/min — usamos 5 intentos con backoff
 // progresivo (1s, 2s, 3s, 4s, 5s) = ~15s máx.
-async function waitForIgContainerReady(containerId, pageToken, maxAttempts = 5) {
+async function waitForIgContainerReady(containerId, accessToken, maxAttempts = 5) {
+  const IG_BASE = `https://graph.instagram.com/${IG_API_VERSION}`
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    const u = new URL(`https://graph.facebook.com/${API_VERSION}/${containerId}`)
+    const u = new URL(`${IG_BASE}/${containerId}`)
     u.searchParams.set('fields', 'status_code,status')
-    u.searchParams.set('access_token', pageToken)
+    u.searchParams.set('access_token', accessToken)
     const r = await fetch(u)
     const j = await r.json().catch(() => ({}))
     if (!r.ok) {
