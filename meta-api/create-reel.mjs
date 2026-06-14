@@ -814,12 +814,14 @@ function buildCaption(p, { hashtags }) {
 // ══════════════════════════════════════════════════════════════
 //                  INSTAGRAM REEL UPLOAD
 // ══════════════════════════════════════════════════════════════
-// Flujo "Instagram API with Instagram Login" — Reels resumable upload:
-//   1. POST /{ig_user}/media  media_type=REELS upload_type=resumable
-//      → { id (container), uri (upload endpoint) }
-//   2. POST <uri>  Authorization: OAuth <token>  offset: 0  binary
-//      → { id, success }
+// Flujo "Instagram API with Instagram Login" — Reels REQUIEREN video_url
+// público (NO soportan resumable upload, a diferencia de Page-based IG).
+// Por eso subimos el .mp4 primero a 0x0.st para tener una URL HTTPS válida.
+//   1. Upload reel.mp4 → 0x0.st → URL pública (30+ días retention)
+//   2. POST /{ig_user}/media  media_type=REELS  video_url=<pub_url>
+//      → { id (container) }
 //   3. Poll GET /{container}?fields=status_code  hasta FINISHED (~30s-2min)
+//      (IG descarga el video en background y lo procesa)
 //   4. POST /{ig_user}/media_publish  creation_id=<container>
 //      → { id (media id) }
 //   5. (opcional) GET /{media}?fields=permalink
@@ -827,11 +829,16 @@ async function publishIgReel({ userId, token, videoPath, caption }) {
   const t0 = Date.now()
   const base = `https://graph.instagram.com/${IG_API_VERSION}`
 
-  // (1) Crear container resumable
+  // (1) Subir a 0x0.st (anonymous file host, retention basada en tamaño)
+  console.log('[reel]     subiendo .mp4 a 0x0.st para obtener URL pública…')
+  const publicUrl = await uploadToTempHost(videoPath)
+  console.log(`[reel]     URL pública: ${publicUrl}`)
+
+  // (2) Crear container con video_url
   const createUrl = new URL(`${base}/${userId}/media`)
   const createBody = new URLSearchParams({
     media_type: 'REELS',
-    upload_type: 'resumable',
+    video_url: publicUrl,
     caption,
     access_token: token,
   })
@@ -841,32 +848,12 @@ async function publishIgReel({ userId, token, videoPath, caption }) {
     body: createBody,
   })
   const createJson = await createRes.json().catch(() => ({}))
-  if (!createRes.ok || !createJson.id || !createJson.uri) {
+  if (!createRes.ok || !createJson.id) {
     const m = createJson?.error?.message || JSON.stringify(createJson).slice(0, 300)
     throw new Error(`ig container ${createRes.status}: ${m}`)
   }
   const containerId = createJson.id
-  const uploadUri = createJson.uri
-  console.log(`[reel]     IG container=${containerId} uri=${uploadUri.slice(0, 80)}…`)
-
-  // (2) Upload binario
-  const fileBuf = readFileSync(videoPath)
-  const uploadRes = await fetch(uploadUri, {
-    method: 'POST',
-    headers: {
-      Authorization: `OAuth ${token}`,
-      offset: '0',
-      file_offset: '0',
-      'Content-Type': 'application/octet-stream',
-      'Content-Length': String(fileBuf.length),
-    },
-    body: fileBuf,
-  })
-  const uploadJson = await uploadRes.json().catch(() => ({}))
-  if (!uploadRes.ok || uploadJson?.success === false) {
-    const m = uploadJson?.error?.message || JSON.stringify(uploadJson).slice(0, 300)
-    throw new Error(`ig upload ${uploadRes.status}: ${m}`)
-  }
+  console.log(`[reel]     IG container=${containerId}`)
 
   // (3) Poll status (Reels son más lentos que single-image — usar timeout más generoso)
   await waitForIgContainer(containerId, token, { maxAttempts: 30, baseDelayMs: 4000 })
@@ -984,6 +971,29 @@ async function publishFbReel({ pageId, token, videoPath, description }) {
 
 function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms))
+}
+
+// Sube un archivo a 0x0.st (host anónimo) y devuelve la URL HTTPS pública.
+// Retention: dinámica según tamaño — videos de pocos MB duran 1+ años.
+// Usado para Reels en IG que requieren video_url y no soportan resumable.
+async function uploadToTempHost(filePath) {
+  const fileBuf = readFileSync(filePath)
+  const fd = new FormData()
+  fd.append('file', new Blob([fileBuf], { type: 'video/mp4' }), 'reel.mp4')
+  const r = await fetch('https://0x0.st', {
+    method: 'POST',
+    body: fd,
+    headers: { 'User-Agent': 'merkao-reel-bot/1.0' },
+  })
+  if (!r.ok) {
+    const body = await r.text().catch(() => '')
+    throw new Error(`0x0.st ${r.status}: ${body.slice(0, 200)}`)
+  }
+  const url = (await r.text()).trim()
+  if (!/^https:\/\/0x0\.st\//.test(url)) {
+    throw new Error(`0x0.st respuesta inesperada: ${url.slice(0, 100)}`)
+  }
+  return url
 }
 
 // ══════════════════════════════════════════════════════════════
