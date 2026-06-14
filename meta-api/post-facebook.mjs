@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// post-facebook.mjs — Publica 1 variante por día en la Page de Merkao.
+// post-facebook.mjs — Publica 1 variante por día en la Page de Merkao
+// (Facebook) y en @merkao_marketplace (Instagram) si está configurada.
 //
 // Comportamiento:
 //   - Lee ../posts/variants.json (generado por post-generator.mjs)
@@ -10,15 +11,22 @@
 //   - Loguea cada intento a fb-posts.log (append-only)
 //
 // Flags:
-//   --dry-run     muestra qué publicaría pero no llama a la API
-//   --force       ignora la guarda de "ya posteó hoy"
-//   --index=N     fuerza una variante específica (0-based)
-//   --no-image    saltar Unsplash, postear text-only a /feed
+//   --dry-run        muestra qué publicaría pero no llama a la API
+//   --force          ignora la guarda de "ya posteó hoy"
+//   --index=N        fuerza una variante específica (0-based)
+//   --no-image       saltar Unsplash, postear text-only a /feed (FB)
+//   --no-instagram   no publicar en Instagram aunque esté configurada
 //
 // Imagen: si UNSPLASH_ACCESS_KEY está seteada (.env o GitHub secret), busca
 // una foto landscape en Unsplash según el tema de la variante (VARIANT_THEMES
 // abajo) y la sube como /photos con caption. Si Unsplash falla o no hay
 // access key, hace fallback a /feed text-only sin romper el cron.
+//
+// Instagram: si META_IG_BUSINESS_ACCOUNT_ID está seteada Y hay imagen,
+// publica también en @merkao_marketplace (mismo texto + imagen + hashtags
+// peruanos). IG no permite posts text-only por API → si Unsplash falló o
+// se usó --no-image, IG se salta. Falla en IG NO interrumpe el flujo: FB
+// ya quedó publicado y mañana se rota igual.
 
 import { readFileSync, writeFileSync, existsSync, appendFileSync } from 'node:fs'
 import { resolve, dirname } from 'node:path'
@@ -58,11 +66,17 @@ const THEMES = {
   general:   ['paisaje peru', 'peru landscape', 'machu picchu peru'],
 }
 
+// ── Instagram ─────────────────────────────────────────────────
+// Hashtags peruanos que se append-ean SOLO al caption de Instagram (no
+// se ensucia el copy de Facebook). Si querés cambiarlos, editá acá.
+const IG_HASHTAGS = '#merkao #marketplaceperuano #hechoenperu #emprendedoresperuanos #peruano'
+
 // ── 1. Parse args ─────────────────────────────────────────────
 const args = process.argv.slice(2)
 const dryRun = args.includes('--dry-run')
 const force = args.includes('--force')
 const noImage = args.includes('--no-image')
+const noInstagram = args.includes('--no-instagram')
 const forcedIndexArg = args.find((a) => a.startsWith('--index='))
 const forcedIndex = forcedIndexArg ? parseInt(forcedIndexArg.split('=')[1], 10) : null
 
@@ -76,6 +90,7 @@ if (existsSync(ENV_PATH)) {
 }
 const PAGE_ID = process.env.META_PAGE_ID?.trim()
 const PAGE_TOKEN = process.env.META_PAGE_ACCESS_TOKEN?.trim()
+const IG_USER_ID = process.env.META_IG_BUSINESS_ACCOUNT_ID?.trim() || null
 if (!PAGE_ID || !PAGE_TOKEN) {
   bail(
     'Faltan META_PAGE_ID o META_PAGE_ACCESS_TOKEN en .env. Corré primero: node get-token.mjs',
@@ -211,7 +226,43 @@ console.log(`[fb] ✓ publicado (${endpoint}) en ${elapsed}ms`)
 console.log(`[fb]   id: ${postIdRaw}${photoId ? ` (photo: ${photoId})` : ''}`)
 console.log(`[fb]   url: ${postUrl}`)
 
-// ── 8. Persist state + log ────────────────────────────────────
+// ── 8. Publicar en Instagram (si está configurada y hay imagen) ─
+// IG no acepta posts text-only por API. Si no hay imageMeta (Unsplash falló
+// o --no-image), se salta IG sin marcarlo como error. La falla en IG NO
+// detiene el flujo: el post de FB ya está publicado.
+let igResult = null
+if (noInstagram) {
+  console.log('[ig] --no-instagram activo → skip')
+} else if (!IG_USER_ID) {
+  console.log('[ig] META_IG_BUSINESS_ACCOUNT_ID no seteada → skip')
+} else if (!imageMeta) {
+  console.log('[ig] sin imagen disponible → IG requiere imagen, skip')
+} else {
+  const igCaption = `${variante.texto}\n\n${IG_HASHTAGS}`
+  console.log(`[ig] Publicando en @merkao_marketplace (ig_user=${IG_USER_ID})…`)
+  console.log(`[ig]   caption: ${igCaption.length} chars (texto + hashtags)`)
+  try {
+    igResult = await postToInstagram({
+      igUserId: IG_USER_ID,
+      pageToken: PAGE_TOKEN,
+      imageUrl: imageMeta.photo_url,
+      caption: igCaption,
+    })
+    console.log(`[ig] ✓ publicado en ${igResult.elapsedMs}ms`)
+    console.log(`[ig]   media id: ${igResult.mediaId}${igResult.permalink ? ` · ${igResult.permalink}` : ''}`)
+    log(
+      `OK_IG media_id=${igResult.mediaId} container=${igResult.containerId} ` +
+      `ms=${igResult.elapsedMs}`,
+    )
+  } catch (e) {
+    igResult = { error: e.message }
+    console.warn(`[ig] ✗ falló: ${e.message}`)
+    log(`ERROR_IG msg="${e.message}"`)
+    // No salimos: FB ya quedó publicado y mañana rota igual.
+  }
+}
+
+// ── 9. Persist state + log ────────────────────────────────────
 const histEntry = {
   fecha: new Date().toISOString(),
   fechaPeru: todayPeru,
@@ -223,6 +274,7 @@ const histEntry = {
   fbPhotoId: photoId,
   url: postUrl,
   image: imageMeta, // null si fue text-only
+  ig: igResult, // { mediaId, containerId, permalink, elapsedMs } | { error } | null si skip
 }
 const newState = {
   lastIndex: nextIndex,
@@ -309,4 +361,82 @@ async function downloadImage(url) {
   if (!r.ok) throw new Error(`download ${r.status} url=${url}`)
   const ab = await r.arrayBuffer()
   return Buffer.from(ab)
+}
+
+// Publica una imagen en Instagram via Graph API en 2 pasos:
+//   1) POST /{ig_user}/media con image_url + caption → creation_id (container)
+//   2) Poll del container hasta status_code=FINISHED (suele tardar <2s para
+//      imágenes; carrouseles y videos pueden tardar más).
+//   3) POST /{ig_user}/media_publish con creation_id → media id final.
+// Devuelve { mediaId, containerId, permalink, elapsedMs }. Throws en error.
+// Docs: https://developers.facebook.com/docs/instagram-api/guides/content-publishing
+async function postToInstagram({ igUserId, pageToken, imageUrl, caption }) {
+  const t0 = Date.now()
+
+  // (1) Crear container
+  const containerUrl = new URL(`https://graph.facebook.com/${API_VERSION}/${igUserId}/media`)
+  containerUrl.searchParams.set('image_url', imageUrl)
+  containerUrl.searchParams.set('caption', caption)
+  containerUrl.searchParams.set('access_token', pageToken)
+  const containerRes = await fetch(containerUrl, { method: 'POST' })
+  const containerData = await containerRes.json().catch(() => ({}))
+  if (!containerRes.ok || !containerData.id) {
+    const m = containerData?.error?.message || JSON.stringify(containerData).slice(0, 300)
+    throw new Error(`container ${containerRes.status}: ${m}`)
+  }
+  const containerId = containerData.id
+
+  // (2) Esperar status_code=FINISHED (recomendado por docs antes de publish)
+  await waitForIgContainerReady(containerId, pageToken)
+
+  // (3) Publicar
+  const publishUrl = new URL(`https://graph.facebook.com/${API_VERSION}/${igUserId}/media_publish`)
+  publishUrl.searchParams.set('creation_id', containerId)
+  publishUrl.searchParams.set('access_token', pageToken)
+  const publishRes = await fetch(publishUrl, { method: 'POST' })
+  const publishData = await publishRes.json().catch(() => ({}))
+  if (!publishRes.ok || !publishData.id) {
+    const m = publishData?.error?.message || JSON.stringify(publishData).slice(0, 300)
+    throw new Error(`publish ${publishRes.status}: ${m}`)
+  }
+  const mediaId = publishData.id
+
+  // Permalink es opcional; si falla no rompemos.
+  let permalink = null
+  try {
+    const permUrl = new URL(`https://graph.facebook.com/${API_VERSION}/${mediaId}`)
+    permUrl.searchParams.set('fields', 'permalink')
+    permUrl.searchParams.set('access_token', pageToken)
+    const r = await fetch(permUrl)
+    const j = await r.json()
+    if (r.ok && j.permalink) permalink = j.permalink
+  } catch {
+    // ignore
+  }
+
+  return { mediaId, containerId, permalink, elapsedMs: Date.now() - t0 }
+}
+
+// Polleá status_code del container hasta FINISHED. Para imágenes single
+// suele estar listo en el primer poll; carrouseles/videos pueden tardar.
+// Docs recomiendan no más de 5 polls/min — usamos 5 intentos con backoff
+// progresivo (1s, 2s, 3s, 4s, 5s) = ~15s máx.
+async function waitForIgContainerReady(containerId, pageToken, maxAttempts = 5) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const u = new URL(`https://graph.facebook.com/${API_VERSION}/${containerId}`)
+    u.searchParams.set('fields', 'status_code,status')
+    u.searchParams.set('access_token', pageToken)
+    const r = await fetch(u)
+    const j = await r.json().catch(() => ({}))
+    if (!r.ok) {
+      throw new Error(`status check ${r.status}: ${j?.error?.message || JSON.stringify(j).slice(0, 200)}`)
+    }
+    if (j.status_code === 'FINISHED') return
+    if (j.status_code === 'ERROR' || j.status_code === 'EXPIRED') {
+      throw new Error(`container status=${j.status_code} status="${j.status || ''}"`)
+    }
+    // IN_PROGRESS o PUBLISHED → seguir polleando (PUBLISHED no debería pasar acá)
+    await new Promise((res) => setTimeout(res, attempt * 1000))
+  }
+  throw new Error('container no llegó a FINISHED en 5 intentos (~15s)')
 }

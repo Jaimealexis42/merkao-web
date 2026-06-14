@@ -1,17 +1,20 @@
-name: Merkao Facebook daily post
+name: Merkao Facebook + Instagram daily post
 
-# Postea 1 variante por día a la Page de Merkao a las 08:00 hora Perú.
+# Postea 1 variante por día a la Page de Merkao (FB) y a @merkao_marketplace
+# (IG) en el mismo run, a las 08:00 hora Perú.
 # Cron en UTC: 13:00 UTC == 08:00 America/Lima (Perú no tiene DST).
 #
 # Estructura esperada en el repo:
-#   meta-api/post-facebook.mjs   ← lee variants.json y postea
+#   meta-api/post-facebook.mjs   ← lee variants.json y postea en FB + IG
 #   posts/variants.json          ← 7 variantes generadas
 #   meta-api/state.json          ← gitignored localmente; gestionado por este workflow
 #
 # Secrets requeridos en Settings → Secrets and variables → Actions:
-#   META_PAGE_ID
-#   META_PAGE_ACCESS_TOKEN
-#   ANTHROPIC_API_KEY    (para futura regeneración de variantes)
+#   META_PAGE_ID                    (FB Page ID de Merkao)
+#   META_PAGE_ACCESS_TOKEN          (long-lived Page Access Token; sirve para FB e IG)
+#   META_IG_BUSINESS_ACCOUNT_ID     (opcional; si falta se publica solo en FB)
+#   UNSPLASH_ACCESS_KEY             (opcional; sin esto FB queda text-only e IG se salta)
+#   ANTHROPIC_API_KEY               (para futura regeneración de variantes)
 
 on:
   schedule:
@@ -56,11 +59,12 @@ jobs:
           echo "UTC now : $(date -u '+%Y-%m-%d %H:%M:%S')"
           echo "Lima now: $(TZ=America/Lima date '+%Y-%m-%d %H:%M:%S')"
 
-      - name: Postear a Facebook
+      - name: Postear a Facebook + Instagram
         working-directory: meta-api
         env:
           META_PAGE_ID: ${{ secrets.META_PAGE_ID }}
           META_PAGE_ACCESS_TOKEN: ${{ secrets.META_PAGE_ACCESS_TOKEN }}
+          META_IG_BUSINESS_ACCOUNT_ID: ${{ secrets.META_IG_BUSINESS_ACCOUNT_ID }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
         run: |
