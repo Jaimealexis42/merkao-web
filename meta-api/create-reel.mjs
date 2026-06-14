@@ -62,6 +62,8 @@ const VIDEO_FPS = 30
 const VIDEO_DURATION = 15
 
 const IG_HASHTAGS = '#merkao #marketplaceperuano #hechoenperu #emprendedoresperuanos #peruano'
+const MAX_IMAGES_PER_REEL = 4 // 4 × 3.75s = 15s con xfade 0.5s
+const XFADE_DUR = 0.5
 
 // ── 1. Args ───────────────────────────────────────────────────
 const args = process.argv.slice(2)
@@ -109,32 +111,53 @@ let videoPath = preExistingVideo
 let imagePath = null
 let tmpDir = null
 
+let imagePaths = []
 if (preExistingVideo) {
   if (!existsSync(preExistingVideo)) bail(`--video file no existe: ${preExistingVideo}`)
   console.log(`[reel] usando video pre-existente: ${preExistingVideo}`)
-  // sin producto → no podemos generar caption con datos reales; usar genérico
-  product = { id: null, nombre: 'Merkao', ciudad: null, precio: null, imageUrl: null }
+  product = { id: null, nombre: 'Merkao', ciudad: null, precio: null, imagenes: [] }
 } else {
-  console.log('[reel] (1/5) Producto random de Supabase…')
-  product = await fetchRandomProduct(SUPABASE_URL, SUPABASE_KEY)
-  if (!product) bail('Sin productos activos con imágenes en Supabase')
-  console.log(
-    `[reel]     ✓ "${product.nombre}"` +
-      (product.ciudad ? ` · ${product.ciudad}` : '') +
-      ` · S/ ${product.precio?.toFixed(2) ?? '?'}`,
-  )
+  console.log('[reel] (1/5) Productos candidatos de Supabase…')
+  const candidates = await fetchProductCandidates(SUPABASE_URL, SUPABASE_KEY)
+  if (candidates.length === 0) bail('Sin productos activos con imágenes en Supabase')
+  console.log(`[reel]     ${candidates.length} candidatos shuffled`)
 
-  console.log('[reel] (2/5) Descargando imagen…')
+  // Probamos productos en orden hasta encontrar uno cuyas imágenes descargan.
+  // Esto resuelve el bug donde la imagen elegida no matcheaba al producto
+  // porque venía de un seed roto: ahora si ninguna imagen del producto carga,
+  // cambiamos de producto en vez de usar placeholder.
   tmpDir = resolve(tmpdir(), 'merkao-reel-' + Date.now())
   mkdirSync(tmpDir, { recursive: true })
-  imagePath = join(tmpDir, 'product.jpg')
-  await downloadTo(product.imageUrl, imagePath)
-  console.log(`[reel]     ✓ ${statSync(imagePath).size} bytes`)
+
+  console.log('[reel] (2/5) Descargando imágenes del producto seleccionado…')
+  for (let attempt = 0; attempt < Math.min(candidates.length, 5); attempt++) {
+    const cand = candidates[attempt]
+    console.log(
+      `[reel]   intento ${attempt + 1}: "${cand.nombre}"` +
+        (cand.ciudad ? ` · ${cand.ciudad}` : '') +
+        ` · ${cand.imagenes.length} img(s)`,
+    )
+    const paths = await downloadProductImages(cand, tmpDir)
+    if (paths.length > 0) {
+      product = cand
+      imagePaths = paths
+      break
+    }
+    console.log(`[reel]   ✗ ninguna imagen cargó, probando siguiente producto…`)
+  }
+  if (!product) bail('Ningún producto tuvo imágenes descargables tras 5 intentos')
+
+  console.log(
+    `[reel]     ✓ producto final: "${product.nombre}"` +
+      (product.ciudad ? ` · ${product.ciudad}` : '') +
+      ` · S/ ${product.precio?.toFixed(2) ?? '?'}` +
+      ` · ${imagePaths.length} imagen(es) usada(s)`,
+  )
 
   videoPath = join(tmpDir, 'reel.mp4')
   console.log(`[reel] (3/5) ffmpeg → ${videoPath}`)
   const t0 = Date.now()
-  await generateReel({ imagePath, videoPath, product, tmpDir })
+  await generateReel({ imagePaths, videoPath, product, tmpDir })
   console.log(`[reel]     ✓ ${statSync(videoPath).size} bytes en ${Date.now() - t0}ms`)
 }
 
@@ -223,7 +246,7 @@ writeFileSync(STATE_PATH, JSON.stringify(newState, null, 2), 'utf8')
 if (!keepVideo && tmpDir) {
   try {
     if (videoPath && existsSync(videoPath)) unlinkSync(videoPath)
-    if (imagePath && existsSync(imagePath)) unlinkSync(imagePath)
+    for (const p of imagePaths) if (existsSync(p)) unlinkSync(p)
   } catch {}
 }
 console.log(`[reel] done. Total reels: ${newState.totalReels}`)
@@ -324,7 +347,11 @@ function findFont(bold) {
 }
 
 // ── Supabase ──────────────────────────────────────────────────
-async function fetchRandomProduct(supabaseUrl, anonKey) {
+// Trae todos los productos activos con imágenes y devuelve uno random.
+// Las imágenes se devuelven EN ORDEN (imagenes[0] es la principal del producto).
+// Si la primera no descarga, el caller intenta con la siguiente. Si todas
+// fallan, cambia de producto.
+async function fetchProductCandidates(supabaseUrl, anonKey) {
   const u = new URL(supabaseUrl.replace(/\/+$/, '') + '/rest/v1/productos')
   u.searchParams.set('select', 'id,nombre,ciudad,precio,imagenes')
   u.searchParams.set('estado', 'eq.activo')
@@ -341,42 +368,68 @@ async function fetchRandomProduct(supabaseUrl, anonKey) {
   const withImgs = (Array.isArray(rows) ? rows : []).filter(
     (p) => Array.isArray(p.imagenes) && p.imagenes.length > 0,
   )
-  if (withImgs.length === 0) return null
-  const p = withImgs[Math.floor(Math.random() * withImgs.length)]
-  return {
+  // Shuffle (Fisher-Yates) para que el caller pruebe en orden aleatorio
+  for (let i = withImgs.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[withImgs[i], withImgs[j]] = [withImgs[j], withImgs[i]]
+  }
+  return withImgs.map((p) => ({
     id: p.id,
     nombre: p.nombre,
     ciudad: p.ciudad,
     precio: typeof p.precio === 'number' ? p.precio : Number(p.precio) || null,
-    imageUrl: p.imagenes[Math.floor(Math.random() * p.imagenes.length)],
-  }
+    imagenes: p.imagenes.slice(0, MAX_IMAGES_PER_REEL), // cap a 4
+  }))
 }
 
+// Descarga al disco. Throws con detalle si no es 200 o el body es chico/HTML
+// (Supabase storage devuelve 200 con JSON de error a veces).
 async function downloadTo(url, path) {
   const r = await fetch(url)
-  if (!r.ok) throw new Error(`download ${r.status} url=${url}`)
+  if (!r.ok) throw new Error(`HTTP ${r.status} ${url.slice(0, 80)}`)
+  const ct = r.headers.get('content-type') || ''
+  if (!/^image\//i.test(ct)) throw new Error(`content-type=${ct} url=${url.slice(0, 80)}`)
   const ab = await r.arrayBuffer()
+  if (ab.byteLength < 500) throw new Error(`body=${ab.byteLength}B too small`)
   writeFileSync(path, Buffer.from(ab))
 }
 
+// Descarga TODAS las imágenes válidas de un producto, en orden. Devuelve
+// array de paths locales. Si imagenes[0] falla pero imagenes[1] funciona,
+// usa imagenes[1] (no pierde el producto entero). Si todas fallan, devuelve [].
+async function downloadProductImages(product, tmpDir) {
+  const paths = []
+  for (let i = 0; i < product.imagenes.length; i++) {
+    const url = product.imagenes[i]
+    const p = join(tmpDir, `product-${i}.jpg`)
+    try {
+      await downloadTo(url, p)
+      paths.push(p)
+      console.log(`[reel]     ✓ imagen ${i + 1}/${product.imagenes.length}: ${statSync(p).size}B`)
+    } catch (e) {
+      console.warn(`[reel]     ⚠ imagen ${i + 1} falló: ${e.message}`)
+    }
+  }
+  return paths
+}
+
 // ── ffmpeg video generation ───────────────────────────────────
-// Diseño visual del Reel (1080x1920):
-//   - Imagen del producto: scale + crop a 1080x1920, zoompan suave (1.0 → 1.3)
-//   - Top band (0..380): #16202B 80% opacity, contiene nombre producto centrado
-//   - Bottom band (1500..1920): #16202B 90% opacity, contiene ciudad + precio
-//   - Logo (si existe): 140x140 esquina bottom-right con padding
-//   - Audio: bgm.mp3 si existe, sino anullsrc (silencio) — IG/FB esperan track de audio
-async function generateReel({ imagePath, videoPath, product, tmpDir }) {
+// Diseño visual del Reel (1080x1920, 15s):
+//   - N imágenes del producto (1..4) — cada una con su propio Ken Burns:
+//     * pan random (UL→DR, UR→DL, etc) para que se sienta cinematográfico
+//     * zoom suave 1.0 → 1.2 durante su slot
+//     * transiciones xfade fade entre slots (0.5s overlap)
+//   - Top band (0..380): #16202B 80% opacity, nombre producto
+//   - Bottom band (1500..1920): #16202B 90% opacity, ciudad + precio
+//   - Logo (si existe): 140x140 esquina top-right
+//   - Audio: bgm.mp3 looped si existe, sino anullsrc (silencio)
+async function generateReel({ imagePaths, videoPath, product, tmpDir }) {
   const fontReg = findFont(false)
   const fontBold = findFont(true)
 
-  // textos a archivos para evitar escapes en filter_complex
   const titleTxt = join(tmpDir, 'title.txt')
   const cityTxt = join(tmpDir, 'city.txt')
   const priceTxt = join(tmpDir, 'price.txt')
-  // Arial/DejaVu (system fonts) NO renderizan emojis → quedan como □. Para los
-  // overlays usamos sólo texto plano; los captions de IG/FB sí llevan emojis
-  // porque las apps tienen sus propias fuentes emoji.
   writeFileSync(titleTxt, wrapText(product.nombre, 22), 'utf8')
   writeFileSync(cityTxt, product.ciudad || 'merkao.org', 'utf8')
   writeFileSync(
@@ -385,22 +438,24 @@ async function generateReel({ imagePath, videoPath, product, tmpDir }) {
     'utf8',
   )
 
-  // Inputs dinámicos. `-framerate 30` ANTES de `-loop 1` fija la tasa de
-  // input de la imagen estática a 30fps; sin esto, ffmpeg usa 25fps default y
-  // el video sale 12.5s en lugar de 15s después de zoompan.
-  const inputs = [
-    '-y',
-    '-framerate',
-    String(VIDEO_FPS),
-    '-loop',
-    '1',
-    '-t',
-    String(VIDEO_DURATION),
-    '-i',
-    imagePath,
-  ]
-  let nextIdx = 1
-  const idx = { image: 0 }
+  const N = imagePaths.length
+  if (N === 0) throw new Error('imagePaths vacío')
+
+  // Cada slot dura V_slot = (15 + (N-1)*xfade) / N para que con xfade el total
+  // dé exactamente 15s. Cada input necesita V_slot + xfade buffer al final.
+  // Derivación: out_total = slot*N - xfade*(N-1) = 15 → slot = (15+xfade*(N-1))/N
+  const slotDuration = (VIDEO_DURATION + XFADE_DUR * (N - 1)) / N
+  const inputDuration = slotDuration + 0.2 // buffer chico
+  console.log(`[reel]     N=${N} imágenes, slot=${slotDuration.toFixed(2)}s, xfade=${XFADE_DUR}s`)
+
+  // Inputs: una entrada `-loop 1 -t T -i` por imagen, después logo, después audio
+  const inputs = ['-y']
+  const idx = { images: [] }
+  for (const ip of imagePaths) {
+    inputs.push('-framerate', String(VIDEO_FPS), '-loop', '1', '-t', String(inputDuration), '-i', ip)
+    idx.images.push(idx.images.length)
+  }
+  let nextIdx = N
 
   const hasLogo = existsSync(LOGO_PATH)
   const hasBgm = existsSync(BGM_PATH)
@@ -424,25 +479,74 @@ async function generateReel({ imagePath, videoPath, product, tmpDir }) {
     idx.audio = nextIdx++
   }
 
-  // filter_complex via archivo (evita drama de shell quoting)
-  // Refs:
-  //   - zoompan con d=1 + on para zoom suave por frame (no jumpy)
-  //   - drawbox t=fill para bandas semi-transparentes
-  //   - drawtext textfile=… para evitar escape de unicode / colon / quotes
+  // ── Filter chain ─────────────────────────────────────────────
+  // Por cada imagen: scale+crop+zoompan con un patrón de pan distinto.
+  // Patrones: 0=centro→zoom, 1=UL→DR, 2=UR→DL, 3=DL→UR
+  // El frame total del zoompan es slotDuration*FPS frames.
   const chain = []
+  const slotFrames = Math.round(slotDuration * VIDEO_FPS)
+
+  for (let i = 0; i < N; i++) {
+    const pattern = i % 4
+    const zExpr = `min(1.0+on*${(0.2 / slotFrames).toFixed(6)},1.2)` // 1.0 → 1.2 lineal
+
+    // x/y según patrón. on va de 0 a slotFrames. Movemos el viewport
+    // mientras zoom va aumentando. ih,iw son las dims de la imagen ya escalada.
+    let xExpr, yExpr
+    if (pattern === 0) {
+      // Center zoom
+      xExpr = 'iw/2-(iw/zoom)/2'
+      yExpr = 'ih/2-(ih/zoom)/2'
+    } else if (pattern === 1) {
+      // Upper-left → Down-right
+      xExpr = `iw*0.1+on*${((0.4) / slotFrames).toFixed(6)}*iw - (iw/zoom)/2`
+      yExpr = `ih*0.1+on*${((0.4) / slotFrames).toFixed(6)}*ih - (ih/zoom)/2`
+    } else if (pattern === 2) {
+      // Upper-right → Down-left
+      xExpr = `iw*0.6-on*${((0.4) / slotFrames).toFixed(6)}*iw - (iw/zoom)/2 + iw*0.4`
+      yExpr = `ih*0.1+on*${((0.4) / slotFrames).toFixed(6)}*ih - (ih/zoom)/2`
+    } else {
+      // Down-left → Up-right
+      xExpr = `iw*0.1+on*${((0.4) / slotFrames).toFixed(6)}*iw - (iw/zoom)/2`
+      yExpr = `ih*0.6-on*${((0.4) / slotFrames).toFixed(6)}*ih - (ih/zoom)/2 + ih*0.4`
+    }
+
+    chain.push(
+      `[${idx.images[i]}:v]` +
+        `scale=${VIDEO_W}:${VIDEO_H}:force_original_aspect_ratio=increase,` +
+        `crop=${VIDEO_W}:${VIDEO_H},` +
+        `zoompan=z='${zExpr}':x='${xExpr}':y='${yExpr}':` +
+        `d=1:s=${VIDEO_W}x${VIDEO_H}:fps=${VIDEO_FPS},` +
+        `trim=duration=${inputDuration},setpts=PTS-STARTPTS,` +
+        `format=yuv420p` +
+        `[v${i}]`,
+    )
+  }
+
+  // xfade chain: encadena v0..vN-1 en cascadas
+  let lastV
+  if (N === 1) {
+    lastV = 'v0'
+  } else {
+    // [v0][v1] xfade offset=slot duration=xfade → [vc1]
+    // [vc1][v2] xfade offset=(slot*2 - xfade) duration=xfade → [vc2]
+    // [vc(n-2)][v(n-1)] xfade offset=(slot*(N-1) - xfade*(N-2)) → [vcomp]
+    let prevLabel = 'v0'
+    for (let i = 1; i < N; i++) {
+      // offset acumulado = slot*i - xfade*(i-1)
+      const offset = slotDuration * i - XFADE_DUR * (i - 1)
+      const out = i === N - 1 ? 'vcomp' : `vc${i}`
+      chain.push(
+        `[${prevLabel}][v${i}]xfade=transition=fade:duration=${XFADE_DUR}:offset=${offset.toFixed(3)}[${out}]`,
+      )
+      prevLabel = out
+    }
+    lastV = 'vcomp'
+  }
+
+  // Bandas + texto sobre el composite final
   chain.push(
-    `[${idx.image}:v]` +
-      `scale=${VIDEO_W}:${VIDEO_H}:force_original_aspect_ratio=increase,` +
-      `crop=${VIDEO_W}:${VIDEO_H},` +
-      `zoompan=z='min(1.0+on*0.0007,1.3)':` +
-      `x='iw/2-(iw/zoom)/2':y='ih/2-(ih/zoom)/2':` +
-      `d=1:s=${VIDEO_W}x${VIDEO_H}:fps=${VIDEO_FPS},` +
-      `format=yuv420p` +
-      `[bg]`,
-  )
-  // Bandas + texto
-  chain.push(
-    `[bg]` +
+    `[${lastV}]` +
       `drawbox=x=0:y=0:w=${VIDEO_W}:h=380:color=0x16202BCC:t=fill,` +
       `drawbox=x=0:y=1500:w=${VIDEO_W}:h=420:color=0x16202BE6:t=fill` +
       `[bands]`,
@@ -472,15 +576,14 @@ async function generateReel({ imagePath, videoPath, product, tmpDir }) {
       `[t3]`,
   )
 
-  let lastV = 't3'
+  let finalV = 't3'
   if (hasLogo) {
-    // Logo 140x140 en esquina sup-derecha con padding
     chain.push(`[${idx.logo}:v]scale=140:140[logo]`)
-    chain.push(`[${lastV}][logo]overlay=W-w-40:40[outv]`)
-    lastV = 'outv'
+    chain.push(`[${finalV}][logo]overlay=W-w-40:40[outv]`)
+    finalV = 'outv'
   } else {
-    chain.push(`[${lastV}]null[outv]`)
-    lastV = 'outv'
+    chain.push(`[${finalV}]null[outv]`)
+    finalV = 'outv'
   }
 
   const filterFile = join(tmpDir, 'filter.txt')
