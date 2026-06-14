@@ -973,13 +973,73 @@ function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms))
 }
 
-// Sube un archivo a 0x0.st (host anónimo) y devuelve la URL HTTPS pública.
-// Retention: dinámica según tamaño — videos de pocos MB duran 1+ años.
-// Usado para Reels en IG que requieren video_url y no soportan resumable.
+// Sube un archivo a un host anónimo y devuelve la URL HTTPS pública.
+// Necesario porque IG Reels (via Instagram Login API) requiere video_url y
+// no soporta resumable upload. Probamos providers en orden hasta que uno
+// funcione — los hosts free van cayendo seguido (0x0.st bloqueó en jun 2026
+// por spam de AI botnets), conviene tener fallback.
 async function uploadToTempHost(filePath) {
   const fileBuf = readFileSync(filePath)
+  const errors = []
+  for (const provider of [uploadTmpfiles, uploadFileio, upload0x0]) {
+    try {
+      const url = await provider(fileBuf)
+      console.log(`[reel]     ✓ subido vía ${provider.name}: ${url}`)
+      return url
+    } catch (e) {
+      errors.push(`${provider.name}: ${e.message}`)
+      console.warn(`[reel]     ⚠ ${provider.name} falló — ${e.message}`)
+    }
+  }
+  throw new Error('todos los hosts fallaron: ' + errors.join(' | '))
+}
+
+// tmpfiles.org — JSON response, link viewer requiere transform a /dl/ para
+// download directo. Free, sin auth, expiry 60min default.
+async function uploadTmpfiles(buf) {
   const fd = new FormData()
-  fd.append('file', new Blob([fileBuf], { type: 'video/mp4' }), 'reel.mp4')
+  fd.append('file', new Blob([buf], { type: 'video/mp4' }), 'reel.mp4')
+  const r = await fetch('https://tmpfiles.org/api/v1/upload', {
+    method: 'POST',
+    body: fd,
+  })
+  if (!r.ok) {
+    const body = await r.text().catch(() => '')
+    throw new Error(`HTTP ${r.status}: ${body.slice(0, 200)}`)
+  }
+  const j = await r.json()
+  if (j.status !== 'success' || !j.data?.url) {
+    throw new Error(`bad response: ${JSON.stringify(j).slice(0, 200)}`)
+  }
+  // Viewer URL: https://tmpfiles.org/123456/reel.mp4
+  // Direct download: https://tmpfiles.org/dl/123456/reel.mp4
+  return j.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/')
+}
+
+// file.io — simple JSON, 14d default expiry, auto-delete on download por
+// default pero podemos pasar autoDelete=false. IG hace una sola descarga
+// del video al crear el container, así que auto-delete está bien.
+async function uploadFileio(buf) {
+  const fd = new FormData()
+  fd.append('file', new Blob([buf], { type: 'video/mp4' }), 'reel.mp4')
+  fd.append('expires', '1d')
+  const r = await fetch('https://file.io', { method: 'POST', body: fd })
+  if (!r.ok) {
+    const body = await r.text().catch(() => '')
+    throw new Error(`HTTP ${r.status}: ${body.slice(0, 200)}`)
+  }
+  const j = await r.json()
+  if (!j.success || !j.link) {
+    throw new Error(`bad response: ${JSON.stringify(j).slice(0, 200)}`)
+  }
+  return j.link
+}
+
+// 0x0.st — backup. Estaba bloqueando uploads en jun 2026 por spam, pero
+// puede volver. Plain text response = URL.
+async function upload0x0(buf) {
+  const fd = new FormData()
+  fd.append('file', new Blob([buf], { type: 'video/mp4' }), 'reel.mp4')
   const r = await fetch('https://0x0.st', {
     method: 'POST',
     body: fd,
@@ -987,11 +1047,11 @@ async function uploadToTempHost(filePath) {
   })
   if (!r.ok) {
     const body = await r.text().catch(() => '')
-    throw new Error(`0x0.st ${r.status}: ${body.slice(0, 200)}`)
+    throw new Error(`HTTP ${r.status}: ${body.slice(0, 200)}`)
   }
   const url = (await r.text()).trim()
   if (!/^https:\/\/0x0\.st\//.test(url)) {
-    throw new Error(`0x0.st respuesta inesperada: ${url.slice(0, 100)}`)
+    throw new Error(`bad response: ${url.slice(0, 100)}`)
   }
   return url
 }
