@@ -91,6 +91,35 @@ const ES_EN_MAP = {
   pisco: 'pisco',
   ceviche: 'ceviche',
 }
+// Queries contextuales por categoría: muestran al PRODUCTO EN SU CONTEXTO real
+// (artesana tejiendo, agricultor cosechando, mercado) en vez del producto
+// aislado. Mucho más cinematográfico y on-brand para marketplace peruano.
+// Lookup por primera palabra del nombre (en español o equivalente inglés).
+const CONTEXT_QUERIES = {
+  // Granos / alimentos andinos
+  quinua: ['quinoa harvest andes peru', 'quinoa farmer field'],
+  quinoa: ['quinoa harvest andes peru', 'quinoa farmer field'],
+  cacao: ['cacao harvest peru farmer', 'cacao plantation'],
+  cafe: ['coffee harvest peru farmer', 'coffee plantation'],
+  café: ['coffee harvest peru farmer', 'coffee plantation'],
+  coffee: ['coffee harvest peru farmer', 'coffee plantation'],
+  maca: ['andes farm peru', 'peruvian highland farmer'],
+  // Textiles / ropa tradicional
+  vestido: ['peruvian textile artisan weaving', 'andean clothing tradition'],
+  chompa: ['alpaca wool knitting peru', 'andean wool textile artisan'],
+  sweater: ['alpaca wool knitting peru', 'andean wool textile artisan'],
+  alpaca: ['alpaca peru andes wool farm'],
+  tejido: ['peruvian textile loom artisan', 'andean weaving'],
+  polo: ['cotton textile artisan', 'peruvian artisan workshop'],
+  // Arte / artesanías
+  cuadro: ['peruvian art painting artisan', 'andean folk art'],
+  shipibo: ['shipibo art amazon peru', 'amazon indigenous art'],
+  ceramica: ['ceramic artisan pottery peru'],
+  // Bebidas peruanas
+  pisco: ['pisco peruvian distillery', 'pisco grape vineyard peru'],
+  // Comida peruana
+  ceviche: ['peruvian food market vendor', 'lima food market'],
+}
 
 // ── 1. Args ───────────────────────────────────────────────────
 const args = process.argv.slice(2)
@@ -668,12 +697,12 @@ async function generateReel({ imagePaths, voicePath, videoPath, product, tmpDir 
 
   // ── Audio mix ────────────────────────────────────────────────
   // Sin voz: usar bgm directo (mapeo simple, sin filter graph)
-  // Con voz: bajar bgm a 0.18, voz a 1.3, delay voz 0.8s (deja intro de música),
-  //          amix de los dos y trim a 15s.
+  // Con voz: bajar bgm a 0.18, voz a 1.3 + atempo=1.15 (más alegre, sin
+  //          cambiar el pitch), delay 0.6s, amix + trim a 15s.
   let audioMap
   if (hasVoice) {
     chain.push(`[${idx.bgm}:a]volume=0.18[bgmlow]`)
-    chain.push(`[${idx.voice}:a]volume=1.3,adelay=800|800[vodel]`)
+    chain.push(`[${idx.voice}:a]atempo=1.15,volume=1.3,adelay=600|600[vodel]`)
     chain.push(
       `[bgmlow][vodel]amix=inputs=2:duration=longest:dropout_transition=0,atrim=duration=${VIDEO_DURATION}[aout]`,
     )
@@ -985,18 +1014,24 @@ function buildUnsplashQueryChain(product) {
   const ciudad = product.ciudad ? product.ciudad.toLowerCase() : null
   const chain = []
 
-  // 1) Top 3 + ciudad + peru (más específico, ideal para artesanías)
+  // (0) Queries contextuales: para productos con keyword reconocido en
+  //     CONTEXT_QUERIES, intentamos primero queries que muestren al producto
+  //     EN SU CONTEXTO (artesana tejiendo, agricultor cosechando) en vez del
+  //     producto aislado. Esto le da mucho más alma al reel.
+  const ctxQueries = CONTEXT_QUERIES[w1] || (w1en && CONTEXT_QUERIES[w1en]) || []
+  for (const ctx of ctxQueries) chain.push(ctx)
+
+  // 1) Top 3 + ciudad + peru
   if (ciudad) chain.push([...words.slice(0, 3), ciudad, 'peru'].join(' '))
   // 2) Top 3 + peru
   chain.push([...words.slice(0, 3), 'peru'].join(' '))
-  // 3) Top 3 sin peru (para tech / marcas donde "peru" empeora resultados)
+  // 3) Top 3 sin peru (para tech / marcas)
   chain.push(words.slice(0, 3).join(' '))
   // 4) Top 2 + peru
   if (words.length >= 2) chain.push([...words.slice(0, 2), 'peru'].join(' '))
   // 5) Top 2 sin peru
   if (words.length >= 2) chain.push(words.slice(0, 2).join(' '))
-  // 6) primera palabra inglés (catálogo Unsplash es EN-tilt) — sin peru primero
-  //    porque "tires peru" devuelve paisajes peruanos, no neumáticos.
+  // 6) inglés sin peru, luego con peru
   if (w1en) chain.push(w1en)
   if (w1en) chain.push(w1en + ' peru')
   // 7) primera palabra + peru / sola
@@ -1056,21 +1091,23 @@ async function downloadUnsplashPhotos(photos, tmpDir) {
 // Texto cleanup: reemplaza chars que TTS pronuncia mal (—, /, ", etc.)
 
 function buildVoiceoverText(product) {
-  // Limpieza para TTS — el em-dash y caracteres especiales no se pronuncian
+  // Limpieza para TTS — el em-dash y caracteres especiales no se pronuncian.
+  // También quitamos números pegados a unidades para que se lea natural.
   const nombreLimpio = product.nombre
     .replace(/—/g, ',')
     .replace(/\//g, ' ')
     .replace(/"/g, '')
     .replace(/\s+/g, ' ')
     .trim()
-  const ciudad = product.ciudad || 'Perú'
+  const ciudad = product.ciudad || 'el Perú'
   const precio = product.precio != null ? Math.round(product.precio) : null
-  const precioFrase = precio != null ? `Precio: ${precio} soles. ` : ''
+  const precioFrase = precio != null
+    ? `Solo ${precio} soles con envío a todo el Perú. `
+    : ''
   return (
-    `¡Descubre ${nombreLimpio} de ${ciudad} en Merkao punto org! ` +
+    `¡Hola! Encuentra ${nombreLimpio} directo de ${ciudad} en Merkao punto org. ` +
     `${precioFrase}` +
-    `Compra segura con pago Escrow. ` +
-    `Entra a Merkao punto org y encuentra lo mejor del Perú.`
+    `¡Compra seguro con pago Escrow! Entra ya a Merkao punto org.`
   )
 }
 
@@ -1114,11 +1151,16 @@ async function ttsElevenLabs(text, outPath, apiKey) {
 // Para textos más largos, se divide por oraciones y se concatenan los MP3.
 // Concatenar MP3 binarios funciona porque MP3 es chunkeable (ID3 al inicio
 // y luego frames independientes); el resultado se reproduce como un solo audio.
+// Usa el TLD .com.mx para acento latino (más alegre que español de España).
+// El TLD afecta el modelo de voz que sirve Google — .com es neutral/español,
+// .com.mx es México (acento latino), .com.ar es argentino, etc. La velocidad
+// se ajusta luego con atempo en ffmpeg (gTTS endpoint no expone ttsspeed
+// confiablemente).
 async function ttsGoogleTranslate(text, outPath) {
   const chunks = chunkSentences(text, 195)
   const buffers = []
   for (const chunk of chunks) {
-    const u = new URL('https://translate.google.com/translate_tts')
+    const u = new URL('https://translate.google.com.mx/translate_tts')
     u.searchParams.set('ie', 'UTF-8')
     u.searchParams.set('q', chunk)
     u.searchParams.set('tl', 'es')
@@ -1126,7 +1168,7 @@ async function ttsGoogleTranslate(text, outPath) {
     const r = await fetch(u, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        Referer: 'https://translate.google.com/',
+        Referer: 'https://translate.google.com.mx/',
       },
     })
     if (!r.ok) {
