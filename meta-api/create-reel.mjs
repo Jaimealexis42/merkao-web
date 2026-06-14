@@ -139,6 +139,68 @@ const CONTEXT_QUERIES = {
   ají: ['aji amarillo pepper peru', 'peruvian chili pepper'],
 }
 
+// Queries ESPECÍFICAS por par (base, modificador). Se prueban ANTES que las
+// CONTEXT_QUERIES genéricas. Resuelve "Cacao en polvo" mostrando POLVO en vez
+// de vainas (que es el match con cacao genérico). Lookup case-insensitive
+// post-cleanProductName (sin diacríticos). Key format: "base,modificador".
+const SPECIFIC_QUERIES = {
+  'cacao,polvo': ['cocoa powder dark chocolate', 'cocoa powder bowl spoon'],
+  'cacao,grano': ['cacao beans raw harvest'],
+  'cacao,granos': ['cacao beans raw harvest'],
+  'cacao,tostado': ['roasted cacao beans dark'],
+  'cafe,molido': ['ground coffee beans dark', 'ground coffee bowl'],
+  'cafe,polvo': ['ground coffee powder', 'ground coffee'],
+  'cafe,grano': ['coffee beans roasted whole'],
+  'cafe,granos': ['coffee beans roasted whole'],
+  'cafe,tostado': ['coffee beans roasted dark'],
+  'cafe,tostada': ['coffee beans roasted dark'],
+  'cafe,fresco': ['fresh coffee beans whole'],
+  'coffee,ground': ['ground coffee beans dark'],
+  'coffee,roasted': ['coffee beans roasted dark'],
+  'quinua,blanca': ['white quinoa grains bowl'],
+  'quinua,blanco': ['white quinoa grains bowl'],
+  'quinua,roja': ['red quinoa grains bowl'],
+  'quinua,rojo': ['red quinoa grains bowl'],
+  'quinua,negra': ['black quinoa grains bowl'],
+  'quinua,negro': ['black quinoa grains bowl'],
+  'quinua,polvo': ['quinoa flour powder bowl'],
+  'quinoa,white': ['white quinoa grains bowl'],
+  'quinoa,red': ['red quinoa grains bowl'],
+  'maca,polvo': ['maca powder bowl spoon', 'maca root powder'],
+  'maca,molido': ['maca powder bowl spoon'],
+  'maca,grano': ['maca root raw'],
+  'aji,polvo': ['chili powder spice bowl'],
+  'aji,molido': ['ground chili pepper'],
+  'aji,fresco': ['fresh chili pepper aji'],
+}
+
+// Modificadores de estado/forma. Cuando aparecen en el nombre del producto,
+// la query base se ajusta vía SPECIFIC_QUERIES Y el filtro de relevancia
+// EXIGE que la foto mencione el modificador en alt_description (AND con base).
+const MODIFIER_KEYWORDS = {
+  polvo: ['powder', 'ground', 'dust', 'bowl', 'spoon', 'flour'],
+  molido: ['ground', 'milled', 'powder', 'grinded'],
+  grano: ['beans', 'grain', 'seed', 'whole', 'raw'],
+  granos: ['beans', 'grain', 'seed', 'whole', 'raw'],
+  tostado: ['roasted', 'toasted', 'dark'],
+  tostada: ['roasted', 'toasted', 'dark'],
+  fresco: ['fresh', 'whole', 'raw'],
+  fresca: ['fresh', 'whole', 'raw'],
+  organico: ['organic'],
+  organica: ['organic'],
+  natural: ['natural', 'raw', 'organic'],
+  crudo: ['raw', 'unprocessed', 'fresh'],
+  cruda: ['raw', 'unprocessed', 'fresh'],
+  blanca: ['white'],
+  blanco: ['white'],
+  negra: ['black', 'dark'],
+  negro: ['black', 'dark'],
+  roja: ['red'],
+  rojo: ['red'],
+  amarilla: ['yellow'],
+  amarillo: ['yellow'],
+}
+
 // Keywords adicionales por keyword del producto. La foto debe mencionar
 // AL MENOS UNA en su alt_description o description para ser considerada
 // relevante. Sin esto, Unsplash (OR-loose text search) devuelve cualquier
@@ -1189,47 +1251,93 @@ function cleanProductName(s) {
 // Si ninguna de las primeras 3 palabras del producto está en CONTEXT_QUERIES
 // → skip producto. Multi-palabra captura cosas como "Cuadro shipibo-conibo"
 // donde "shipibo" da queries más específicas que "cuadro".
-function buildUnsplashStrictChain(product) {
-  // Procesamos las palabras EN REVERSA: "Cuadro shipibo-conibo" → primero
-  // 'conibo' y 'shipibo' (más específicos), después 'cuadro' (genérico).
-  // En español el modificador suele venir tras el sustantivo y es lo que
-  // describe mejor al producto.
-  const words = cleanProductName(product.nombre).split(/\s+/).slice(0, 3).reverse()
-  const chain = []
+// Analiza el nombre completo y devuelve { bases, modifiers } detectados.
+// `bases` son palabras conocidas en CONTEXT_QUERIES/RELEVANCE_KEYWORDS
+// (cacao, vestido, quinua…). `modifiers` son palabras en MODIFIER_KEYWORDS
+// (polvo, molido, tostado, blanca…). Detecta hasta 5 palabras del nombre.
+function analyzeProductName(product) {
+  const words = cleanProductName(product.nombre).split(/\s+/).slice(0, 5)
+  const bases = []
+  const modifiers = []
   for (const w of words) {
     const wen = ES_EN_MAP[w] || null
-    const ctx = CONTEXT_QUERIES[w] || (wen && CONTEXT_QUERIES[wen]) || []
+    if (CONTEXT_QUERIES[w] || (wen && CONTEXT_QUERIES[wen]) || RELEVANCE_KEYWORDS[w] || (wen && RELEVANCE_KEYWORDS[wen])) {
+      bases.push(w)
+    }
+    if (MODIFIER_KEYWORDS[w]) {
+      modifiers.push(w)
+    }
+  }
+  return { bases, modifiers, words }
+}
+
+function buildUnsplashStrictChain(product) {
+  const { bases, modifiers } = analyzeProductName(product)
+  const chain = []
+
+  // (1) Queries ESPECÍFICAS por (base, modificador). Más relevantes que las
+  //     genéricas — muestran el producto en el estado/forma correcto.
+  for (const base of bases) {
+    const baseEn = ES_EN_MAP[base] || null
+    for (const mod of modifiers) {
+      for (const key of [`${base},${mod}`, baseEn && `${baseEn},${mod}`]) {
+        if (key && SPECIFIC_QUERIES[key]) {
+          for (const q of SPECIFIC_QUERIES[key]) chain.push(q)
+        }
+      }
+    }
+  }
+
+  // (2) CONTEXT_QUERIES genéricas por base, en reversa (modificadores
+  //     antes que categorías genéricas — 'shipibo' antes que 'cuadro').
+  for (const base of bases.slice().reverse()) {
+    const baseEn = ES_EN_MAP[base] || null
+    const ctx = CONTEXT_QUERIES[base] || (baseEn && CONTEXT_QUERIES[baseEn]) || []
     for (const q of ctx) chain.push(q)
   }
+
   return [...new Set(chain)]
 }
 
-// Después de buscar, filtramos foto por foto contra una lista de keywords
-// relevantes para esa categoría. Una foto "pasa" si su alt_description o
-// description menciona al menos una keyword. Esto resuelve el OR-loose:
-// Unsplash devuelve N fotos, nosotros aceptamos solo las que de verdad
-// hablan del producto.
-function getRelevanceKeywords(product) {
-  const words = cleanProductName(product.nombre).split(/\s+/).slice(0, 3)
-  const kws = []
-  for (const w of words) {
-    const wen = ES_EN_MAP[w] || null
-    kws.push(w)
-    if (wen) kws.push(wen)
-    const extra = RELEVANCE_KEYWORDS[w] || (wen && RELEVANCE_KEYWORDS[wen]) || []
-    for (const k of extra) kws.push(k)
+// Devuelve { base, modifier } — listas de keywords. Para que una foto sea
+// relevante debe matchear AL MENOS UNA keyword de CADA lista no-vacía
+// (AND-of-ORs). Así "cacao en polvo" exige tanto cocoa/cacao/chocolate como
+// powder/ground/bowl en el alt_description.
+function getRelevanceCategories(product) {
+  const { bases, modifiers } = analyzeProductName(product)
+  const baseKws = []
+  for (const base of bases) {
+    const baseEn = ES_EN_MAP[base] || null
+    baseKws.push(base)
+    if (baseEn) baseKws.push(baseEn)
+    const extra = RELEVANCE_KEYWORDS[base] || (baseEn && RELEVANCE_KEYWORDS[baseEn]) || []
+    for (const k of extra) baseKws.push(k)
   }
-  return [...new Set(kws.filter(Boolean).map((s) => s.toLowerCase()))]
+  const modKws = []
+  for (const mod of modifiers) {
+    for (const k of MODIFIER_KEYWORDS[mod] || []) modKws.push(k)
+  }
+  return {
+    base: [...new Set(baseKws.filter(Boolean).map((s) => s.toLowerCase()))],
+    modifier: [...new Set(modKws.filter(Boolean).map((s) => s.toLowerCase()))],
+  }
 }
 
-function isPhotoRelevant(photo, keywords) {
-  if (keywords.length === 0) return false // sin keywords, no podemos validar
+function isPhotoRelevant(photo, categories) {
+  const { base, modifier } = categories
+  if (base.length === 0) return false // sin base, no podemos validar
   const text = (
     (photo.alt_description || '') +
     ' ' +
     (photo.description || '')
   ).toLowerCase()
-  return keywords.some((kw) => text.includes(kw))
+  const baseMatch = base.some((kw) => text.includes(kw))
+  if (!baseMatch) return false
+  // Si hay modificadores, EXIGIR que la foto mencione al menos uno
+  if (modifier.length > 0) {
+    return modifier.some((kw) => text.includes(kw))
+  }
+  return true
 }
 
 async function findUnsplashImagesForProduct(product, accessKey, count) {
@@ -1238,8 +1346,11 @@ async function findUnsplashImagesForProduct(product, accessKey, count) {
     console.log(`[reel]     producto sin CONTEXT_QUERIES match — skip`)
     return null
   }
-  const keywords = getRelevanceKeywords(product)
-  console.log(`[reel]     relevance keywords: [${keywords.slice(0, 8).join(', ')}]`)
+  const cats = getRelevanceCategories(product)
+  console.log(
+    `[reel]     base: [${cats.base.slice(0, 6).join(', ')}]` +
+      (cats.modifier.length > 0 ? ` ∧ mod: [${cats.modifier.join(', ')}]` : ''),
+  )
   for (const query of chain) {
     const u = new URL('https://api.unsplash.com/search/photos')
     u.searchParams.set('query', query)
@@ -1259,7 +1370,7 @@ async function findUnsplashImagesForProduct(product, accessKey, count) {
       console.log(`[reel]     query "${query}" → 0 hits`)
       continue
     }
-    const relevant = results.filter((p) => isPhotoRelevant(p, keywords))
+    const relevant = results.filter((p) => isPhotoRelevant(p, cats))
     console.log(
       `[reel]     query "${query}" → ${results.length} hits, ${relevant.length} relevantes`,
     )
