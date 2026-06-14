@@ -1228,8 +1228,9 @@ async function upload0x0(buf) {
 
 function cleanProductName(s) {
   return s
-    .split('—')[0].split(',')[0]
+    .split(',')[0]
     .replace(/\([^)]*\)/g, '')
+    .replace(/—/g, ' ') // em-dash como separador (no corta el sufijo "— Molido")
     .replace(/\b\d+\s*(kg|g|ml|l|cm|m|mm|gb|tb|pack)\b/gi, '')
     .replace(/\bx\s*\d+\b/gi, '')
     .replace(/[\d/"']/g, ' ')
@@ -1435,11 +1436,12 @@ async function generateVoiceover(text, outPath) {
   return 'gtts'
 }
 
-// ElevenLabs Multilingual v2 hace excelente español. Voz por defecto: "Rachel"
-// (21m00Tcm4TlvDq8ikWAM) que con multilingual_v2 suena natural en español.
-// Override con ELEVENLABS_VOICE_ID.
+// ElevenLabs Multilingual v2 hace excelente español. Voz por defecto:
+// "Sarah" (EXAVITQu4vr4xnSDxMaL) — default voice del Free tier, profesional
+// y cálida en español. Override con ELEVENLABS_VOICE_ID si tenés plan paid
+// y querés voces premium como Rachel/Bella.
 async function ttsElevenLabs(text, outPath, apiKey) {
-  const voiceId = stripWs(process.env.ELEVENLABS_VOICE_ID) || '21m00Tcm4TlvDq8ikWAM'
+  const voiceId = stripWs(process.env.ELEVENLABS_VOICE_ID) || 'EXAVITQu4vr4xnSDxMaL'
   const r = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
     method: 'POST',
     headers: {
