@@ -95,6 +95,11 @@ const ES_EN_MAP = {
 // (artesana tejiendo, agricultor cosechando, mercado) en vez del producto
 // aislado. Mucho más cinematográfico y on-brand para marketplace peruano.
 // Lookup por primera palabra del nombre (en español o equivalente inglés).
+//
+// IMPORTANTE: si la primera palabra del nombre del producto no está acá,
+// el producto se SALTA — no usamos paisajes genéricos. Para sumar productos
+// nuevos, agregar entrada con queries que mencionen explícitamente
+// el producto (las fotos luego se filtran por presencia de keywords).
 const CONTEXT_QUERIES = {
   // Granos / alimentos andinos
   quinua: ['quinoa harvest andes peru', 'quinoa farmer field'],
@@ -111,14 +116,62 @@ const CONTEXT_QUERIES = {
   alpaca: ['alpaca peru andes wool farm'],
   tejido: ['peruvian textile loom artisan', 'andean weaving'],
   polo: ['cotton textile artisan', 'peruvian artisan workshop'],
+  chullo: ['andean chullo hat wool', 'peruvian knitted hat'],
+  poncho: ['andean poncho traditional wool', 'peruvian poncho textile'],
   // Arte / artesanías
   cuadro: ['peruvian art painting artisan', 'andean folk art'],
   shipibo: ['shipibo art amazon peru', 'amazon indigenous art'],
-  ceramica: ['ceramic artisan pottery peru'],
+  ceramica: ['ceramic artisan pottery peru', 'pottery workshop hands'],
+  cerámica: ['ceramic artisan pottery peru', 'pottery workshop hands'],
+  retablo: ['peruvian retablo folk art', 'andean altarpiece painted'],
+  mate: ['peruvian mate gourd carved', 'andean gourd artisan'],
+  joya: ['peruvian silver jewelry handmade', 'silver craft jewelry'],
+  joyeria: ['peruvian silver jewelry handmade', 'silver craft jewelry'],
+  joyería: ['peruvian silver jewelry handmade', 'silver craft jewelry'],
+  tumi: ['peruvian tumi knife silver', 'andean ceremonial silver'],
+  bordado: ['peruvian embroidery textile', 'andean embroidered fabric'],
   // Bebidas peruanas
   pisco: ['pisco peruvian distillery', 'pisco grape vineyard peru'],
+  chicha: ['chicha morada peru drink', 'peruvian corn drink'],
   // Comida peruana
   ceviche: ['peruvian food market vendor', 'lima food market'],
+  aji: ['aji amarillo pepper peru', 'peruvian chili pepper'],
+  ají: ['aji amarillo pepper peru', 'peruvian chili pepper'],
+}
+
+// Keywords adicionales por keyword del producto. La foto debe mencionar
+// AL MENOS UNA en su alt_description o description para ser considerada
+// relevante. Sin esto, Unsplash (OR-loose text search) devuelve cualquier
+// foto que matchee un solo token — paisajes con tag "peru", etc.
+const RELEVANCE_KEYWORDS = {
+  quinua: ['quinoa', 'quinua', 'grain', 'cereal', 'harvest'],
+  quinoa: ['quinoa', 'quinua', 'grain', 'cereal', 'harvest'],
+  cacao: ['cacao', 'cocoa', 'bean', 'pod', 'chocolate'],
+  cafe: ['coffee', 'cafe', 'café', 'bean', 'roast', 'cup', 'espresso'],
+  café: ['coffee', 'cafe', 'café', 'bean', 'roast', 'cup', 'espresso'],
+  vestido: ['dress', 'textile', 'weaving', 'embroider', 'fabric', 'cloth', 'woman wearing'],
+  chompa: ['sweater', 'knit', 'wool', 'cardigan', 'jumper', 'chompa', 'alpaca'],
+  alpaca: ['alpaca', 'llama', 'wool', 'andes', 'fleece'],
+  tejido: ['weaving', 'loom', 'textile', 'knit', 'fabric'],
+  polo: ['shirt', 'cotton', 'tshirt', 'textile', 'fabric'],
+  chullo: ['chullo', 'hat', 'beanie', 'wool hat', 'knitted hat'],
+  poncho: ['poncho', 'cape', 'wool', 'andean clothing'],
+  cuadro: ['painting', 'artwork', 'canvas', 'art', 'mural', 'frame'],
+  shipibo: ['shipibo', 'amazon', 'indigenous', 'tribal', 'amazonian'],
+  ceramica: ['ceramic', 'pottery', 'clay', 'vase', 'pot', 'kiln'],
+  cerámica: ['ceramic', 'pottery', 'clay', 'vase', 'pot', 'kiln'],
+  retablo: ['retablo', 'altarpiece', 'folk art', 'painted box', 'shrine'],
+  mate: ['gourd', 'mate', 'calabash', 'carved gourd'],
+  joya: ['jewelry', 'jewellery', 'ring', 'necklace', 'silver', 'bracelet'],
+  joyeria: ['jewelry', 'jewellery', 'ring', 'necklace', 'silver', 'bracelet'],
+  joyería: ['jewelry', 'jewellery', 'ring', 'necklace', 'silver', 'bracelet'],
+  tumi: ['tumi', 'knife', 'silver', 'ceremonial'],
+  bordado: ['embroider', 'textile', 'fabric', 'stitching'],
+  pisco: ['pisco', 'bottle', 'distillery', 'grape', 'liquor', 'spirit', 'cocktail'],
+  chicha: ['chicha', 'corn drink', 'beverage', 'purple drink'],
+  ceviche: ['ceviche', 'seafood', 'fish', 'lime', 'food market'],
+  aji: ['pepper', 'chili', 'aji', 'spice'],
+  ají: ['pepper', 'chili', 'aji', 'spice'],
 }
 
 // ── 1. Args ───────────────────────────────────────────────────
@@ -187,58 +240,81 @@ if (preExistingVideo) {
   tmpDir = resolve(tmpdir(), 'merkao-reel-' + Date.now())
   mkdirSync(tmpDir, { recursive: true })
 
-  // Estrategia v2: las imágenes de Supabase son placeholders (picsum) que NO
-  // matchean al producto. Buscamos en Unsplash con queries derivados del nombre
-  // del producto + ciudad. Caemos en fallback chain si la query específica no
-  // tiene resultados. Si Unsplash falla del todo, usamos las imágenes Supabase
-  // como último recurso.
+  // Estrategia v3 (regla del usuario): NO usar paisajes genéricos.
+  //   (a) Si el producto tiene imágenes REALES (no picsum/placeholder),
+  //       usarlas directo — son las del vendedor.
+  //   (b) Si solo tiene placeholders, buscar en Unsplash con queries
+  //       ESTRICTAS (context queries o nombre+peru con ≥2 palabras).
+  //       Si Unsplash no devuelve nada en queries estrictas → SKIP el
+  //       producto y probar el siguiente (NO caer a fallbacks genéricos).
+  //   (c) Si tras N intentos ningún producto pasa los filtros, error.
+  // Los candidatos vienen ordenados con productos reales PRIMERO.
   const UNSPLASH_KEY = stripWs(process.env.UNSPLASH_ACCESS_KEY)
-  console.log('[reel] (2/6) Buscando imágenes temáticas en Unsplash…')
+  console.log('[reel] (2/6) Seleccionando imágenes (real-first, strict-match)…')
 
-  for (let attempt = 0; attempt < Math.min(candidates.length, 5); attempt++) {
+  const MAX_ATTEMPTS = Math.min(candidates.length, 10)
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
     const cand = candidates[attempt]
+    const hasReal = cand.realImageUrls.length > 0
     console.log(
-      `[reel]   intento ${attempt + 1}: "${cand.nombre}"` +
-        (cand.ciudad ? ` · ${cand.ciudad}` : ''),
+      `[reel]   intento ${attempt + 1}/${MAX_ATTEMPTS}: "${cand.nombre}"` +
+        (cand.ciudad ? ` · ${cand.ciudad}` : '') +
+        ` · ${hasReal ? `${cand.realImageUrls.length} imagen(es) REAL(es)` : 'solo placeholders'}`,
     )
 
-    // (a) Intento Unsplash con fallback chain
     let paths = []
-    if (UNSPLASH_KEY) {
+    let sourceUsed = null
+
+    // (a) Imágenes reales del vendedor — prioridad absoluta
+    if (hasReal) {
+      paths = await downloadUrlList(cand.realImageUrls, tmpDir, 'product')
+      if (paths.length > 0) sourceUsed = 'supabase_real'
+      else console.log('[reel]     ✗ imágenes reales no descargaron, probando Unsplash…')
+    }
+
+    // (b) Unsplash STRICT — solo si no hay reales o reales fallaron
+    if (paths.length === 0 && UNSPLASH_KEY) {
       try {
         const found = await findUnsplashImagesForProduct(cand, UNSPLASH_KEY, 3)
         if (found && found.photos.length > 0) {
           paths = await downloadUnsplashPhotos(found.photos, tmpDir)
-          unsplashMeta = {
-            query: found.query,
-            photo_ids: found.photos.map((p) => p.id),
-            photographers: found.photos.map((p) => p.user?.name || null),
+          if (paths.length > 0) {
+            unsplashMeta = {
+              query: found.query,
+              photo_ids: found.photos.map((p) => p.id),
+              photographers: found.photos.map((p) => p.user?.name || null),
+            }
+            sourceUsed = `unsplash:${found.query}`
+            console.log(`[reel]     ✓ Unsplash estricto "${found.query}" → ${paths.length} imgs`)
           }
-          console.log(
-            `[reel]     ✓ Unsplash "${found.query}" → ${paths.length}/${found.photos.length} imgs descargadas`,
-          )
         } else {
-          console.log('[reel]     ⚠ Unsplash sin resultados en ninguna query')
+          console.log(
+            '[reel]     ✗ Unsplash sin match estricto para este producto, skip',
+          )
         }
       } catch (e) {
-        console.warn(`[reel]     ⚠ Unsplash falló: ${e.message}`)
+        console.warn(`[reel]     ⚠ Unsplash error: ${e.message}`)
       }
-    }
-
-    // (b) Fallback: imagenes Supabase del producto (aunque sean placeholders)
-    if (paths.length === 0) {
-      console.log('[reel]     fallback a imágenes Supabase del producto…')
-      paths = await downloadProductImages(cand, tmpDir)
     }
 
     if (paths.length > 0) {
       product = cand
       imagePaths = paths
+      console.log(`[reel]     ✓ usando ${sourceUsed} (${paths.length} imgs)`)
       break
     }
-    console.log('[reel]   ✗ sin imágenes utilizables, probando siguiente producto…')
+    console.log('[reel]   ✗ sin imágenes que correspondan al producto, siguiente…')
   }
-  if (!product) bail('Ningún producto resultó en imágenes utilizables tras 5 intentos')
+  if (!product) {
+    bail(
+      'Ningún producto pasó los filtros tras ' +
+        MAX_ATTEMPTS +
+        ' intentos. ' +
+        'Verificar que existan productos en Supabase con imágenes reales O ' +
+        'productos cuyo nombre matchee CONTEXT_QUERIES (chompa, vestido, ' +
+        'quinua, cafe, pisco, etc).',
+    )
+  }
 
   console.log(
     `[reel]     ✓ producto final: "${product.nombre}"` +
@@ -454,10 +530,19 @@ function findFont(bold) {
 }
 
 // ── Supabase ──────────────────────────────────────────────────
-// Trae todos los productos activos con imágenes y devuelve uno random.
-// Las imágenes se devuelven EN ORDEN (imagenes[0] es la principal del producto).
-// Si la primera no descarga, el caller intenta con la siguiente. Si todas
-// fallan, cambia de producto.
+// Detecta URLs de placeholder (picsum.photos, placeholder.com, etc.). Estas
+// imágenes no corresponden al producto real → no se deben usar para el reel.
+function isPlaceholderUrl(url) {
+  return /picsum\.photos|placeholder\.com|placehold\.co|via\.placeholder|dummyimage/i.test(
+    url || '',
+  )
+}
+
+// Trae todos los productos activos con imágenes y los devuelve ordenados:
+// PRIMERO los que tienen imágenes reales subidas por el vendedor, DESPUÉS
+// los que solo tienen placeholders (picsum). Esta prioridad implementa la
+// regla del usuario: usar imágenes del vendedor cuando existan, y caer a
+// Unsplash temático solo para productos sin foto real.
 async function fetchProductCandidates(supabaseUrl, anonKey) {
   const u = new URL(supabaseUrl.replace(/\/+$/, '') + '/rest/v1/productos')
   u.searchParams.set('select', 'id,nombre,ciudad,precio,imagenes')
@@ -475,17 +560,34 @@ async function fetchProductCandidates(supabaseUrl, anonKey) {
   const withImgs = (Array.isArray(rows) ? rows : []).filter(
     (p) => Array.isArray(p.imagenes) && p.imagenes.length > 0,
   )
-  // Shuffle (Fisher-Yates) para que el caller pruebe en orden aleatorio
-  for (let i = withImgs.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[withImgs[i], withImgs[j]] = [withImgs[j], withImgs[i]]
+
+  // Separar por tipo de imagen: reales (subidas por vendedor) vs placeholder.
+  const real = []
+  const placeholderOnly = []
+  for (const p of withImgs) {
+    const hasReal = p.imagenes.some((url) => !isPlaceholderUrl(url))
+    ;(hasReal ? real : placeholderOnly).push(p)
   }
-  return withImgs.map((p) => ({
+  // Shuffle dentro de cada grupo
+  const shuffle = (arr) => {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[arr[i], arr[j]] = [arr[j], arr[i]]
+    }
+  }
+  shuffle(real)
+  shuffle(placeholderOnly)
+
+  console.log(
+    `[reel]     ${real.length} con imagen real, ${placeholderOnly.length} solo placeholder`,
+  )
+  return [...real, ...placeholderOnly].map((p) => ({
     id: p.id,
     nombre: p.nombre,
     ciudad: p.ciudad,
     precio: typeof p.precio === 'number' ? p.precio : Number(p.precio) || null,
-    imagenes: p.imagenes.slice(0, MAX_IMAGES_PER_REEL), // cap a 4
+    imagenes: p.imagenes.slice(0, MAX_IMAGES_PER_REEL),
+    realImageUrls: p.imagenes.filter((url) => !isPlaceholderUrl(url)).slice(0, MAX_IMAGES_PER_REEL),
   }))
 }
 
@@ -501,20 +603,19 @@ async function downloadTo(url, path) {
   writeFileSync(path, Buffer.from(ab))
 }
 
-// Descarga TODAS las imágenes válidas de un producto, en orden. Devuelve
-// array de paths locales. Si imagenes[0] falla pero imagenes[1] funciona,
-// usa imagenes[1] (no pierde el producto entero). Si todas fallan, devuelve [].
-async function downloadProductImages(product, tmpDir) {
+// Descarga una lista de URLs en orden. Cada URL → archivo local en tmpDir.
+// Si una descarga falla, log warn y continúa con la siguiente. Devuelve los
+// paths que sí descargaron.
+async function downloadUrlList(urls, tmpDir, prefix) {
   const paths = []
-  for (let i = 0; i < product.imagenes.length; i++) {
-    const url = product.imagenes[i]
-    const p = join(tmpDir, `product-${i}.jpg`)
+  for (let i = 0; i < urls.length; i++) {
+    const p = join(tmpDir, `${prefix}-${i}.jpg`)
     try {
-      await downloadTo(url, p)
+      await downloadTo(urls[i], p)
       paths.push(p)
-      console.log(`[reel]     ✓ imagen ${i + 1}/${product.imagenes.length}: ${statSync(p).size}B`)
+      console.log(`[reel]     ✓ ${prefix} ${i + 1}/${urls.length}: ${statSync(p).size}B`)
     } catch (e) {
-      console.warn(`[reel]     ⚠ imagen ${i + 1} falló: ${e.message}`)
+      console.warn(`[reel]     ⚠ ${prefix} ${i + 1} falló: ${e.message}`)
     }
   }
   return paths
@@ -1070,6 +1171,7 @@ function cleanProductName(s) {
     .replace(/\b\d+\s*(kg|g|ml|l|cm|m|mm|gb|tb|pack)\b/gi, '')
     .replace(/\bx\s*\d+\b/gi, '')
     .replace(/[\d/"']/g, ' ')
+    .replace(/-/g, ' ') // shipibo-conibo → shipibo conibo
     .toLowerCase()
     .normalize('NFD').replace(/[̀-ͯ]/g, '')
     .split(/\s+/).filter((w) => w && !STOP_WORDS.has(w))
@@ -1080,47 +1182,69 @@ function cleanProductName(s) {
 // Estrategia: probar primero queries con sesgo peruano (mejor match para
 // productos artesanales/tradicionales), luego queries sin "peru" (mejor para
 // tech/marcas internacionales donde "peru" puebla con paisajes irrelevantes).
-function buildUnsplashQueryChain(product) {
-  const words = cleanProductName(product.nombre).split(/\s+/).filter(Boolean)
-  const w1 = words[0] || 'peru'
-  const w1en = ES_EN_MAP[w1] || null
-  const ciudad = product.ciudad ? product.ciudad.toLowerCase() : null
+// Chain ESTRICTA — SOLO queries de CONTEXT_QUERIES (curadas a mano).
+// Sin fallbacks a top-N+peru porque Unsplash search es OR-loose y eso
+// devuelve cualquier foto de Perú tagueada con una de esas palabras (ej:
+// "retablo ayacuchano peru" matcheó paisaje Millpu de Ayacucho — bug crítico).
+// Si ninguna de las primeras 3 palabras del producto está en CONTEXT_QUERIES
+// → skip producto. Multi-palabra captura cosas como "Cuadro shipibo-conibo"
+// donde "shipibo" da queries más específicas que "cuadro".
+function buildUnsplashStrictChain(product) {
+  // Procesamos las palabras EN REVERSA: "Cuadro shipibo-conibo" → primero
+  // 'conibo' y 'shipibo' (más específicos), después 'cuadro' (genérico).
+  // En español el modificador suele venir tras el sustantivo y es lo que
+  // describe mejor al producto.
+  const words = cleanProductName(product.nombre).split(/\s+/).slice(0, 3).reverse()
   const chain = []
-
-  // (0) Queries contextuales: para productos con keyword reconocido en
-  //     CONTEXT_QUERIES, intentamos primero queries que muestren al producto
-  //     EN SU CONTEXTO (artesana tejiendo, agricultor cosechando) en vez del
-  //     producto aislado. Esto le da mucho más alma al reel.
-  const ctxQueries = CONTEXT_QUERIES[w1] || (w1en && CONTEXT_QUERIES[w1en]) || []
-  for (const ctx of ctxQueries) chain.push(ctx)
-
-  // 1) Top 3 + ciudad + peru
-  if (ciudad) chain.push([...words.slice(0, 3), ciudad, 'peru'].join(' '))
-  // 2) Top 3 + peru
-  chain.push([...words.slice(0, 3), 'peru'].join(' '))
-  // 3) Top 3 sin peru (para tech / marcas)
-  chain.push(words.slice(0, 3).join(' '))
-  // 4) Top 2 + peru
-  if (words.length >= 2) chain.push([...words.slice(0, 2), 'peru'].join(' '))
-  // 5) Top 2 sin peru
-  if (words.length >= 2) chain.push(words.slice(0, 2).join(' '))
-  // 6) inglés sin peru, luego con peru
-  if (w1en) chain.push(w1en)
-  if (w1en) chain.push(w1en + ' peru')
-  // 7) primera palabra + peru / sola
-  chain.push(w1 + ' peru')
-  chain.push(w1)
-
+  for (const w of words) {
+    const wen = ES_EN_MAP[w] || null
+    const ctx = CONTEXT_QUERIES[w] || (wen && CONTEXT_QUERIES[wen]) || []
+    for (const q of ctx) chain.push(q)
+  }
   return [...new Set(chain)]
 }
 
+// Después de buscar, filtramos foto por foto contra una lista de keywords
+// relevantes para esa categoría. Una foto "pasa" si su alt_description o
+// description menciona al menos una keyword. Esto resuelve el OR-loose:
+// Unsplash devuelve N fotos, nosotros aceptamos solo las que de verdad
+// hablan del producto.
+function getRelevanceKeywords(product) {
+  const words = cleanProductName(product.nombre).split(/\s+/).slice(0, 3)
+  const kws = []
+  for (const w of words) {
+    const wen = ES_EN_MAP[w] || null
+    kws.push(w)
+    if (wen) kws.push(wen)
+    const extra = RELEVANCE_KEYWORDS[w] || (wen && RELEVANCE_KEYWORDS[wen]) || []
+    for (const k of extra) kws.push(k)
+  }
+  return [...new Set(kws.filter(Boolean).map((s) => s.toLowerCase()))]
+}
+
+function isPhotoRelevant(photo, keywords) {
+  if (keywords.length === 0) return false // sin keywords, no podemos validar
+  const text = (
+    (photo.alt_description || '') +
+    ' ' +
+    (photo.description || '')
+  ).toLowerCase()
+  return keywords.some((kw) => text.includes(kw))
+}
+
 async function findUnsplashImagesForProduct(product, accessKey, count) {
-  const chain = buildUnsplashQueryChain(product)
+  const chain = buildUnsplashStrictChain(product)
+  if (chain.length === 0) {
+    console.log(`[reel]     producto sin CONTEXT_QUERIES match — skip`)
+    return null
+  }
+  const keywords = getRelevanceKeywords(product)
+  console.log(`[reel]     relevance keywords: [${keywords.slice(0, 8).join(', ')}]`)
   for (const query of chain) {
     const u = new URL('https://api.unsplash.com/search/photos')
     u.searchParams.set('query', query)
-    u.searchParams.set('per_page', String(Math.min(count * 4, 12)))
-    u.searchParams.set('orientation', 'portrait') // mejor para 1080x1920
+    u.searchParams.set('per_page', String(Math.min(count * 8, 30)))
+    u.searchParams.set('orientation', 'portrait')
     u.searchParams.set('content_filter', 'high')
     const r = await fetch(u, {
       headers: { Authorization: `Client-ID ${accessKey}`, 'Accept-Version': 'v1' },
@@ -1131,12 +1255,18 @@ async function findUnsplashImagesForProduct(product, accessKey, count) {
     }
     const j = await r.json()
     const results = Array.isArray(j?.results) ? j.results : []
-    if (results.length > 0) {
-      // shuffle y tomar `count` — variedad visual
-      const shuffled = [...results].sort(() => Math.random() - 0.5)
+    if (results.length === 0) {
+      console.log(`[reel]     query "${query}" → 0 hits`)
+      continue
+    }
+    const relevant = results.filter((p) => isPhotoRelevant(p, keywords))
+    console.log(
+      `[reel]     query "${query}" → ${results.length} hits, ${relevant.length} relevantes`,
+    )
+    if (relevant.length > 0) {
+      const shuffled = [...relevant].sort(() => Math.random() - 0.5)
       return { query, photos: shuffled.slice(0, count) }
     }
-    console.log(`[reel]     query "${query}" → 0 resultados`)
   }
   return null
 }
