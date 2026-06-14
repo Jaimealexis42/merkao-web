@@ -1,7 +1,7 @@
 {
-  "lastIndex": 1,
-  "lastPostedDate": "2026-06-13",
-  "totalPosts": 8,
+  "lastIndex": 2,
+  "lastPostedDate": "2026-06-14",
+  "totalPosts": 9,
   "history": [
     {
       "fecha": "2026-06-07T15:23:06.606Z",
@@ -143,6 +143,27 @@
         "photographer_url": "https://unsplash.com/@capturando_maravillas",
         "alt": "A large body of water with a mountain in the background"
       }
+    },
+    {
+      "fecha": "2026-06-14T15:08:05.993Z",
+      "fechaPeru": "2026-06-14",
+      "variantIndex": 2,
+      "variantId": 3,
+      "enfoque": "Artesana / productora regional",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122114473077345830",
+      "fbPhotoId": "122114473047345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122114473077345830",
+      "image": {
+        "query": "weaving peru",
+        "theme": "artesania",
+        "photo_id": "VIxflVJ1BEY",
+        "photo_url": "https://images.unsplash.com/photo-1524876111514-588a6c0ee324?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxOHx8d2VhdmluZyUyMHBlcnV8ZW58MXwwfHx8MTc4MTQ0OTY4Mnww&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Willian Justen de Vasconcellos",
+        "photographer_url": "https://unsplash.com/@willianjusten",
+        "alt": "woman sitting near shelf"
+      },
+      "ig": null
     }
   ]
 }
