@@ -17,16 +17,19 @@
 //   --no-image       saltar Unsplash, postear text-only a /feed (FB)
 //   --no-instagram   no publicar en Instagram aunque esté configurada
 //
-// Imagen: si UNSPLASH_ACCESS_KEY está seteada (.env o GitHub secret), busca
-// una foto landscape en Unsplash según el tema de la variante (VARIANT_THEMES
-// abajo) y la sube como /photos con caption. Si Unsplash falla o no hay
-// access key, hace fallback a /feed text-only sin romper el cron.
+// Imagen (orden de prioridad):
+//   1) Producto activo random de Supabase tabla `productos` (preferido) →
+//      muestra catálogo real + agrega "🛍️ nombre - ciudad · merkao.org" al
+//      caption. Requiere SUPABASE_URL y SUPABASE_ANON_KEY.
+//   2) Unsplash (paisaje peruano por tema de variante) si Supabase no devuelve
+//      productos o falla. Requiere UNSPLASH_ACCESS_KEY.
+//   3) Text-only a /feed si tampoco hay Unsplash (FB only; IG se salta).
 //
-// Instagram: si META_IG_BUSINESS_ACCOUNT_ID está seteada Y hay imagen,
-// publica también en @merkao_marketplace (mismo texto + imagen + hashtags
-// peruanos). IG no permite posts text-only por API → si Unsplash falló o
-// se usó --no-image, IG se salta. Falla en IG NO interrumpe el flujo: FB
-// ya quedó publicado y mañana se rota igual.
+// Instagram: si META_IG_USER_ID + META_IG_ACCESS_TOKEN están seteadas Y hay
+// imagen, publica también en @merkao_marketplace (texto + sufijo producto +
+// hashtags peruanos). IG no permite posts text-only por API → si no hay
+// imagen, IG se salta. Falla en IG NO interrumpe el flujo: FB ya quedó
+// publicado y mañana se rota igual.
 
 import { readFileSync, writeFileSync, existsSync, appendFileSync } from 'node:fs'
 import { resolve, dirname } from 'node:path'
@@ -148,43 +151,96 @@ if (dryRun) {
   process.exit(0)
 }
 
-// ── 6. Buscar y descargar imagen en Unsplash (opcional) ──────
+// ── 6. Elegir imagen: producto Merkao (Supabase) → fallback Unsplash ──
+// Prioridad:
+//   1) Producto activo random de la tabla `productos` con imágenes (preferido:
+//      muestra catálogo real + agrega "🛍️ nombre - ciudad" al caption)
+//   2) Unsplash (paisaje peruano según tema de la variante)
+//   3) Text-only a /feed (FB only; IG se salta)
 let imageBuffer = null
 let imageMeta = null
+let productInfo = null // { nombre, ciudad } usado para el caption suffix
+const supabaseUrl = process.env.SUPABASE_URL?.trim()
+const supabaseKey = process.env.SUPABASE_ANON_KEY?.trim()
 const unsplashKey = process.env.UNSPLASH_ACCESS_KEY?.trim()
+
 if (noImage) {
-  console.log('[fb] --no-image activo → posteo text-only a /feed')
-} else if (!unsplashKey) {
-  console.log('[fb] UNSPLASH_ACCESS_KEY no seteada → posteo text-only a /feed')
+  console.log('[img] --no-image activo → posteo text-only a /feed')
 } else {
-  const theme = VARIANT_THEMES[variante.id] || 'general'
-  const queries = THEMES[theme] || THEMES.general
-  console.log(`[fb] Unsplash: tema="${theme}" queries=${JSON.stringify(queries)}`)
-  try {
-    const { photo, query } = await searchUnsplash(queries, unsplashKey)
-    if (!photo) {
-      console.warn('[fb]   ⚠ sin resultados en ninguna query, fallback a text-only')
-      log(`WARN unsplash_no_results theme="${theme}"`)
-    } else {
-      imageBuffer = await downloadImage(photo.urls.regular)
-      imageMeta = {
-        query,
-        theme,
-        photo_id: photo.id,
-        photo_url: photo.urls.regular,
-        photographer: photo.user?.name || null,
-        photographer_url: photo.user?.links?.html || null,
-        alt: photo.alt_description || null,
+  // (1) Intentar producto real de Merkao
+  if (supabaseUrl && supabaseKey) {
+    try {
+      const product = await fetchRandomMerkaoProduct(supabaseUrl, supabaseKey)
+      if (!product) {
+        console.log('[img] sin productos activos con imágenes en Supabase → fallback Unsplash')
+        log('WARN supabase_no_products')
+      } else {
+        imageBuffer = await downloadImage(product.imageUrl)
+        imageMeta = {
+          source: 'merkao_product',
+          product_id: product.id,
+          nombre: product.nombre,
+          ciudad: product.ciudad,
+          photo_url: product.imageUrl,
+        }
+        productInfo = { nombre: product.nombre, ciudad: product.ciudad }
+        console.log(
+          `[img] ✓ producto Merkao "${product.nombre}"` +
+            (product.ciudad ? ` (${product.ciudad})` : '') +
+            ` — ${imageBuffer.length} bytes`,
+        )
       }
-      console.log(`[fb]   ✓ "${photo.alt_description || photo.id}" by ${photo.user?.name} (${imageBuffer.length} bytes)`)
+    } catch (e) {
+      console.warn(`[img] ⚠ Supabase falló: ${e.message}. Fallback a Unsplash.`)
+      log(`WARN supabase_failed msg="${e.message}"`)
     }
-  } catch (e) {
-    console.warn(`[fb]   ⚠ Unsplash falló: ${e.message}. Fallback a text-only.`)
-    log(`WARN unsplash_failed msg="${e.message}"`)
-    imageBuffer = null
-    imageMeta = null
+  } else {
+    console.log('[img] SUPABASE_URL/SUPABASE_ANON_KEY no seteadas → usar Unsplash')
+  }
+
+  // (2) Fallback Unsplash si no se obtuvo imagen de producto
+  if (!imageBuffer) {
+    if (!unsplashKey) {
+      console.log('[img] UNSPLASH_ACCESS_KEY no seteada → text-only a /feed')
+    } else {
+      const theme = VARIANT_THEMES[variante.id] || 'general'
+      const queries = THEMES[theme] || THEMES.general
+      console.log(`[img] Unsplash: tema="${theme}" queries=${JSON.stringify(queries)}`)
+      try {
+        const { photo, query } = await searchUnsplash(queries, unsplashKey)
+        if (!photo) {
+          console.warn('[img]   ⚠ sin resultados en ninguna query, text-only')
+          log(`WARN unsplash_no_results theme="${theme}"`)
+        } else {
+          imageBuffer = await downloadImage(photo.urls.regular)
+          imageMeta = {
+            source: 'unsplash',
+            query,
+            theme,
+            photo_id: photo.id,
+            photo_url: photo.urls.regular,
+            photographer: photo.user?.name || null,
+            photographer_url: photo.user?.links?.html || null,
+            alt: photo.alt_description || null,
+          }
+          console.log(`[img]   ✓ Unsplash "${photo.alt_description || photo.id}" by ${photo.user?.name} (${imageBuffer.length} bytes)`)
+        }
+      } catch (e) {
+        console.warn(`[img]   ⚠ Unsplash falló: ${e.message}. Text-only.`)
+        log(`WARN unsplash_failed msg="${e.message}"`)
+        imageBuffer = null
+        imageMeta = null
+      }
+    }
   }
 }
+
+// Sufijo de caption para productos reales (solo cuando la imagen vino de Supabase).
+// FB e IG comparten el mismo sufijo. IG agrega además los hashtags al final.
+const productSuffix = productInfo
+  ? `\n\n🛍️ ${productInfo.nombre}${productInfo.ciudad ? ` - ${productInfo.ciudad}` : ''} · merkao.org`
+  : ''
+const fbCaption = variante.texto + productSuffix
 
 // ── 7. POST to Graph API (/photos si hay imagen, /feed si no) ──
 const endpoint = imageBuffer ? 'photos' : 'feed'
@@ -195,13 +251,13 @@ let res
 try {
   if (imageBuffer) {
     const fd = new FormData()
-    fd.append('caption', variante.texto)
+    fd.append('caption', fbCaption)
     fd.append('access_token', PAGE_TOKEN)
     fd.append('source', new Blob([imageBuffer], { type: 'image/jpeg' }), 'merkao.jpg')
     res = await fetch(fbUrl, { method: 'POST', body: fd })
   } else {
     const u = new URL(fbUrl)
-    u.searchParams.set('message', variante.texto)
+    u.searchParams.set('message', fbCaption)
     u.searchParams.set('access_token', PAGE_TOKEN)
     res = await fetch(u, { method: 'POST' })
   }
@@ -244,9 +300,10 @@ if (noInstagram) {
 } else if (!imageMeta) {
   console.log('[ig] sin imagen disponible → IG requiere imagen, skip')
 } else {
-  const igCaption = `${variante.texto}\n\n${IG_HASHTAGS}`
+  // IG caption = texto + (sufijo producto si aplica) + hashtags
+  const igCaption = `${variante.texto}${productSuffix}\n\n${IG_HASHTAGS}`
   console.log(`[ig] Publicando en @merkao_marketplace (ig_user=${IG_USER_ID})…`)
-  console.log(`[ig]   caption: ${igCaption.length} chars (texto + hashtags)`)
+  console.log(`[ig]   caption: ${igCaption.length} chars (texto${productSuffix ? ' + producto' : ''} + hashtags)`)
   try {
     igResult = await postToInstagram({
       igUserId: IG_USER_ID,
@@ -367,6 +424,37 @@ async function downloadImage(url) {
   if (!r.ok) throw new Error(`download ${r.status} url=${url}`)
   const ab = await r.arrayBuffer()
   return Buffer.from(ab)
+}
+
+// Trae hasta 20 productos activos con imágenes desde Supabase REST y elige
+// uno al azar; después elige una imagen al azar de su array `imagenes`.
+// Devuelve { id, nombre, ciudad, imageUrl } o null si no hay matches.
+// Throws si la API responde !ok (red, key inválida, RLS bloqueando).
+async function fetchRandomMerkaoProduct(supabaseUrl, anonKey) {
+  const u = new URL(supabaseUrl.replace(/\/+$/, '') + '/rest/v1/productos')
+  u.searchParams.set('select', 'id,nombre,ciudad,imagenes')
+  u.searchParams.set('estado', 'eq.activo')
+  u.searchParams.set('imagenes', 'not.is.null')
+  u.searchParams.set('limit', '20')
+  const r = await fetch(u, {
+    headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` },
+  })
+  if (!r.ok) {
+    const body = await r.text().catch(() => '')
+    throw new Error(`supabase ${r.status}: ${body.slice(0, 200)}`)
+  }
+  const rows = await r.json()
+  if (!Array.isArray(rows) || rows.length === 0) return null
+  const withImgs = rows.filter((p) => Array.isArray(p.imagenes) && p.imagenes.length > 0)
+  if (withImgs.length === 0) return null
+  const product = withImgs[Math.floor(Math.random() * withImgs.length)]
+  const imageUrl = product.imagenes[Math.floor(Math.random() * product.imagenes.length)]
+  return {
+    id: product.id,
+    nombre: product.nombre,
+    ciudad: product.ciudad,
+    imageUrl,
+  }
 }
 
 // Publica una imagen en Instagram via "Instagram API with Instagram Login"

@@ -16,7 +16,9 @@ name: Merkao Facebook + Instagram daily post
 #   META_IG_ACCESS_TOKEN            (opcional — long-lived IG token de graph.instagram.com,
 #                                    flujo "Instagram API with Instagram Login". Dura 60d:
 #                                    refrescar con GET /refresh_access_token antes de expirar)
-#   UNSPLASH_ACCESS_KEY             (opcional; sin esto FB queda text-only e IG se salta)
+#   SUPABASE_URL                    (opcional — usa productos reales en vez de Unsplash)
+#   SUPABASE_ANON_KEY               (opcional — anon JWT del proyecto)
+#   UNSPLASH_ACCESS_KEY             (opcional — fallback si Supabase no devuelve productos)
 #   ANTHROPIC_API_KEY               (para futura regeneración de variantes)
 
 on:
@@ -69,6 +71,8 @@ jobs:
           META_PAGE_ACCESS_TOKEN: ${{ secrets.META_PAGE_ACCESS_TOKEN }}
           META_IG_USER_ID: ${{ secrets.META_IG_USER_ID }}
           META_IG_ACCESS_TOKEN: ${{ secrets.META_IG_ACCESS_TOKEN }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
         run: |
