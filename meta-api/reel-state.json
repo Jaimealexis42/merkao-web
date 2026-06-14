@@ -1,6 +1,6 @@
 {
   "lastReelDate": "2026-06-14",
-  "totalReels": 1,
+  "totalReels": 2,
   "history": [
     {
       "fecha": "2026-06-14T17:13:17.318Z",
@@ -18,6 +18,24 @@
         "videoId": "2467181697057454",
         "permalink": "https://www.facebook.com/reel/2467181697057454",
         "elapsedMs": 7831
+      }
+    },
+    {
+      "fecha": "2026-06-14T17:17:47.269Z",
+      "fechaPeru": "2026-06-14",
+      "product": {
+        "id": "faa152bc-5038-44fb-83ca-ca93a2cc95f9",
+        "nombre": "Sofá 2 cuerpos tela antimanchas gris Oxford",
+        "ciudad": "Lima",
+        "precio": 890
+      },
+      "ig": {
+        "error": "0x0.st 503: uploads disabled because it’s been almost nothing but AI botnet spam for the past few months. will be back with a few changes at some point. no ETA."
+      },
+      "fb": {
+        "videoId": "1034273592590427",
+        "permalink": "https://www.facebook.com/reel/1034273592590427",
+        "elapsedMs": 13678
       }
     }
   ]
