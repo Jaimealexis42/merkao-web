@@ -1,6 +1,6 @@
 {
-  "lastReelDate": "2026-06-16",
-  "totalReels": 6,
+  "lastReelDate": "2026-06-17",
+  "totalReels": 7,
   "history": [
     {
       "fecha": "2026-06-14T17:13:17.318Z",
@@ -120,6 +120,27 @@
         "videoId": "1486118486078352",
         "permalink": "https://www.facebook.com/reel/1486118486078352",
         "elapsedMs": 11814
+      }
+    },
+    {
+      "fecha": "2026-06-17T16:41:44.746Z",
+      "fechaPeru": "2026-06-17",
+      "product": {
+        "id": "f6d3d48d-6fb5-4ac2-b2e9-da0b80040e79",
+        "nombre": "Quinua orgánica blanca Puno — 5 kg",
+        "ciudad": "Puno",
+        "precio": 45
+      },
+      "ig": {
+        "mediaId": "18070497119698148",
+        "containerId": "18126261907564725",
+        "permalink": "https://www.instagram.com/reel/DZsa4_LkQ3u/",
+        "elapsedMs": 32479
+      },
+      "fb": {
+        "videoId": "1007948141981748",
+        "permalink": "https://www.facebook.com/reel/1007948141981748",
+        "elapsedMs": 9842
       }
     }
   ]

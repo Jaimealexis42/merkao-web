@@ -1,7 +1,7 @@
 {
-  "lastIndex": 5,
-  "lastPostedDate": "2026-06-16",
-  "totalPosts": 12,
+  "lastIndex": 6,
+  "lastPostedDate": "2026-06-17",
+  "totalPosts": 13,
   "history": [
     {
       "fecha": "2026-06-07T15:23:06.606Z",
@@ -243,6 +243,33 @@
         "containerId": "18126042781564725",
         "permalink": "https://www.instagram.com/p/DZp_26CGkHG/",
         "elapsedMs": 10898
+      }
+    },
+    {
+      "fecha": "2026-06-17T16:40:42.964Z",
+      "fechaPeru": "2026-06-17",
+      "variantIndex": 6,
+      "variantId": 7,
+      "enfoque": "Invitación corta y cálida",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122116683099345830",
+      "fbPhotoId": "122116683033345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122116683099345830",
+      "image": {
+        "source": "unsplash",
+        "query": "ropa colorida peru",
+        "theme": "moda",
+        "photo_id": "tZ6uJBMJuVE",
+        "photo_url": "https://images.unsplash.com/photo-1730432447904-d0d408ad15c1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxOXx8cm9wYSUyMGNvbG9yaWRhJTIwcGVydXxlbnwxfDB8fHwxNzgxNzE0NDI4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Naveen Raj Dhanapal",
+        "photographer_url": "https://unsplash.com/@naveen_rd",
+        "alt": "A woman in a colorful headdress holding a surfboard"
+      },
+      "ig": {
+        "mediaId": "17976674742050732",
+        "containerId": "18126261880564725",
+        "permalink": "https://www.instagram.com/p/DZsa1Iwka4V/",
+        "elapsedMs": 9497
       }
     }
   ]
