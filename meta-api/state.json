@@ -1,7 +1,7 @@
 {
-  "lastIndex": 6,
-  "lastPostedDate": "2026-06-17",
-  "totalPosts": 13,
+  "lastIndex": 0,
+  "lastPostedDate": "2026-06-18",
+  "totalPosts": 14,
   "history": [
     {
       "fecha": "2026-06-07T15:23:06.606Z",
@@ -270,6 +270,33 @@
         "containerId": "18126261880564725",
         "permalink": "https://www.instagram.com/p/DZsa1Iwka4V/",
         "elapsedMs": 9497
+      }
+    },
+    {
+      "fecha": "2026-06-18T16:41:38.553Z",
+      "fechaPeru": "2026-06-18",
+      "variantIndex": 0,
+      "variantId": 1,
+      "enfoque": "Comparativa con números",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122117545083345830",
+      "fbPhotoId": "122117545059345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122117545083345830",
+      "image": {
+        "source": "unsplash",
+        "query": "paisaje peru",
+        "theme": "general",
+        "photo_id": "fvptwPZ2Fqo",
+        "photo_url": "https://images.unsplash.com/photo-1563818708336-3e3449ca7eb4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHw5fHxwYWlzYWplJTIwcGVydXxlbnwxfDB8fHwxNzgxODAwODc4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Amilcar Alvarez Garcia",
+        "photographer_url": "https://unsplash.com/@amil_style",
+        "alt": "mountain under blue sky"
+      },
+      "ig": {
+        "mediaId": "17869123713554662",
+        "containerId": "18126519763564725",
+        "permalink": "https://www.instagram.com/p/DZu_uaWExJ7/",
+        "elapsedMs": 12653
       }
     }
   ]
