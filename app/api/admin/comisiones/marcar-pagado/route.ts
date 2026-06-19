@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import { isAdminEmail } from '@/lib/admin'
 
 // POST /api/admin/comisiones/marcar-pagado
 // Marca una comision liberada como pagada al vendedor (transfer off-platform OK).
-// Auth: bearer + email allowlist (mismo modelo que GET /api/admin/comisiones).
+// Auth: bearer + email allowlist (lib/admin). Mismo modelo que GET /api/admin/comisiones.
 
-const ADMIN_EMAILS = new Set(['alexisaranap21@gmail.com'])
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 let _admin: SupabaseClient | null = null
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
   if (eUser || !userData.user) {
     return NextResponse.json({ error: 'Sesión inválida.' }, { status: 401 })
   }
-  if (!ADMIN_EMAILS.has((userData.user.email ?? '').toLowerCase())) {
+  if (!isAdminEmail(userData.user.email)) {
     return NextResponse.json({ error: 'No autorizado.' }, { status: 403 })
   }
 

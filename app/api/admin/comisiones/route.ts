@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import { isAdminEmail } from '@/lib/admin'
 
 // ── Endpoint admin: snapshot completo del ledger de comisiones Merkao.
-// Auth: bearer + email allowlist. La tabla tiene RLS sin policies para
-// anon — solo el service_role la lee. La validación de email viene del
+// Auth: bearer + email allowlist (lib/admin). La tabla tiene RLS sin policies
+// para anon — solo el service_role la lee. La validación de email viene del
 // JWT del usuario (server-side, no se confía en el cliente).
-
-const ADMIN_EMAILS = new Set(['alexisaranap21@gmail.com'])
 
 let _admin: SupabaseClient | null = null
 function getAdminClient(): SupabaseClient | null {
@@ -77,8 +76,7 @@ export async function GET(req: NextRequest) {
   if (eUser || !userData.user) {
     return NextResponse.json({ error: 'Sesión inválida.' }, { status: 401 })
   }
-  const userEmail = (userData.user.email ?? '').toLowerCase()
-  if (!ADMIN_EMAILS.has(userEmail)) {
+  if (!isAdminEmail(userData.user.email)) {
     return NextResponse.json({ error: 'No autorizado.' }, { status: 403 })
   }
 

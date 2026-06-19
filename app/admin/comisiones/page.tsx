@@ -4,8 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/useAuth'
-
-const ADMIN_EMAIL = 'alexisaranap21@gmail.com'
+import { isAdminEmail } from '@/lib/admin'
 
 type ComisionItem = {
   id: string
@@ -72,7 +71,7 @@ export default function AdminComisionesPage() {
       router.replace('/login?redirect=/admin/comisiones')
       return
     }
-    if ((user.email ?? '').toLowerCase() !== ADMIN_EMAIL) {
+    if (!isAdminEmail(user.email)) {
       router.replace('/')
       return
     }
@@ -209,7 +208,7 @@ export default function AdminComisionesPage() {
     return <div style={{ padding: 32, fontFamily: 'system-ui' }}>Cargando…</div>
   }
 
-  if ((user?.email ?? '').toLowerCase() !== ADMIN_EMAIL) {
+  if (!isAdminEmail(user?.email)) {
     return null
   }
 

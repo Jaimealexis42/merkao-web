@@ -25,11 +25,16 @@ COMMENT ON COLUMN perfiles.yape_plin      IS 'Número de celular registrado en Y
 -- RLS: cada usuario solo puede ver y editar su propio perfil
 ALTER TABLE perfiles ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "perfil_select_own"
+-- Patrón DROP+CREATE: Postgres no soporta `IF NOT EXISTS` en `CREATE POLICY`,
+-- así que para que este script sea re-ejecutable sin error tiramos primero.
+DROP POLICY IF EXISTS "perfil_select_own" ON perfiles;
+CREATE POLICY "perfil_select_own"
   ON perfiles FOR SELECT USING (auth.uid() = id);
 
-CREATE POLICY IF NOT EXISTS "perfil_insert_own"
+DROP POLICY IF EXISTS "perfil_insert_own" ON perfiles;
+CREATE POLICY "perfil_insert_own"
   ON perfiles FOR INSERT WITH CHECK (auth.uid() = id);
 
-CREATE POLICY IF NOT EXISTS "perfil_update_own"
+DROP POLICY IF EXISTS "perfil_update_own" ON perfiles;
+CREATE POLICY "perfil_update_own"
   ON perfiles FOR UPDATE USING (auth.uid() = id);

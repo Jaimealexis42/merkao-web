@@ -36,19 +36,27 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <GoogleAnalytics />
         {children}
-        <Script id="tawkto" strategy="afterInteractive">
-          {`
-            var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-            (function(){
-              var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-              s1.async=true;
-              s1.src='https://embed.tawk.to/69d7917a03af4e1c38194370/1jlp10hp1';
-              s1.charset='UTF-8';
-              s1.setAttribute('crossorigin','*');
-              s0.parentNode.insertBefore(s1,s0);
-            })();
-          `}
-        </Script>
+        {/* Tawk solo en producción. En dev su bundle emite `console.error(true)`
+            desde twk-chunk-common.js, lo cual ensucia el console del browser
+            (no es código nuestro — confirmado con bisect). En prod sí lo
+            queremos: es el chat de soporte. `process.env.NODE_ENV` lo evalúa
+            Next en build-time, así el dev bundle no incluye ni siquiera la
+            tag <Script>. */}
+        {process.env.NODE_ENV === 'production' && (
+          <Script id="tawkto" strategy="afterInteractive">
+            {`
+              var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+              (function(){
+                var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+                s1.async=true;
+                s1.src='https://embed.tawk.to/69d7917a03af4e1c38194370/1jlp10hp1';
+                s1.charset='UTF-8';
+                s1.setAttribute('crossorigin','*');
+                s0.parentNode.insertBefore(s1,s0);
+              })();
+            `}
+          </Script>
+        )}
       </body>
     </html>
   );

@@ -20,12 +20,17 @@ COMMENT ON COLUMN tiendas.logo_url    IS 'URL pública del logo de la tienda';
 ALTER TABLE tiendas ENABLE ROW LEVEL SECURITY;
 
 -- Lectura pública: cualquiera puede ver la información de la tienda.
-CREATE POLICY IF NOT EXISTS "tienda_select_public"
+-- Patrón DROP+CREATE: Postgres no soporta `IF NOT EXISTS` en `CREATE POLICY`,
+-- así que para que este script sea re-ejecutable sin error tiramos primero.
+DROP POLICY IF EXISTS "tienda_select_public" ON tiendas;
+CREATE POLICY "tienda_select_public"
   ON tiendas FOR SELECT USING (true);
 
 -- Escritura: solo el dueño puede insertar/actualizar su propia tienda.
-CREATE POLICY IF NOT EXISTS "tienda_insert_own"
+DROP POLICY IF EXISTS "tienda_insert_own" ON tiendas;
+CREATE POLICY "tienda_insert_own"
   ON tiendas FOR INSERT WITH CHECK (auth.uid() = id);
 
-CREATE POLICY IF NOT EXISTS "tienda_update_own"
+DROP POLICY IF EXISTS "tienda_update_own" ON tiendas;
+CREATE POLICY "tienda_update_own"
   ON tiendas FOR UPDATE USING (auth.uid() = id);

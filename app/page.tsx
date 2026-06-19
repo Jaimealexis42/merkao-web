@@ -7,6 +7,7 @@ import { T, CAT_NAMES, type Lang } from '@/lib/translations'
 import { useCarritoStore } from '@/src/store/carritoStore'
 import { Icon, type IconName } from '@/lib/icons'
 import { DEPARTAMENTOS_PERU } from '@/lib/peru-geo'
+import TrackPageView from '@/components/TrackPageView'
 
 /* ─────────────────────────── CONSTANTES ─────────────────────────── */
 
@@ -376,6 +377,7 @@ export default function Home() {
 
   return (
     <>
+      <TrackPageView />
       {/* ══════════════════ HEADER ══════════════════ */}
       <header className="mk-hdr">
         <div className="mk-hdr-top">
