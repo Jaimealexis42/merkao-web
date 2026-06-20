@@ -1,7 +1,7 @@
 {
-  "lastIndex": 1,
-  "lastPostedDate": "2026-06-19",
-  "totalPosts": 15,
+  "lastIndex": 2,
+  "lastPostedDate": "2026-06-20",
+  "totalPosts": 16,
   "history": [
     {
       "fecha": "2026-06-07T15:23:06.606Z",
@@ -324,6 +324,33 @@
         "containerId": "18126758182564725",
         "permalink": "https://www.instagram.com/p/DZxgqBvGtml/",
         "elapsedMs": 8612
+      }
+    },
+    {
+      "fecha": "2026-06-20T15:04:52.992Z",
+      "fechaPeru": "2026-06-20",
+      "variantIndex": 2,
+      "variantId": 3,
+      "enfoque": "Artesana / productora regional",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122118696267345830",
+      "fbPhotoId": "122118696213345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122118696267345830",
+      "image": {
+        "source": "unsplash",
+        "query": "weaving peru",
+        "theme": "artesania",
+        "photo_id": "fqur_YKkxI4",
+        "photo_url": "https://images.unsplash.com/photo-1524876564579-55d0eeeb00f3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHw0fHx3ZWF2aW5nJTIwcGVydXxlbnwxfDB8fHwxNzgxOTY3ODc5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Willian Justen de Vasconcellos",
+        "photographer_url": "https://unsplash.com/@willianjusten",
+        "alt": "woman sitting on chair"
+      },
+      "ig": {
+        "mediaId": "17979569774865199",
+        "containerId": "18126999154564725",
+        "permalink": "https://www.instagram.com/p/DZz-QBZkQnC/",
+        "elapsedMs": 7866
       }
     }
   ]
