@@ -1,7 +1,7 @@
 {
-  "lastIndex": 2,
-  "lastPostedDate": "2026-06-20",
-  "totalPosts": 16,
+  "lastIndex": 3,
+  "lastPostedDate": "2026-06-21",
+  "totalPosts": 17,
   "history": [
     {
       "fecha": "2026-06-07T15:23:06.606Z",
@@ -351,6 +351,33 @@
         "containerId": "18126999154564725",
         "permalink": "https://www.instagram.com/p/DZz-QBZkQnC/",
         "elapsedMs": 7866
+      }
+    },
+    {
+      "fecha": "2026-06-21T15:12:47.347Z",
+      "fechaPeru": "2026-06-21",
+      "variantIndex": 3,
+      "variantId": 4,
+      "enfoque": "Pregunta abierta a la comunidad",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122119482675345830",
+      "fbPhotoId": "122119482591345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122119482675345830",
+      "image": {
+        "source": "unsplash",
+        "query": "paisaje peru",
+        "theme": "general",
+        "photo_id": "fvptwPZ2Fqo",
+        "photo_url": "https://images.unsplash.com/photo-1563818708336-3e3449ca7eb4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHw5fHxwYWlzYWplJTIwcGVydXxlbnwxfDB8fHwxNzgyMDU0NzUxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Amilcar Alvarez Garcia",
+        "photographer_url": "https://unsplash.com/@amil_style",
+        "alt": "mountain under blue sky"
+      },
+      "ig": {
+        "mediaId": "18006807788868324",
+        "containerId": "18127285894564725",
+        "permalink": "https://www.instagram.com/p/DZ2j8h2loHm/",
+        "elapsedMs": 9893
       }
     }
   ]
