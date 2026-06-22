@@ -1,6 +1,6 @@
 {
-  "lastReelDate": "2026-06-21",
-  "totalReels": 11,
+  "lastReelDate": "2026-06-22",
+  "totalReels": 12,
   "history": [
     {
       "fecha": "2026-06-14T17:13:17.318Z",
@@ -225,6 +225,27 @@
         "videoId": "1041773165105383",
         "permalink": "https://www.facebook.com/reel/1041773165105383",
         "elapsedMs": 12243
+      }
+    },
+    {
+      "fecha": "2026-06-22T17:42:56.763Z",
+      "fechaPeru": "2026-06-22",
+      "product": {
+        "id": "9d8833c9-e109-4dcf-95ac-0a650f34385c",
+        "nombre": "Vestido bordado ayacuchano multicolor",
+        "ciudad": "Ayacucho",
+        "precio": 120
+      },
+      "ig": {
+        "mediaId": "18096918542520576",
+        "containerId": "18127627903564725",
+        "permalink": "https://www.instagram.com/reel/DZ5Z3hbE3Cy/",
+        "elapsedMs": 32298
+      },
+      "fb": {
+        "videoId": "26924115730604630",
+        "permalink": "https://www.facebook.com/reel/26924115730604630",
+        "elapsedMs": 12120
       }
     }
   ]
