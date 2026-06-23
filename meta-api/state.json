@@ -1,7 +1,7 @@
 {
-  "lastIndex": 4,
-  "lastPostedDate": "2026-06-22",
-  "totalPosts": 18,
+  "lastIndex": 5,
+  "lastPostedDate": "2026-06-23",
+  "totalPosts": 19,
   "history": [
     {
       "fecha": "2026-06-07T15:23:06.606Z",
@@ -405,6 +405,33 @@
         "containerId": "18127627852564725",
         "permalink": "https://www.instagram.com/p/DZ5Zyv7FH04/",
         "elapsedMs": 7156
+      }
+    },
+    {
+      "fecha": "2026-06-23T15:51:27.635Z",
+      "fechaPeru": "2026-06-23",
+      "variantIndex": 5,
+      "variantId": 6,
+      "enfoque": "Tip de venta + mención natural",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122121293469345830",
+      "fbPhotoId": "122121293445345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122121293469345830",
+      "image": {
+        "source": "unsplash",
+        "query": "cafe peru plantacion",
+        "theme": "cafe",
+        "photo_id": "b8xo59IcAUY",
+        "photo_url": "https://images.unsplash.com/photo-1629008642899-178df6fc5f2f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHw4fHxjYWZlJTIwcGVydSUyMHBsYW50YWNpb258ZW58MXwwfHx8MTc4MjIyOTg3MXww&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Nguyen Tong Hai Van",
+        "photographer_url": "https://unsplash.com/@ngtghaivan",
+        "alt": "red and brown round fruits in white plastic bucket"
+      },
+      "ig": {
+        "mediaId": "18057756989758297",
+        "containerId": "18127876897564725",
+        "permalink": "https://www.instagram.com/p/DZ7x9c-GszQ/",
+        "elapsedMs": 10954
       }
     }
   ]
