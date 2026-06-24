@@ -837,6 +837,7 @@ export default function Home() {
                 { label: lang === 'en' ? 'Shipping & delivery' : lang === 'pt' ? 'Envios e entregas' : 'Envíos y entregas', href: '#' },
                 { label: lang === 'en' ? 'Returns' : lang === 'pt' ? 'Devoluções' : 'Devoluciones', href: '#' },
                 { label: lang === 'en' ? 'Contact' : lang === 'pt' ? 'Contato' : 'Contacto', href: '/contacto' },
+                { label: lang === 'en' ? 'Complaints Book' : lang === 'pt' ? 'Livro de Reclamações' : 'Libro de Reclamaciones', href: '/libro-de-reclamaciones' },
               ],
             },
             {

@@ -50,6 +50,7 @@ export function SiteFootnav() {
           <Link href="/vende">Vender</Link>
           <Link href="/vendedor">Panel de Vendedor</Link>
           <Link href="/contacto">Contacto</Link>
+          <Link href="/libro-de-reclamaciones">Libro de Reclamaciones</Link>
         </nav>
         <div className="mk-foot-copy">© 2026 Merkao · Hecho en Perú 🇵🇪 · Compra protegida con Pago Escrow</div>
       </div>

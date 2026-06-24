@@ -1809,3 +1809,61 @@ img { display: block; max-width: 100%; }
   .mk-pdet-actions { flex-direction: column; }
   .mk-pdet-actions .mk-btn { min-width: 0; }
 }
+
+/* ══════════ Libro de Reclamaciones (Indecopi) ══════════ */
+.mk-libro { padding: 32px 16px 80px; background: #f7f7f9; min-height: calc(100vh - 132px); }
+.mk-libro-wrap { max-width: 820px; margin: 0 auto; }
+.mk-libro-head { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+.mk-libro-head h1 { font-size: 26px; font-weight: 800; margin: 0 0 8px; color: var(--ink); }
+.mk-libro-head p { font-size: 14px; color: var(--muted); line-height: 1.55; margin: 0; }
+.mk-libro-form { display: flex; flex-direction: column; gap: 18px; }
+.mk-libro-section { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 22px; }
+.mk-libro-section h2 { font-size: 16px; font-weight: 700; color: var(--ink); margin: 0 0 16px; }
+.mk-libro-prov { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 24px; margin: 0; font-size: 13.5px; }
+.mk-libro-prov > div { display: flex; flex-direction: column; gap: 2px; }
+.mk-libro-prov dt { font-size: 11px; color: var(--muted-2); text-transform: uppercase; letter-spacing: .04em; font-weight: 700; }
+.mk-libro-prov dd { margin: 0; color: var(--ink); font-weight: 600; }
+.mk-libro-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.mk-libro-field { display: flex; flex-direction: column; gap: 6px; }
+.mk-libro-field-full { grid-column: 1 / -1; }
+.mk-libro-field > span { font-size: 12.5px; font-weight: 600; color: var(--ink); }
+.mk-libro-field input, .mk-libro-field select, .mk-libro-field textarea {
+  font: inherit; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 8px;
+  background: #fff; color: var(--ink); transition: border-color .12s, box-shadow .12s;
+}
+.mk-libro-field input:focus, .mk-libro-field select:focus, .mk-libro-field textarea:focus {
+  outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-tint);
+}
+.mk-libro-field textarea { resize: vertical; font-family: inherit; }
+.mk-libro-check { display: flex; align-items: flex-start; gap: 10px; font-size: 13.5px; color: var(--ink); line-height: 1.45; cursor: pointer; }
+.mk-libro-check input { margin-top: 2px; width: 16px; height: 16px; cursor: pointer; }
+.mk-libro-tipo { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.mk-libro-tipo-opt { display: flex; gap: 12px; align-items: flex-start; padding: 14px; border: 1.5px solid var(--line); border-radius: 10px; cursor: pointer; transition: border-color .12s, background .12s; }
+.mk-libro-tipo-opt.on { border-color: var(--brand); background: var(--brand-tint); }
+.mk-libro-tipo-opt input { margin-top: 2px; cursor: pointer; }
+.mk-libro-tipo-opt strong { display: block; font-size: 13px; color: var(--ink); margin-bottom: 4px; }
+.mk-libro-tipo-opt p { font-size: 12px; color: var(--muted); margin: 0; line-height: 1.4; }
+.mk-libro-error { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 12px 14px; border-radius: 8px; font-size: 13px; }
+.mk-libro-actions { display: flex; gap: 10px; justify-content: flex-end; }
+.mk-libro-foot { font-size: 12px; color: var(--muted-2); text-align: center; margin: 4px 0 0; }
+.mk-libro-success { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 36px 28px; text-align: center; }
+.mk-libro-success-icon { width: 60px; height: 60px; border-radius: 50%; background: #DCFCE7; color: #15803D; display: grid; place-items: center; margin: 0 auto 16px; font-size: 32px; font-weight: 800; }
+.mk-libro-success h1 { font-size: 24px; font-weight: 800; margin: 0 0 8px; color: var(--ink); }
+.mk-libro-success-lead { font-size: 14px; color: var(--muted); margin: 0 0 20px; }
+.mk-libro-codigo { background: var(--brand-tint); border: 1px solid var(--brand); border-radius: 10px; padding: 16px; margin: 0 0 18px; }
+.mk-libro-codigo-label { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--brand-700); font-weight: 700; }
+.mk-libro-codigo-val { font-size: 26px; font-weight: 800; color: var(--ink); letter-spacing: -.01em; margin: 4px 0; }
+.mk-libro-codigo-fecha { font-size: 12px; color: var(--muted); }
+.mk-libro-success-info, .mk-libro-success-warn, .mk-libro-success-plazo { font-size: 13.5px; line-height: 1.55; margin: 12px 0; color: var(--ink); }
+.mk-libro-success-warn { background: #FEF3C7; border: 1px solid #FDE68A; padding: 12px; border-radius: 8px; }
+.mk-libro-success-plazo { color: var(--muted); }
+.mk-libro-success-actions { display: flex; gap: 10px; justify-content: center; margin-top: 18px; }
+@media (max-width: 640px) {
+  .mk-libro-grid { grid-template-columns: 1fr; }
+  .mk-libro-prov { grid-template-columns: 1fr; }
+  .mk-libro-tipo { grid-template-columns: 1fr; }
+  .mk-libro-head { padding: 18px; }
+  .mk-libro-section { padding: 18px; }
+  .mk-libro-actions { flex-direction: column-reverse; }
+  .mk-libro-actions .mk-btn { width: 100%; }
+}
