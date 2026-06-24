@@ -208,69 +208,239 @@ const SET_1_FUTBOL: Slide[] = [
   },
 ]
 
-// ─── SET 2 ─ [SET 2 - COMPLETAR: nombre/tema del set] ────────────────
-// Reemplazar los placeholders [...] con tu contenido. Podés agregar o
-// quitar slides libremente — el carrusel se adapta a la cantidad.
-// Themes válidos: 'terra' | 'stone' | 'jungle' | 'gold' | 'desert'
-// categoriaId: 1=ropa 2=electrónicos 3=alimentos 4=artesanías 5=hogar
-//              6=autos 7=agrícola 8=otros
+// ─── SET 2 ─ Artesanías peruanas ─────────────────────────────────────
+// Tema: textiles, cerámica, tejidos hechos a mano. Tono: "vende desde
+// tu pueblo, llega a todo el Perú". CTA → categoría Artesanías (id 4).
 // ──────────────────────────────────────────────────────────────────────
 const SET_2: Slide[] = [
   {
-    id: 'set2-slide-1',
+    id: 'artesania-hecho-a-mano',
     theme: 'terra',
-    tag: { es: '[SET 2 - tag ES]', en: '[SET 2 - tag EN]', pt: '[SET 2 - tag PT]' },
-    region: '[SET 2 - región o subtítulo de imagen]',
+    tag: { es: 'HECHO A MANO EN EL PERÚ', en: 'HANDMADE IN PERU', pt: 'FEITO À MÃO NO PERU' },
+    region: 'Cusco · Puno · Ayacucho',
     title: {
-      es: ['[línea 1 ES]', '[línea 2 ES]'],
-      en: ['[line 1 EN]', '[line 2 EN]'],
-      pt: ['[linha 1 PT]', '[linha 2 PT]'],
+      es: ['Hecho a mano', 'en el Perú'],
+      en: ['Handmade', 'in Peru'],
+      pt: ['Feito à mão', 'no Peru'],
     },
-    sub: { es: '[subtítulo ES]', en: '[subtitle EN]', pt: '[subtítulo PT]' },
-    body: { es: '[body ES]', en: '[body EN]', pt: '[body PT]' },
-    cta: { es: '[CTA ES]', en: '[CTA EN]', pt: '[CTA PT]' },
-    img: '[URL imagen 1600px ej. https://images.unsplash.com/...]',
-    categoriaId: 1,
+    sub: {
+      es: 'Textiles, tejidos y cerámica de cada región',
+      en: 'Textiles, weavings and ceramics from every region',
+      pt: 'Têxteis, tecelagens e cerâmicas de cada região',
+    },
+    body: {
+      es: 'Cada pieza con historia. Manos peruanas que tejen, modelan y pintan — desde el pueblo hasta tu casa.',
+      en: 'Every piece has a story. Peruvian hands that weave, mold and paint — from the village to your home.',
+      pt: 'Cada peça com história. Mãos peruanas que tecem, moldam e pintam — do povoado à sua casa.',
+    },
+    cta: { es: 'Ver artesanías', en: 'See crafts', pt: 'Ver artesanato' },
+    img: 'https://images.unsplash.com/photo-1582582494705-f8ce0b0c24f0?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 4,
   },
-  // Duplicar el objeto de arriba para agregar más slides al SET 2
+  {
+    id: 'artesania-apoya-artesano',
+    theme: 'gold',
+    tag: { es: 'APOYA AL ARTESANO LOCAL', en: 'SUPPORT THE LOCAL ARTISAN', pt: 'APOIE O ARTESÃO LOCAL' },
+    region: 'Cerámica y alfarería',
+    title: {
+      es: ['Tu compra sostiene', 'una familia artesana'],
+      en: ['Your purchase supports', 'an artisan family'],
+      pt: ['Sua compra sustenta', 'uma família artesã'],
+    },
+    sub: {
+      es: 'Cerámica peruana directo del taller',
+      en: 'Peruvian ceramics straight from the workshop',
+      pt: 'Cerâmica peruana direto do ateliê',
+    },
+    body: {
+      es: 'Comprás directo, sin intermediarios. El artesano cobra justo y vos te llevás una pieza única.',
+      en: 'Buy direct, no middlemen. The artisan gets paid fairly and you take home a one-of-a-kind piece.',
+      pt: 'Você compra direto, sem intermediários. O artesão recebe um preço justo e você leva uma peça única.',
+    },
+    cta: { es: 'Ver artesanías', en: 'See crafts', pt: 'Ver artesanato' },
+    img: 'https://images.unsplash.com/photo-1551122089-4e3e72477432?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 4,
+  },
+  {
+    id: 'artesania-tradicion-generaciones',
+    theme: 'stone',
+    tag: { es: 'TRADICIÓN ANCESTRAL', en: 'ANCESTRAL TRADITION', pt: 'TRADIÇÃO ANCESTRAL' },
+    region: 'Andes y selva peruana',
+    title: {
+      es: ['Tradición que viene', 'de generaciones'],
+      en: ['Tradition passed down', 'for generations'],
+      pt: ['Tradição que vem', 'de gerações'],
+    },
+    sub: {
+      es: 'Tejidos, mantas y piezas únicas',
+      en: 'Weavings, blankets and unique pieces',
+      pt: 'Tecidos, mantas e peças únicas',
+    },
+    body: {
+      es: 'Lo que ayer fue herencia, hoy llega a tu hogar — del telar del artesano a todo el Perú.',
+      en: 'Yesterday’s heritage, today in your home — from the artisan’s loom to all of Peru.',
+      pt: 'O que ontem era herança, hoje chega à sua casa — do tear do artesão a todo o Peru.',
+    },
+    cta: { es: 'Ver artesanías', en: 'See crafts', pt: 'Ver artesanato' },
+    img: 'https://images.unsplash.com/photo-1567748157439-651aca2ff064?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 4,
+  },
 ]
 
-// ─── SET 3 ─ [SET 3 - COMPLETAR: nombre/tema del set] ────────────────
+// ─── SET 3 ─ Tecnología ──────────────────────────────────────────────
+// Tema: electrónicos, gadgets, smartphones, laptops. CTA → categoría
+// Electrónicos (id 2).
+// ──────────────────────────────────────────────────────────────────────
 const SET_3: Slide[] = [
   {
-    id: 'set3-slide-1',
+    id: 'tech-a-tu-alcance',
     theme: 'stone',
-    tag: { es: '[SET 3 - tag ES]', en: '[SET 3 - tag EN]', pt: '[SET 3 - tag PT]' },
-    region: '[SET 3 - región o subtítulo de imagen]',
+    tag: { es: 'TECNOLOGÍA AL ALCANCE', en: 'TECH WITHIN REACH', pt: 'TECNOLOGIA AO ALCANCE' },
+    region: 'Celulares, laptops y gadgets',
     title: {
-      es: ['[línea 1 ES]', '[línea 2 ES]'],
-      en: ['[line 1 EN]', '[line 2 EN]'],
-      pt: ['[linha 1 PT]', '[linha 2 PT]'],
+      es: ['Tecnología', 'a tu alcance'],
+      en: ['Tech within', 'your reach'],
+      pt: ['Tecnologia', 'ao seu alcance'],
     },
-    sub: { es: '[subtítulo ES]', en: '[subtitle EN]', pt: '[subtítulo PT]' },
-    body: { es: '[body ES]', en: '[body EN]', pt: '[body PT]' },
-    cta: { es: '[CTA ES]', en: '[CTA EN]', pt: '[CTA PT]' },
-    img: '[URL imagen 1600px]',
+    sub: {
+      es: 'Lo último en electrónicos, sin moverte de tu pueblo',
+      en: 'The latest in electronics, without leaving your town',
+      pt: 'O mais novo em eletrônicos, sem sair do seu povoado',
+    },
+    body: {
+      es: 'Comprá smartphones, laptops y accesorios. Te llegan a la puerta — en cualquier punto del Perú.',
+      en: 'Order smartphones, laptops and accessories. Delivered to your door — anywhere in Peru.',
+      pt: 'Compre smartphones, laptops e acessórios. Chegam à sua porta — em qualquer ponto do Peru.',
+    },
+    cta: { es: 'Ver electrónicos', en: 'See electronics', pt: 'Ver eletrônicos' },
+    img: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 2,
+  },
+  {
+    id: 'tech-novedades-ofertas',
+    theme: 'jungle',
+    tag: { es: 'NOVEDADES TECH', en: 'NEW IN TECH', pt: 'NOVIDADES TECH' },
+    region: 'Vendedores verificados',
+    title: {
+      es: ['Lo último en tech,', 'del vendedor a tu casa'],
+      en: ['The newest tech,', 'seller direct to home'],
+      pt: ['O mais novo em tech,', 'do vendedor à sua casa'],
+    },
+    sub: {
+      es: 'Novedades y ofertas en electrónicos',
+      en: 'New arrivals and deals in electronics',
+      pt: 'Novidades e ofertas em eletrônicos',
+    },
+    body: {
+      es: 'Precios directos de tienda peruana. Sin sobreprecios, con escrow seguro y entrega rastreable.',
+      en: 'Direct prices from Peruvian shops. No markups, secure escrow and trackable delivery.',
+      pt: 'Preços direto da loja peruana. Sem sobretaxas, com escrow seguro e entrega rastreável.',
+    },
+    cta: { es: 'Ver electrónicos', en: 'See electronics', pt: 'Ver eletrônicos' },
+    img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 2,
+  },
+  {
+    id: 'tech-conexion-total',
+    theme: 'desert',
+    tag: { es: 'CONÉCTATE A TODO', en: 'GET CONNECTED', pt: 'CONECTE-SE A TUDO' },
+    region: 'Accesorios y periféricos',
+    title: {
+      es: ['Conéctate', 'a todo el Perú'],
+      en: ['Connect across', 'all of Peru'],
+      pt: ['Conecte-se', 'a todo o Peru'],
+    },
+    sub: {
+      es: 'Auriculares, cargadores y periféricos',
+      en: 'Headphones, chargers and peripherals',
+      pt: 'Fones, carregadores e periféricos',
+    },
+    body: {
+      es: 'El accesorio que falta para tu setup. Comprá desde donde estés — te llega rápido y seguro.',
+      en: 'The accessory your setup is missing. Order from wherever — fast and secure delivery.',
+      pt: 'O acessório que falta no seu setup. Compre de onde estiver — entrega rápida e segura.',
+    },
+    cta: { es: 'Ver electrónicos', en: 'See electronics', pt: 'Ver eletrônicos' },
+    img: 'https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=1600&q=80&auto=format&fit=crop',
     categoriaId: 2,
   },
 ]
 
-// ─── SET 4 ─ [SET 4 - COMPLETAR: nombre/tema del set] ────────────────
+// ─── SET 4 ─ Alimentos regionales ────────────────────────────────────
+// Tema: café, cacao, granos andinos, productos de la selva y la sierra.
+// CTA → categoría Alimentos (id 3).
+// ──────────────────────────────────────────────────────────────────────
 const SET_4: Slide[] = [
   {
-    id: 'set4-slide-1',
-    theme: 'jungle',
-    tag: { es: '[SET 4 - tag ES]', en: '[SET 4 - tag EN]', pt: '[SET 4 - tag PT]' },
-    region: '[SET 4 - región o subtítulo de imagen]',
+    id: 'alimentos-sabores-peru',
+    theme: 'gold',
+    tag: { es: 'SABORES DEL PERÚ', en: 'FLAVORS OF PERU', pt: 'SABORES DO PERU' },
+    region: 'Café especial · Villa Rica',
     title: {
-      es: ['[línea 1 ES]', '[línea 2 ES]'],
-      en: ['[line 1 EN]', '[line 2 EN]'],
-      pt: ['[linha 1 PT]', '[linha 2 PT]'],
+      es: ['Sabores', 'del Perú'],
+      en: ['Flavors', 'of Peru'],
+      pt: ['Sabores', 'do Peru'],
     },
-    sub: { es: '[subtítulo ES]', en: '[subtitle EN]', pt: '[subtítulo PT]' },
-    body: { es: '[body ES]', en: '[body EN]', pt: '[body PT]' },
-    cta: { es: '[CTA ES]', en: '[CTA EN]', pt: '[CTA PT]' },
-    img: '[URL imagen 1600px]',
+    sub: {
+      es: 'Café especial directo del productor peruano',
+      en: 'Specialty coffee straight from the Peruvian grower',
+      pt: 'Café especial direto do produtor peruano',
+    },
+    body: {
+      es: 'Granos de altura, cosecha cuidada. Del cafetalero a tu taza — sin pasar por mil manos.',
+      en: 'High-altitude beans, careful harvest. From the grower to your cup — no thousand hands in between.',
+      pt: 'Grãos de altitude, colheita cuidada. Do cafeicultor à sua xícara — sem passar por mil mãos.',
+    },
+    cta: { es: 'Ver alimentos', en: 'See food', pt: 'Ver alimentos' },
+    img: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 3,
+  },
+  {
+    id: 'alimentos-cacao-amazonia',
+    theme: 'jungle',
+    tag: { es: 'NATURAL Y REGIONAL', en: 'NATURAL & REGIONAL', pt: 'NATURAL E REGIONAL' },
+    region: 'Selva amazónica peruana',
+    title: {
+      es: ['Cacao puro', 'de la Amazonía'],
+      en: ['Pure cocoa', 'from the Amazon'],
+      pt: ['Cacau puro', 'da Amazônia'],
+    },
+    sub: {
+      es: 'Cacao, granos andinos y productos de la selva',
+      en: 'Cocoa, Andean grains and jungle products',
+      pt: 'Cacau, grãos andinos e produtos da selva',
+    },
+    body: {
+      es: 'Vendedores regionales que cultivan con respeto. Vos comprás, ellos crecen — y el Perú lo siente.',
+      en: 'Regional growers who farm with respect. You buy, they grow — and Peru feels it.',
+      pt: 'Vendedores regionais que cultivam com respeito. Você compra, eles crescem — e o Peru sente.',
+    },
+    cta: { es: 'Ver alimentos', en: 'See food', pt: 'Ver alimentos' },
+    img: 'https://images.unsplash.com/photo-1442550528053-c431ecb55509?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 3,
+  },
+  {
+    id: 'alimentos-granos-andinos',
+    theme: 'terra',
+    tag: { es: 'GRANOS ANDINOS', en: 'ANDEAN GRAINS', pt: 'GRÃOS ANDINOS' },
+    region: 'Sierra peruana',
+    title: {
+      es: ['Granos andinos,', 'fuerza milenaria'],
+      en: ['Andean grains,', 'thousand-year strength'],
+      pt: ['Grãos andinos,', 'força milenar'],
+    },
+    sub: {
+      es: 'Quinua, kiwicha y semillas de la sierra',
+      en: 'Quinoa, kiwicha and seeds from the highlands',
+      pt: 'Quinua, kiwicha e sementes da serra',
+    },
+    body: {
+      es: 'Lo mejor del campo peruano: productos naturales, sin intermediarios, del pueblo a tu cocina.',
+      en: 'The best of the Peruvian countryside: natural products, no middlemen, from the village to your kitchen.',
+      pt: 'O melhor do campo peruano: produtos naturais, sem intermediários, do povoado à sua cozinha.',
+    },
+    cta: { es: 'Ver alimentos', en: 'See food', pt: 'Ver alimentos' },
+    img: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=1600&q=80&auto=format&fit=crop',
     categoriaId: 3,
   },
 ]
