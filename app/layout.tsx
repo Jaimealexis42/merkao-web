@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
 import Script from "next/script";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
+import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -36,6 +37,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <GoogleAnalytics />
         {children}
+        <CookieConsentBanner />
         {/* Tawk solo en producción. En dev su bundle emite `console.error(true)`
             desde twk-chunk-common.js, lo cual ensucia el console del browser
             (no es código nuestro — confirmado con bisect). En prod sí lo
