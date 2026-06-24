@@ -1,7 +1,7 @@
 {
-  "lastIndex": 5,
-  "lastPostedDate": "2026-06-23",
-  "totalPosts": 19,
+  "lastIndex": 6,
+  "lastPostedDate": "2026-06-24",
+  "totalPosts": 20,
   "history": [
     {
       "fecha": "2026-06-07T15:23:06.606Z",
@@ -432,6 +432,33 @@
         "containerId": "18127876897564725",
         "permalink": "https://www.instagram.com/p/DZ7x9c-GszQ/",
         "elapsedMs": 10954
+      }
+    },
+    {
+      "fecha": "2026-06-24T15:34:26.155Z",
+      "fechaPeru": "2026-06-24",
+      "variantIndex": 6,
+      "variantId": 7,
+      "enfoque": "Invitación corta y cálida",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122121855963345830",
+      "fbPhotoId": "122121855939345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122121855963345830",
+      "image": {
+        "source": "unsplash",
+        "query": "ropa colorida peru",
+        "theme": "moda",
+        "photo_id": "3cax0qcYQ8s",
+        "photo_url": "https://images.unsplash.com/photo-1631554240706-ab68578bc6ac?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxMHx8cm9wYSUyMGNvbG9yaWRhJTIwcGVydXxlbnwxfDB8fHwxNzgyMzE1MjUwfDA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Neto Torres",
+        "photographer_url": "https://unsplash.com/@torres82",
+        "alt": "a man riding a bike with a colorful blanket on the back of it"
+      },
+      "ig": {
+        "mediaId": "18431118916131712",
+        "containerId": "18128150347564725",
+        "permalink": "https://www.instagram.com/p/DZ-Uz0Blvqg/",
+        "elapsedMs": 8662
       }
     }
   ]
