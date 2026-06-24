@@ -49,17 +49,43 @@ type Slide = {
   categoriaId: number // para filtrar productos cuando el usuario hace click en el CTA
 }
 
+// ══════════════════════════════════════════════════════════════════════
+// ROTACIÓN AUTOMÁTICA DE 4 SETS DE HERO (cambia cada 2 días)
 // ──────────────────────────────────────────────────────────────────────
-// Campaña hero: "Temporada del fútbol" — copy alusivo a la fiesta del
-// fútbol SIN nombrar ningún torneo oficial, marca, selección, mascota ni
-// logo. Cada slide apunta a una categoría poblada en producción para que
-// el CTA caiga en una grilla con productos reales.
+// El hero rota cíclicamente entre 4 sets distintos en función de la fecha
+// actual. La rotación es 100% determinística: solo depende del reloj del
+// sistema, no requiere cron job, DB ni intervención manual.
 //
-// Imágenes: Unsplash con IDs evergreen de fútbol genérico (pelota sobre
-// césped, cancha vacía, ambiente futbolero). Verificar antes del merge
-// que ninguna foto muestre logos visibles de marcas/clubes.
+// Cómo funciona getSetActivo():
+//   1) diasTranscurridos = días enteros desde FECHA_BASE (UTC).
+//   2) indiceSet = Math.floor(diasTranscurridos / 2) % 4
+//   3) Resultado: cambia cada 2 días y cicla SET 1 → SET 2 → SET 3 → SET 4 → SET 1 ...
+//
+// Calendario (desde FECHA_BASE = mié 24 jun 2026 UTC):
+//   día 0–1   → SET 1 (fútbol)
+//   día 2–3   → SET 2
+//   día 4–5   → SET 3
+//   día 6–7   → SET 4
+//   día 8–9   → SET 1 (vuelve a empezar)
+//
+// Para cargar contenido: editar los objetos dentro de cada SET (SET_2,
+// SET_3, SET_4 abajo). NO tocar getSetActivo() ni FECHA_BASE — la lógica
+// se mantiene estable.
+// ══════════════════════════════════════════════════════════════════════
+
+// Fecha de referencia para el cálculo del set activo. UTC para evitar
+// que SSR (Vercel UTC) y cliente (timezone local) caigan en sets
+// distintos durante la hidratación.
+const FECHA_BASE = new Date('2026-06-24T00:00:00Z') // miércoles 24 jun 2026 UTC
+const DIAS_POR_SET = 2
+const MS_POR_DIA = 1000 * 60 * 60 * 24
+
+// ─── SET 1 ────────────────────────────────────────────────────────────
+// Tema: "Temporada del fútbol" — copy alusivo a la fiesta del fútbol SIN
+// nombrar torneos oficiales, marcas, selecciones, mascotas ni logos.
+// Cada slide apunta a una categoría poblada en producción.
 // ──────────────────────────────────────────────────────────────────────
-const SLIDES: Slide[] = [
+const SET_1_FUTBOL: Slide[] = [
   {
     id: 'polo-aliento',
     theme: 'terra',
@@ -181,6 +207,91 @@ const SLIDES: Slide[] = [
     categoriaId: 2,
   },
 ]
+
+// ─── SET 2 ─ [SET 2 - COMPLETAR: nombre/tema del set] ────────────────
+// Reemplazar los placeholders [...] con tu contenido. Podés agregar o
+// quitar slides libremente — el carrusel se adapta a la cantidad.
+// Themes válidos: 'terra' | 'stone' | 'jungle' | 'gold' | 'desert'
+// categoriaId: 1=ropa 2=electrónicos 3=alimentos 4=artesanías 5=hogar
+//              6=autos 7=agrícola 8=otros
+// ──────────────────────────────────────────────────────────────────────
+const SET_2: Slide[] = [
+  {
+    id: 'set2-slide-1',
+    theme: 'terra',
+    tag: { es: '[SET 2 - tag ES]', en: '[SET 2 - tag EN]', pt: '[SET 2 - tag PT]' },
+    region: '[SET 2 - región o subtítulo de imagen]',
+    title: {
+      es: ['[línea 1 ES]', '[línea 2 ES]'],
+      en: ['[line 1 EN]', '[line 2 EN]'],
+      pt: ['[linha 1 PT]', '[linha 2 PT]'],
+    },
+    sub: { es: '[subtítulo ES]', en: '[subtitle EN]', pt: '[subtítulo PT]' },
+    body: { es: '[body ES]', en: '[body EN]', pt: '[body PT]' },
+    cta: { es: '[CTA ES]', en: '[CTA EN]', pt: '[CTA PT]' },
+    img: '[URL imagen 1600px ej. https://images.unsplash.com/...]',
+    categoriaId: 1,
+  },
+  // Duplicar el objeto de arriba para agregar más slides al SET 2
+]
+
+// ─── SET 3 ─ [SET 3 - COMPLETAR: nombre/tema del set] ────────────────
+const SET_3: Slide[] = [
+  {
+    id: 'set3-slide-1',
+    theme: 'stone',
+    tag: { es: '[SET 3 - tag ES]', en: '[SET 3 - tag EN]', pt: '[SET 3 - tag PT]' },
+    region: '[SET 3 - región o subtítulo de imagen]',
+    title: {
+      es: ['[línea 1 ES]', '[línea 2 ES]'],
+      en: ['[line 1 EN]', '[line 2 EN]'],
+      pt: ['[linha 1 PT]', '[linha 2 PT]'],
+    },
+    sub: { es: '[subtítulo ES]', en: '[subtitle EN]', pt: '[subtítulo PT]' },
+    body: { es: '[body ES]', en: '[body EN]', pt: '[body PT]' },
+    cta: { es: '[CTA ES]', en: '[CTA EN]', pt: '[CTA PT]' },
+    img: '[URL imagen 1600px]',
+    categoriaId: 2,
+  },
+]
+
+// ─── SET 4 ─ [SET 4 - COMPLETAR: nombre/tema del set] ────────────────
+const SET_4: Slide[] = [
+  {
+    id: 'set4-slide-1',
+    theme: 'jungle',
+    tag: { es: '[SET 4 - tag ES]', en: '[SET 4 - tag EN]', pt: '[SET 4 - tag PT]' },
+    region: '[SET 4 - región o subtítulo de imagen]',
+    title: {
+      es: ['[línea 1 ES]', '[línea 2 ES]'],
+      en: ['[line 1 EN]', '[line 2 EN]'],
+      pt: ['[linha 1 PT]', '[linha 2 PT]'],
+    },
+    sub: { es: '[subtítulo ES]', en: '[subtitle EN]', pt: '[subtítulo PT]' },
+    body: { es: '[body ES]', en: '[body EN]', pt: '[body PT]' },
+    cta: { es: '[CTA ES]', en: '[CTA EN]', pt: '[CTA PT]' },
+    img: '[URL imagen 1600px]',
+    categoriaId: 3,
+  },
+]
+
+// Array ordenado de los 4 sets. NO cambiar el orden a menos que quieras
+// desplazar el calendario de rotación.
+const SETS: Slide[][] = [SET_1_FUTBOL, SET_2, SET_3, SET_4]
+
+/**
+ * Devuelve el set de slides activo según la fecha actual.
+ * Determinístico: misma fecha → mismo set, en cualquier zona horaria.
+ */
+function getSetActivo(): Slide[] {
+  const diasTranscurridos = Math.floor((Date.now() - FECHA_BASE.getTime()) / MS_POR_DIA)
+  const crudo = Math.floor(diasTranscurridos / DIAS_POR_SET)
+  // Módulo positivo: cubre el caso en que el reloj cliente esté antes de FECHA_BASE.
+  const indiceSet = ((crudo % SETS.length) + SETS.length) % SETS.length
+  return SETS[indiceSet]
+}
+
+const SLIDES: Slide[] = getSetActivo()
 
 type EscrowStep = { icon: IconName; labelKey: 'step_pays' | 'step_hold' | 'step_ships' | 'step_confirm' | 'step_release' }
 const ESCROW_STEPS: EscrowStep[] = [
