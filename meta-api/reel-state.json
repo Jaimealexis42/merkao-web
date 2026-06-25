@@ -1,6 +1,6 @@
 {
-  "lastReelDate": "2026-06-24",
-  "totalReels": 14,
+  "lastReelDate": "2026-06-25",
+  "totalReels": 15,
   "history": [
     {
       "fecha": "2026-06-14T17:13:17.318Z",
@@ -288,6 +288,27 @@
         "videoId": "1655457812423085",
         "permalink": "https://www.facebook.com/reel/1655457812423085",
         "elapsedMs": 10366
+      }
+    },
+    {
+      "fecha": "2026-06-25T15:43:08.332Z",
+      "fechaPeru": "2026-06-25",
+      "product": {
+        "id": "79d0e769-b856-4de9-83ab-321266096a70",
+        "nombre": "Chompa de alpaca tejida a mano — Cusco",
+        "ciudad": "Cusco",
+        "precio": 85
+      },
+      "ig": {
+        "mediaId": "17870171538553997",
+        "containerId": "18128431324564725",
+        "permalink": "https://www.instagram.com/reel/DaA6ihfj7PZ/",
+        "elapsedMs": 39208
+      },
+      "fb": {
+        "videoId": "2223809095082814",
+        "permalink": "https://www.facebook.com/reel/2223809095082814",
+        "elapsedMs": 9739
       }
     }
   ]
