@@ -1,7 +1,7 @@
 {
-  "lastIndex": 0,
-  "lastPostedDate": "2026-06-25",
-  "totalPosts": 21,
+  "lastIndex": 1,
+  "lastPostedDate": "2026-06-26",
+  "totalPosts": 22,
   "history": [
     {
       "fecha": "2026-06-07T15:23:06.606Z",
@@ -486,6 +486,33 @@
         "containerId": "18128431195564725",
         "permalink": "https://www.instagram.com/p/DaA6dSvFnHN/",
         "elapsedMs": 9228
+      }
+    },
+    {
+      "fecha": "2026-06-26T15:25:27.031Z",
+      "fechaPeru": "2026-06-26",
+      "variantIndex": 1,
+      "variantId": 2,
+      "enfoque": "Para la que recién empieza",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122123361561345830",
+      "fbPhotoId": "122123361537345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122123361561345830",
+      "image": {
+        "source": "unsplash",
+        "query": "paisaje peru",
+        "theme": "general",
+        "photo_id": "G2zjqUDkYSQ",
+        "photo_url": "https://images.unsplash.com/photo-1590835192370-3941b97e93fd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxfHxwYWlzYWplJTIwcGVydXxlbnwxfDB8fHwxNzgyNDAyMDk4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Giorgia Doglioni",
+        "photographer_url": "https://unsplash.com/@gio_aroundtheworld",
+        "alt": "green grass field near mountain under blue sky during daytime"
+      },
+      "ig": {
+        "mediaId": "18121238749703724",
+        "containerId": "18128733559564725",
+        "permalink": "https://www.instagram.com/p/DaDdX5ZmsqM/",
+        "elapsedMs": 7919
       }
     }
   ]
