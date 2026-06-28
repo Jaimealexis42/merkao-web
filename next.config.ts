@@ -7,11 +7,11 @@ import type { NextConfig } from 'next'
 // a v5 con dominios fijos.
 const ContentSecurityPolicy = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://checkout.culqi.com https://secure.culqi.com https://*.culqi.com https://embed.tawk.to https://*.tawk.to",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://checkout.culqi.com https://secure.culqi.com https://*.culqi.com https://embed.tawk.to https://*.tawk.to https://www.googletagmanager.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.tawk.to",
   "img-src 'self' data: blob: https: http:",
   "font-src 'self' data: https://fonts.gstatic.com https://*.tawk.to",
-  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.culqi.com https://*.culqi.com https://*.tawk.to wss://*.tawk.to https://ipapi.co https://formspree.io",
+  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.culqi.com https://*.culqi.com https://*.tawk.to wss://*.tawk.to https://ipapi.co https://formspree.io https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com",
   "frame-src 'self' https://checkout.culqi.com https://*.culqi.com https://*.tawk.to",
   "frame-ancestors 'none'",
   "base-uri 'self'",
