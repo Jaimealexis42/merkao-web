@@ -42,3 +42,6 @@ next-env.d.ts
 
 # claude code local settings
 .claude/
+
+# sensitive backup codes (MFA / recovery)
+Backup-codes-merkao.org.txt
