@@ -1,7 +1,7 @@
 {
-  "lastIndex": 2,
-  "lastPostedDate": "2026-06-27",
-  "totalPosts": 23,
+  "lastIndex": 3,
+  "lastPostedDate": "2026-06-28",
+  "totalPosts": 24,
   "history": [
     {
       "fecha": "2026-06-07T15:23:06.606Z",
@@ -540,6 +540,33 @@
         "containerId": "18129023680564725",
         "permalink": "https://www.instagram.com/p/DaF9iT7kVv1/",
         "elapsedMs": 9491
+      }
+    },
+    {
+      "fecha": "2026-06-28T14:50:11.010Z",
+      "fechaPeru": "2026-06-28",
+      "variantIndex": 3,
+      "variantId": 4,
+      "enfoque": "Pregunta abierta a la comunidad",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122124096555345830",
+      "fbPhotoId": "122124096531345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122124096555345830",
+      "image": {
+        "source": "unsplash",
+        "query": "paisaje peru",
+        "theme": "general",
+        "photo_id": "vZ9SVXGqhgg",
+        "photo_url": "https://images.unsplash.com/photo-1728572323998-a72cbf10c0ff?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxNHx8cGFpc2FqZSUyMHBlcnV8ZW58MXwwfHx8MTc4MjY1ODE5N3ww&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Jhon Aldo Nuñez H.",
+        "photographer_url": "https://unsplash.com/@jhonaldo23",
+        "alt": "A large circular structure in the middle of a field"
+      },
+      "ig": {
+        "mediaId": "18160689304457329",
+        "containerId": "18129363055564725",
+        "permalink": "https://www.instagram.com/p/DaIi7aOlPAA/",
+        "elapsedMs": 6701
       }
     }
   ]
