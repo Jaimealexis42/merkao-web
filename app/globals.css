@@ -104,7 +104,11 @@ img { display: block; max-width: 100%; }
 .mk-hdr-nav .mk-hdr-inner { display: flex; align-items: center; gap: 6px; height: 48px; }
 .mk-nav-all { display: flex; align-items: center; gap: 8px; color: #fff; font-weight: 700; font-size: 13.5px; padding: 8px 14px; background: rgba(255,255,255,.08); border-radius: 8px; margin-right: 6px; }
 .mk-nav-all:hover { background: rgba(255,255,255,.16); }
-.mk-nav-cats { display: flex; align-items: center; gap: 2px; flex: 1; overflow: hidden; }
+.mk-nav-cats { display: flex; align-items: center; gap: 2px; flex: 1; min-width: 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.35) transparent; -webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 28px), transparent 100%); mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 28px), transparent 100%); }
+.mk-nav-cats::-webkit-scrollbar { height: 5px; }
+.mk-nav-cats::-webkit-scrollbar-thumb { background: rgba(255,255,255,.28); border-radius: 5px; }
+.mk-nav-cats::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.5); }
+.mk-nav-cats::-webkit-scrollbar-track { background: transparent; }
 .mk-nav-cat { display: flex; align-items: center; gap: 6px; color: #C9D3DD; font-weight: 600; font-size: 13.5px; padding: 8px 12px; border-radius: 8px; white-space: nowrap; }
 .mk-nav-cat:hover { color: #fff; background: rgba(255,255,255,.08); }
 .mk-nav-cat.accent { color: #FFB061; }
@@ -266,9 +270,11 @@ img { display: block; max-width: 100%; }
 .mk-arancel button { margin-left: 12px; text-decoration: underline; }
 
 /* ── Filtros de ciudad ───────────────────────────────────── */
-.mk-city-row { display: flex; align-items: center; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
-.mk-city-row::-webkit-scrollbar { display: none; }
-.mk-city-row { scrollbar-width: none; }
+.mk-city-row { display: flex; align-items: center; gap: 8px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: thin; scrollbar-color: rgba(0,0,0,.22) transparent; -webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 28px), transparent 100%); mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 28px), transparent 100%); }
+.mk-city-row::-webkit-scrollbar { height: 6px; }
+.mk-city-row::-webkit-scrollbar-thumb { background: rgba(0,0,0,.22); border-radius: 6px; }
+.mk-city-row::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,.4); }
+.mk-city-row::-webkit-scrollbar-track { background: transparent; }
 .mk-city-chip { flex-shrink: 0; font-size: 12.5px; font-weight: 600; padding: 7px 14px; border-radius: 20px; border: 1px solid var(--line); background: #fff; color: var(--muted); white-space: nowrap; cursor: pointer; transition: border-color .12s, color .12s, background .12s; }
 .mk-city-chip:hover { border-color: var(--brand); color: var(--brand-700); }
 .mk-city-chip.on { background: var(--brand); border-color: var(--brand); color: #fff; }

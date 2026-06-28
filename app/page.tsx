@@ -762,10 +762,10 @@ export default function Home() {
 
         <nav className="mk-hdr-nav">
           <div className="mk-hdr-inner">
-            <button className="mk-nav-all">
+            <a className="mk-nav-all" href="/categorias">
               <Icon name="menu" size={18} />
               {lang === 'en' ? 'All categories' : lang === 'pt' ? 'Todas as categorias' : 'Todas las categorías'}
-            </button>
+            </a>
             <div className="mk-nav-cats">
               <button onClick={() => goToShop(0)} className="mk-nav-cat accent">
                 <Icon name="flame" size={16} stroke={1.8} />
