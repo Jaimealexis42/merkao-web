@@ -1,7 +1,7 @@
 {
-  "lastIndex": 3,
-  "lastPostedDate": "2026-06-28",
-  "totalPosts": 24,
+  "lastIndex": 4,
+  "lastPostedDate": "2026-06-29",
+  "totalPosts": 25,
   "history": [
     {
       "fecha": "2026-06-07T15:23:06.606Z",
@@ -567,6 +567,33 @@
         "containerId": "18129363055564725",
         "permalink": "https://www.instagram.com/p/DaIi7aOlPAA/",
         "elapsedMs": 6701
+      }
+    },
+    {
+      "fecha": "2026-06-29T16:39:45.634Z",
+      "fechaPeru": "2026-06-29",
+      "variantIndex": 4,
+      "variantId": 5,
+      "enfoque": "Testimonio en primera persona",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122124634965345830",
+      "fbPhotoId": "122124634923345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122124634965345830",
+      "image": {
+        "source": "unsplash",
+        "query": "peruvian market fruits",
+        "theme": "alimentos",
+        "photo_id": "BWUvkv93HU4",
+        "photo_url": "https://images.unsplash.com/photo-1774082290292-eeef41f4d889?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwyfHxwZXJ1dmlhbiUyMG1hcmtldCUyMGZydWl0c3xlbnwxfDB8fHwxNzgyNzUxMTY3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Sheila C",
+        "photographer_url": "https://unsplash.com/@qld_traveller",
+        "alt": "Woman selling colorful textiles at a market stall."
+      },
+      "ig": {
+        "mediaId": "18028507997650798",
+        "containerId": "18129734278564725",
+        "permalink": "https://www.instagram.com/p/DaLUQsAlqs8/",
+        "elapsedMs": 8687
       }
     }
   ]
