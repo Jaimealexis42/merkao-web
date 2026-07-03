@@ -1,7 +1,7 @@
 {
-  "lastIndex": 0,
-  "lastPostedDate": "2026-07-02",
-  "totalPosts": 28,
+  "lastIndex": 1,
+  "lastPostedDate": "2026-07-03",
+  "totalPosts": 29,
   "history": [
     {
       "fecha": "2026-06-07T15:23:06.606Z",
@@ -675,6 +675,33 @@
         "containerId": "18130699840564725",
         "permalink": "https://www.instagram.com/p/DaS5XhYmh7p/",
         "elapsedMs": 12930
+      }
+    },
+    {
+      "fecha": "2026-07-03T15:13:46.175Z",
+      "fechaPeru": "2026-07-03",
+      "variantIndex": 1,
+      "variantId": 2,
+      "enfoque": "Para la que recién empieza",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122125828605345830",
+      "fbPhotoId": "122125828581345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122125828605345830",
+      "image": {
+        "source": "unsplash",
+        "query": "paisaje peru",
+        "theme": "general",
+        "photo_id": "7t1w9Sk056Q",
+        "photo_url": "https://images.unsplash.com/photo-1723432886289-b9f1f2cebe85?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwyMHx8cGFpc2FqZSUyMHBlcnV8ZW58MXwwfHx8MTc4MzA5MTU5N3ww&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Gabriel Istvan",
+        "photographer_url": "https://unsplash.com/@gabrielistvan_fotografia",
+        "alt": "A man standing on top of a mountain next to a river"
+      },
+      "ig": {
+        "mediaId": "18122050072701436",
+        "containerId": "18131024611564725",
+        "permalink": "https://www.instagram.com/p/DaVdmJeHFfN/",
+        "elapsedMs": 10262
       }
     }
   ]
