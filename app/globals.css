@@ -67,6 +67,10 @@ img { display: block; max-width: 100%; }
 /* ── Logo ────────────────────────────────────────────────── */
 .mk-logo { font-weight: 800; font-size: 26px; color: var(--brand); letter-spacing: -.03em; line-height: 1; }
 .mk-logo-dot { color: var(--ink); }
+.mk-fiestas { display: inline-flex; align-items: center; font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; flex-shrink: 0; border-radius: 20px; overflow: hidden; box-shadow: 0 2px 8px rgba(217,16,35,.35); line-height: 1; }
+.mk-fiestas-red { background: #D91023; color: #fff; padding: 6px 10px 6px 14px; }
+.mk-fiestas-white { background: #fff; color: #D91023; padding: 6px 14px 6px 10px; border: 1.5px solid #D91023; border-left: none; border-radius: 0 20px 20px 0; }
+@media (max-width: 780px) { .mk-fiestas { display: none; } }
 
 /* ── Header (2 filas) ────────────────────────────────────── */
 .mk-hdr { position: sticky; top: 0; z-index: 50; }
@@ -141,6 +145,7 @@ img { display: block; max-width: 100%; }
 .mk-theme-jungle .mk-hslide-copy { background: linear-gradient(135deg, #15803D 0%, #14532D 100%); }
 .mk-theme-gold .mk-hslide-copy { background: linear-gradient(135deg, #B45309 0%, #7C3A0A 100%); }
 .mk-theme-desert .mk-hslide-copy { background: linear-gradient(135deg, #B45309 0%, #1E3A5F 100%); }
+.mk-theme-peru .mk-hslide-copy { background: linear-gradient(135deg, #D91023 0%, #8B0000 100%); }
 .mk-hslide-copy::after { content: ''; position: absolute; top: 0; right: -1px; bottom: 0; width: 60px; background: inherit; clip-path: polygon(0 0, 100% 0, 40% 100%, 0 100%); z-index: 1; }
 .mk-hslide-media { flex: 1; position: relative; overflow: hidden; background: #EDE7DF; }
 .mk-theme-terra .mk-hslide-media { background: #F3E4D8; }
@@ -148,6 +153,8 @@ img { display: block; max-width: 100%; }
 .mk-theme-jungle .mk-hslide-media { background: #DEEADE; }
 .mk-theme-gold .mk-hslide-media { background: #F2E8CF; }
 .mk-theme-desert .mk-hslide-media { background: #EAE3D3; }
+.mk-theme-peru .mk-hslide-media { background: #FDE8EB; }
+.mk-theme-peru .mk-hslide-media::before { content: ''; position: absolute; inset: 0; background: rgba(217,16,35,.10); z-index: 2; pointer-events: none; }
 .mk-hslide-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .mk-hslide-region { position: absolute; left: 16px; top: 16px; z-index: 3; display: inline-flex; align-items: center; gap: 5px; background: rgba(22,32,43,.82); color: #fff; font-size: 12px; font-weight: 700; padding: 6px 11px; border-radius: 20px; pointer-events: none; }
 

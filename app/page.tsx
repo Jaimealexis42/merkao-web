@@ -35,7 +35,7 @@ const CAT_SLUG: Record<number, string> = {
   8: 'otros',
 }
 
-type HeroTheme = 'terra' | 'stone' | 'jungle' | 'gold' | 'desert'
+type HeroTheme = 'terra' | 'stone' | 'jungle' | 'gold' | 'desert' | 'peru'
 type Slide = {
   id: string
   theme: HeroTheme
@@ -45,6 +45,7 @@ type Slide = {
   sub: Record<Lang, string>
   body: Record<Lang, string>
   cta: Record<Lang, string>
+  ctaHref?: string // si está presente, el CTA navega a esta URL en vez de hacer scroll al shop
   img: string
   categoriaId: number // para filtrar productos cuando el usuario hace click en el CTA
 }
@@ -80,148 +81,121 @@ const FECHA_BASE = new Date('2026-06-24T00:00:00Z') // miércoles 24 jun 2026 UT
 const DIAS_POR_SET = 2
 const MS_POR_DIA = 1000 * 60 * 60 * 24
 
-// ─── SET 1 ────────────────────────────────────────────────────────────
-// Tema: "Temporada del fútbol" — copy alusivo a la fiesta del fútbol SIN
-// nombrar torneos oficiales, marcas, selecciones, mascotas ni logos.
-// Cada slide apunta a una categoría poblada en producción.
+// ─── SET 1 ─ Fiestas Patrias: apertura festiva ───────────────────────
+// Tema: polos peruanos, deporte, tech y CTA de registro.
 // ──────────────────────────────────────────────────────────────────────
-const SET_1_FUTBOL: Slide[] = [
+const SET_1_PATRIAS: Slide[] = [
   {
-    id: 'polo-aliento',
-    theme: 'terra',
-    tag: { es: 'ALIENTA A TU EQUIPO', en: 'CHEER FOR YOUR TEAM', pt: 'TORÇA PELO SEU TIME' },
+    id: 'patrias-polo-peru',
+    theme: 'peru',
+    tag: { es: 'EDICIÓN ESPECIAL 28 DE JULIO', en: 'JULY 28 SPECIAL EDITION', pt: 'EDIÇÃO ESPECIAL 28 DE JULHO' },
     region: 'Algodón pima peruano',
     title: {
-      es: ['Rojo y blanco', 'para alentar'],
-      en: ['Red and white,', 'cheer them on'],
-      pt: ['Vermelho e branco', 'para torcer'],
+      es: ['Polos del Perú', 'para el 28'],
+      en: ['Peruvian polos', 'for July 28'],
+      pt: ['Polos do Peru', 'para o 28'],
     },
     sub: {
-      es: 'Polos de algodón pima — el más suave del mundo',
-      en: 'Pima cotton polos — the softest in the world',
-      pt: 'Polos de algodão pima — o mais macio do mundo',
+      es: 'Algodón pima en rojo y blanco — el más suave del mundo',
+      en: 'Pima cotton in red and white — the softest in the world',
+      pt: 'Algodão pima em vermelho e branco — o mais macio do mundo',
     },
     body: {
-      es: 'Vestite los colores de la fiesta del fútbol con prendas peruanas hechas a conciencia.',
-      en: 'Wear the colors of football season with Peruvian garments made with care.',
-      pt: 'Vista as cores da festa do futebol com peças peruanas feitas com consciência.',
+      es: 'Las mejores prendas peruanas para celebrar la independencia con orgullo.',
+      en: 'The finest Peruvian garments to celebrate independence with pride.',
+      pt: 'As melhores roupas peruanas para celebrar a independência com orgulho.',
     },
     cta: { es: 'Ver polos y camisetas', en: 'See polos & tees', pt: 'Ver polos e camisetas' },
-    img: 'https://images.unsplash.com/photo-1551958219-acbc608c6377?w=1600&q=80&auto=format&fit=crop',
+    img: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&q=80&auto=format&fit=crop',
     categoriaId: 1,
   },
   {
-    id: 'abrigo-partido',
-    theme: 'stone',
-    tag: { es: 'NOCHES DE PARTIDO', en: 'MATCH NIGHTS', pt: 'NOITES DE JOGO' },
-    region: 'Cusco · Andes',
+    id: 'patrias-deporte',
+    theme: 'peru',
+    tag: { es: 'DEPORTE PERUANO', en: 'PERUVIAN SPORT', pt: 'ESPORTE PERUANO' },
+    region: 'Equipamiento deportivo',
     title: {
-      es: ['Abrigate para', 'ver el partido'],
-      en: ['Bundle up for', 'matchnight'],
-      pt: ['Agasalhe-se para', 'ver o jogo'],
+      es: ['Actívate', 'estas fiestas'],
+      en: ['Get active', 'this July'],
+      pt: ['Ative-se', 'nestas festas'],
     },
     sub: {
-      es: 'Chompas de alpaca tejidas a mano',
-      en: 'Hand-knit alpaca sweaters',
-      pt: 'Suéteres de alpaca tricotados à mão',
+      es: 'Ropa y equipamiento deportivo peruano',
+      en: 'Peruvian sports clothing and gear',
+      pt: 'Roupas e equipamentos esportivos peruanos',
     },
     body: {
-      es: 'Calidez de los Andes para los 90 minutos en familia.',
-      en: 'Andean warmth for ninety minutes with the family.',
-      pt: 'Calor andino para os 90 minutos em família.',
+      es: 'Celebrá el 28 de julio moviéndote — con prendas hechas en el Perú.',
+      en: 'Celebrate July 28 staying active — with garments made in Peru.',
+      pt: 'Celebre o 28 de julho se movimentando — com roupas feitas no Peru.',
     },
-    cta: { es: 'Ver chompas y abrigos', en: 'See sweaters', pt: 'Ver suéteres' },
-    img: 'https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=1600&q=80&auto=format&fit=crop',
+    cta: { es: 'Ver ropa deportiva', en: 'See sportswear', pt: 'Ver roupa esportiva' },
+    img: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=1600&q=80&auto=format&fit=crop',
     categoriaId: 1,
   },
   {
-    id: 'antes-del-pitazo',
-    theme: 'gold',
-    tag: { es: 'ANTES DEL PITAZO', en: 'BEFORE KICKOFF', pt: 'ANTES DO APITO' },
-    region: 'Villa Rica · Amazonas',
+    id: 'patrias-tech',
+    theme: 'peru',
+    tag: { es: '¡FIESTAS PATRIAS!', en: 'PERU INDEPENDENCE!', pt: 'FESTAS PÁTRIAS!' },
+    region: 'Tecnología peruana',
     title: {
-      es: ['Café y cacao,', 'el antes del partido'],
-      en: ['Coffee and cocoa,', 'pre-match ritual'],
-      pt: ['Café e cacau,', 'antes do jogo'],
+      es: ['Tecnología', 'a precio', 'peruano'],
+      en: ['Tech at', 'Peruvian', 'prices'],
+      pt: ['Tecnologia', 'a preço', 'peruano'],
     },
     sub: {
-      es: 'Café especial peruano y cacao puro',
-      en: 'Peruvian specialty coffee and pure cocoa',
-      pt: 'Café especial peruano e cacau puro',
+      es: 'Los mejores electrónicos, directo de vendedores locales',
+      en: 'The best electronics, direct from local sellers',
+      pt: 'Os melhores eletrônicos, direto de vendedores locais',
     },
     body: {
-      es: 'Despertá los nervios con lo mejor del campo peruano. Directo del productor.',
-      en: 'Wake up the nerves with the best of the Peruvian countryside. Straight from the producer.',
-      pt: 'Desperte os nervos com o melhor do campo peruano. Direto do produtor.',
+      es: 'Regala o regálate lo último en tech estas fiestas patrias.',
+      en: 'Give or treat yourself to the latest tech this independence day.',
+      pt: 'Presenteie ou se presenteie com o melhor em tech nessas festas pátrias.',
     },
-    cta: { es: 'Café, cacao y más', en: 'Coffee, cocoa & more', pt: 'Café, cacau e mais' },
-    img: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1600&q=80&auto=format&fit=crop',
-    categoriaId: 3,
-  },
-  {
-    id: 'butaca-90-min',
-    theme: 'desert',
-    tag: { es: 'TU LUGAR EN CASA', en: 'YOUR HOME SPOT', pt: 'SEU LUGAR EM CASA' },
-    region: 'Hogar y descanso',
-    title: {
-      es: ['Tu butaca para', 'los 90 minutos'],
-      en: ['Your seat for', 'the full 90'],
-      pt: ['Sua poltrona para', 'os 90 minutos'],
-    },
-    sub: {
-      es: 'Sillas reclinables y muebles para el partido',
-      en: 'Recliners and matchnight furniture',
-      pt: 'Poltronas reclináveis e móveis de jogo',
-    },
-    body: {
-      es: 'Acomodate como se merecen los partidos importantes — sin que la espalda te haga gambeta.',
-      en: 'Sit comfortable for the matches that matter — no back complaints.',
-      pt: 'Acomode-se como os grandes jogos pedem — sem dor nas costas.',
-    },
-    cta: { es: 'Ver sillas y sofás', en: 'See chairs & sofas', pt: 'Ver poltronas e sofás' },
-    img: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1600&q=80&auto=format&fit=crop',
-    categoriaId: 5,
-  },
-  {
-    id: 'cada-gol-4k',
-    theme: 'jungle',
-    tag: { es: 'VIVÍ CADA GOL', en: 'LIVE EVERY GOAL', pt: 'VIVA CADA GOL' },
-    region: 'Pantallas y electrónicos',
-    title: {
-      es: ['Viví cada gol', 'en 4K'],
-      en: ['Live every goal', 'in 4K'],
-      pt: ['Viva cada gol', 'em 4K'],
-    },
-    sub: {
-      es: 'Smart TVs y pantallas para la temporada',
-      en: 'Smart TVs and screens for the season',
-      pt: 'Smart TVs e telas para a temporada',
-    },
-    body: {
-      es: 'Renová la pantalla y viví la fiesta del fútbol como si estuvieras en la cancha.',
-      en: 'Upgrade the screen and feel football season like being on the pitch.',
-      pt: 'Renove a tela e viva a festa do futebol como se estivesse no gramado.',
-    },
-    cta: { es: 'Ver TVs y pantallas', en: 'See TVs & screens', pt: 'Ver TVs e telas' },
-    img: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=1600&q=80&auto=format&fit=crop',
+    cta: { es: 'Ver tecnología', en: 'See electronics', pt: 'Ver tecnologia' },
+    img: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=1600&q=80&auto=format&fit=crop',
     categoriaId: 2,
+  },
+  {
+    id: 'patrias-registro-1',
+    theme: 'peru',
+    tag: { es: 'ÚNETE A MERKAO', en: 'JOIN MERKAO', pt: 'JUNTE-SE AO MERKAO' },
+    region: 'Marketplace peruano',
+    title: {
+      es: ['Vende y compra', 'con orgullo', 'peruano'],
+      en: ['Buy and sell', 'with Peruvian', 'pride'],
+      pt: ['Compre e venda', 'com orgulho', 'peruano'],
+    },
+    sub: {
+      es: 'Regístrate gratis en merkao.org',
+      en: 'Sign up free at merkao.org',
+      pt: 'Cadastre-se grátis em merkao.org',
+    },
+    body: {
+      es: 'El marketplace del Perú te espera. Creá tu cuenta y empezá a comprar o vender hoy.',
+      en: "Peru's marketplace awaits you. Create your account and start buying or selling today.",
+      pt: 'O marketplace do Peru espera por você. Crie sua conta e comece a comprar ou vender hoje.',
+    },
+    cta: { es: 'Regístrate gratis', en: 'Sign up free', pt: 'Cadastre-se grátis' },
+    ctaHref: '/register',
+    img: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 0,
   },
 ]
 
-// ─── SET 2 ─ Artesanías peruanas ─────────────────────────────────────
-// Tema: textiles, cerámica, tejidos hechos a mano. Tono: "vende desde
-// tu pueblo, llega a todo el Perú". CTA → categoría Artesanías (id 4).
+// ─── SET 2 ─ Fiestas Patrias: artesanía, moda y relojes ──────────────
 // ──────────────────────────────────────────────────────────────────────
-const SET_2: Slide[] = [
+const SET_2_PATRIAS: Slide[] = [
   {
-    id: 'artesania-hecho-a-mano',
-    theme: 'terra',
-    tag: { es: 'HECHO A MANO EN EL PERÚ', en: 'HANDMADE IN PERU', pt: 'FEITO À MÃO NO PERU' },
+    id: 'patrias-artesania',
+    theme: 'peru',
+    tag: { es: 'HECHO EN PERÚ', en: 'MADE IN PERU', pt: 'FEITO NO PERU' },
     region: 'Cusco · Puno · Ayacucho',
     title: {
-      es: ['Hecho a mano', 'en el Perú'],
-      en: ['Handmade', 'in Peru'],
-      pt: ['Feito à mão', 'no Peru'],
+      es: ['Artesanía', 'peruana', 'auténtica'],
+      en: ['Authentic', 'Peruvian', 'crafts'],
+      pt: ['Artesanato', 'peruano', 'autêntico'],
     },
     sub: {
       es: 'Textiles, tejidos y cerámica de cada región',
@@ -229,225 +203,248 @@ const SET_2: Slide[] = [
       pt: 'Têxteis, tecelagens e cerâmicas de cada região',
     },
     body: {
-      es: 'Cada pieza con historia. Manos peruanas que tejen, modelan y pintan — desde el pueblo hasta tu casa.',
-      en: 'Every piece has a story. Peruvian hands that weave, mold and paint — from the village to your home.',
-      pt: 'Cada peça com história. Mãos peruanas que tecem, moldam e pintam — do povoado à sua casa.',
+      es: 'Estas fiestas patrias, llevate algo hecho con manos peruanas.',
+      en: 'This independence day, take home something made with Peruvian hands.',
+      pt: 'Nestas festas pátrias, leve para casa algo feito com mãos peruanas.',
     },
     cta: { es: 'Ver artesanías', en: 'See crafts', pt: 'Ver artesanato' },
     img: 'https://images.unsplash.com/photo-1582582494705-f8ce0b0c24f0?w=1600&q=80&auto=format&fit=crop',
     categoriaId: 4,
   },
   {
-    id: 'artesania-apoya-artesano',
-    theme: 'gold',
-    tag: { es: 'APOYA AL ARTESANO LOCAL', en: 'SUPPORT THE LOCAL ARTISAN', pt: 'APOIE O ARTESÃO LOCAL' },
-    region: 'Cerámica y alfarería',
+    id: 'patrias-moda',
+    theme: 'peru',
+    tag: { es: 'MODA PATRIA', en: 'PATRIOTIC STYLE', pt: 'MODA PATRIÓTICA' },
+    region: 'Moda peruana',
     title: {
-      es: ['Tu compra sostiene', 'una familia artesana'],
-      en: ['Your purchase supports', 'an artisan family'],
-      pt: ['Sua compra sustenta', 'uma família artesã'],
+      es: ['Luce los', 'colores de', 'tu bandera'],
+      en: ['Wear the', 'colors of', 'your flag'],
+      pt: ['Vista as', 'cores da', 'sua bandeira'],
     },
     sub: {
-      es: 'Cerámica peruana directo del taller',
-      en: 'Peruvian ceramics straight from the workshop',
-      pt: 'Cerâmica peruana direto do ateliê',
+      es: 'Ropa y accesorios en rojo y blanco',
+      en: 'Clothing and accessories in red and white',
+      pt: 'Roupas e acessórios em vermelho e branco',
     },
     body: {
-      es: 'Comprás directo, sin intermediarios. El artesano cobra justo y vos te llevás una pieza única.',
-      en: 'Buy direct, no middlemen. The artisan gets paid fairly and you take home a one-of-a-kind piece.',
-      pt: 'Você compra direto, sem intermediários. O artesão recebe um preço justo e você leva uma peça única.',
+      es: 'Vestite de fiesta nacional — prendas para el 28 de julio.',
+      en: 'Dress for the national holiday — outfits for July 28.',
+      pt: 'Vista-se para a festa nacional — roupas para o 28 de julho.',
     },
-    cta: { es: 'Ver artesanías', en: 'See crafts', pt: 'Ver artesanato' },
-    img: 'https://images.unsplash.com/photo-1551122089-4e3e72477432?w=1600&q=80&auto=format&fit=crop',
-    categoriaId: 4,
+    cta: { es: 'Ver moda', en: 'See fashion', pt: 'Ver moda' },
+    img: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 1,
   },
   {
-    id: 'artesania-tradicion-generaciones',
-    theme: 'stone',
-    tag: { es: 'TRADICIÓN ANCESTRAL', en: 'ANCESTRAL TRADITION', pt: 'TRADIÇÃO ANCESTRAL' },
-    region: 'Andes y selva peruana',
+    id: 'patrias-relojes',
+    theme: 'peru',
+    tag: { es: 'REGALO ESPECIAL', en: 'SPECIAL GIFT', pt: 'PRESENTE ESPECIAL' },
+    region: 'Relojes y accesorios',
     title: {
-      es: ['Tradición que viene', 'de generaciones'],
-      en: ['Tradition passed down', 'for generations'],
-      pt: ['Tradição que vem', 'de gerações'],
+      es: ['Relojes', 'para celebrar', 'en grande'],
+      en: ['Watches', 'to celebrate', 'in style'],
+      pt: ['Relógios', 'para celebrar', 'com estilo'],
     },
     sub: {
-      es: 'Tejidos, mantas y piezas únicas',
-      en: 'Weavings, blankets and unique pieces',
-      pt: 'Tecidos, mantas e peças únicas',
+      es: 'El regalo perfecto para el 28 de julio',
+      en: 'The perfect gift for July 28',
+      pt: 'O presente perfeito para o 28 de julho',
     },
     body: {
-      es: 'Lo que ayer fue herencia, hoy llega a tu hogar — del telar del artesano a todo el Perú.',
-      en: 'Yesterday’s heritage, today in your home — from the artisan’s loom to all of Peru.',
-      pt: 'O que ontem era herança, hoje chega à sua casa — do tear do artesão a todo o Peru.',
+      es: 'Dale el tiempo que merece esta independencia. Relojes para todos los presupuestos.',
+      en: 'Give the time this independence deserves. Watches for every budget.',
+      pt: 'Dê o tempo que esta independência merece. Relógios para todos os bolsos.',
     },
-    cta: { es: 'Ver artesanías', en: 'See crafts', pt: 'Ver artesanato' },
-    img: 'https://images.unsplash.com/photo-1567748157439-651aca2ff064?w=1600&q=80&auto=format&fit=crop',
-    categoriaId: 4,
-  },
-]
-
-// ─── SET 3 ─ Tecnología ──────────────────────────────────────────────
-// Tema: electrónicos, gadgets, smartphones, laptops. CTA → categoría
-// Electrónicos (id 2).
-// ──────────────────────────────────────────────────────────────────────
-const SET_3: Slide[] = [
-  {
-    id: 'tech-a-tu-alcance',
-    theme: 'stone',
-    tag: { es: 'TECNOLOGÍA AL ALCANCE', en: 'TECH WITHIN REACH', pt: 'TECNOLOGIA AO ALCANCE' },
-    region: 'Celulares, laptops y gadgets',
-    title: {
-      es: ['Tecnología', 'a tu alcance'],
-      en: ['Tech within', 'your reach'],
-      pt: ['Tecnologia', 'ao seu alcance'],
-    },
-    sub: {
-      es: 'Lo último en electrónicos, sin moverte de tu pueblo',
-      en: 'The latest in electronics, without leaving your town',
-      pt: 'O mais novo em eletrônicos, sem sair do seu povoado',
-    },
-    body: {
-      es: 'Comprá smartphones, laptops y accesorios. Te llegan a la puerta — en cualquier punto del Perú.',
-      en: 'Order smartphones, laptops and accessories. Delivered to your door — anywhere in Peru.',
-      pt: 'Compre smartphones, laptops e acessórios. Chegam à sua porta — em qualquer ponto do Peru.',
-    },
-    cta: { es: 'Ver electrónicos', en: 'See electronics', pt: 'Ver eletrônicos' },
-    img: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=1600&q=80&auto=format&fit=crop',
-    categoriaId: 2,
+    cta: { es: 'Ver relojes', en: 'See watches', pt: 'Ver relógios' },
+    img: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 8,
   },
   {
-    id: 'tech-novedades-ofertas',
-    theme: 'jungle',
-    tag: { es: 'NOVEDADES TECH', en: 'NEW IN TECH', pt: 'NOVIDADES TECH' },
-    region: 'Vendedores verificados',
+    id: 'patrias-registro-set2',
+    theme: 'peru',
+    tag: { es: 'CREA TU CUENTA', en: 'CREATE YOUR ACCOUNT', pt: 'CRIE SUA CONTA' },
+    region: 'Marketplace peruano',
     title: {
-      es: ['Lo último en tech,', 'del vendedor a tu casa'],
-      en: ['The newest tech,', 'seller direct to home'],
-      pt: ['O mais novo em tech,', 'do vendedor à sua casa'],
+      es: ['Crea tu cuenta', 'en Merkao', 'es gratis'],
+      en: ['Create your', 'Merkao account', 'it\'s free'],
+      pt: ['Crie sua conta', 'no Merkao', 'e gratis'],
     },
     sub: {
-      es: 'Novedades y ofertas en electrónicos',
-      en: 'New arrivals and deals in electronics',
-      pt: 'Novidades e ofertas em eletrônicos',
+      es: 'Comprá y vendé en el marketplace del Peru',
+      en: 'Buy and sell on Peru\'s marketplace',
+      pt: 'Compre e venda no marketplace do Peru',
     },
     body: {
-      es: 'Precios directos de tienda peruana. Sin sobreprecios, con escrow seguro y entrega rastreable.',
-      en: 'Direct prices from Peruvian shops. No markups, secure escrow and trackable delivery.',
-      pt: 'Preços direto da loja peruana. Sem sobretaxas, com escrow seguro e entrega rastreável.',
+      es: 'Miles de productos peruanos te esperan. Registrate hoy y celebra el 28 comprando con orgullo.',
+      en: 'Thousands of Peruvian products await you. Sign up today and celebrate July 28 with pride.',
+      pt: 'Milhares de produtos peruanos esperam por voce. Cadastre-se hoje e celebre o 28 com orgulho.',
     },
-    cta: { es: 'Ver electrónicos', en: 'See electronics', pt: 'Ver eletrônicos' },
-    img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=1600&q=80&auto=format&fit=crop',
-    categoriaId: 2,
-  },
-  {
-    id: 'tech-conexion-total',
-    theme: 'desert',
-    tag: { es: 'CONÉCTATE A TODO', en: 'GET CONNECTED', pt: 'CONECTE-SE A TUDO' },
-    region: 'Accesorios y periféricos',
-    title: {
-      es: ['Conéctate', 'a todo el Perú'],
-      en: ['Connect across', 'all of Peru'],
-      pt: ['Conecte-se', 'a todo o Peru'],
-    },
-    sub: {
-      es: 'Auriculares, cargadores y periféricos',
-      en: 'Headphones, chargers and peripherals',
-      pt: 'Fones, carregadores e periféricos',
-    },
-    body: {
-      es: 'El accesorio que falta para tu setup. Comprá desde donde estés — te llega rápido y seguro.',
-      en: 'The accessory your setup is missing. Order from wherever — fast and secure delivery.',
-      pt: 'O acessório que falta no seu setup. Compre de onde estiver — entrega rápida e segura.',
-    },
-    cta: { es: 'Ver electrónicos', en: 'See electronics', pt: 'Ver eletrônicos' },
-    img: 'https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=1600&q=80&auto=format&fit=crop',
-    categoriaId: 2,
+    cta: { es: 'Registrate gratis', en: 'Sign up free', pt: 'Cadastre-se gratis' },
+    ctaHref: '/register',
+    img: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 0,
   },
 ]
 
-// ─── SET 4 ─ Alimentos regionales ────────────────────────────────────
-// Tema: café, cacao, granos andinos, productos de la selva y la sierra.
-// CTA → categoría Alimentos (id 3).
+// ─── SET 3 ─ Fiestas Patrias: hogar, gastronomía y registro ──────────
 // ──────────────────────────────────────────────────────────────────────
-const SET_4: Slide[] = [
+const SET_3_PATRIAS: Slide[] = [
   {
-    id: 'alimentos-sabores-peru',
-    theme: 'gold',
-    tag: { es: 'SABORES DEL PERÚ', en: 'FLAVORS OF PERU', pt: 'SABORES DO PERU' },
-    region: 'Café especial · Villa Rica',
+    id: 'patrias-hogar',
+    theme: 'peru',
+    tag: { es: 'HOGAR FESTIVO', en: 'FESTIVE HOME', pt: 'LAR FESTIVO' },
+    region: 'Decoración y hogar',
     title: {
-      es: ['Sabores', 'del Perú'],
-      en: ['Flavors', 'of Peru'],
-      pt: ['Sabores', 'do Peru'],
+      es: ['Decora', 'tu hogar', 'para el 28'],
+      en: ['Decorate', 'your home', 'for July 28'],
+      pt: ['Decore', 'sua casa', 'para o 28'],
     },
     sub: {
-      es: 'Café especial directo del productor peruano',
-      en: 'Specialty coffee straight from the Peruvian grower',
-      pt: 'Café especial direto do produtor peruano',
+      es: 'Muebles y deco para las fiestas patrias',
+      en: 'Furniture and decor for independence day',
+      pt: 'Móveis e decoração para as festas pátrias',
     },
     body: {
-      es: 'Granos de altura, cosecha cuidada. Del cafetalero a tu taza — sin pasar por mil manos.',
-      en: 'High-altitude beans, careful harvest. From the grower to your cup — no thousand hands in between.',
-      pt: 'Grãos de altitude, colheita cuidada. Do cafeicultor à sua xícara — sem passar por mil mãos.',
+      es: 'Ambientá tu casa para recibir a la familia estas fiestas.',
+      en: 'Set up your home to welcome the family this holidays.',
+      pt: 'Prepare sua casa para receber a família nestas festas.',
     },
-    cta: { es: 'Ver alimentos', en: 'See food', pt: 'Ver alimentos' },
-    img: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=1600&q=80&auto=format&fit=crop',
-    categoriaId: 3,
+    cta: { es: 'Ver hogar', en: 'See home décor', pt: 'Ver decoração' },
+    img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 5,
   },
   {
-    id: 'alimentos-cacao-amazonia',
-    theme: 'jungle',
-    tag: { es: 'NATURAL Y REGIONAL', en: 'NATURAL & REGIONAL', pt: 'NATURAL E REGIONAL' },
-    region: 'Selva amazónica peruana',
+    id: 'patrias-gastronomia',
+    theme: 'peru',
+    tag: { es: 'SABORES PERUANOS', en: 'PERUVIAN FLAVORS', pt: 'SABORES PERUANOS' },
+    region: 'Gastronomía y cocina',
     title: {
-      es: ['Cacao puro', 'de la Amazonía'],
-      en: ['Pure cocoa', 'from the Amazon'],
-      pt: ['Cacau puro', 'da Amazônia'],
+      es: ['Cocina lo', 'mejor del', 'Perú'],
+      en: ['Cook the', 'best of', 'Peru'],
+      pt: ['Cozinhe o', 'melhor do', 'Peru'],
     },
     sub: {
-      es: 'Cacao, granos andinos y productos de la selva',
-      en: 'Cocoa, Andean grains and jungle products',
-      pt: 'Cacau, grãos andinos e produtos da selva',
+      es: 'Menaje y utensilios para la cocina peruana',
+      en: 'Cookware and utensils for Peruvian cuisine',
+      pt: 'Utensílios de cozinha para a culinária peruana',
     },
     body: {
-      es: 'Vendedores regionales que cultivan con respeto. Vos comprás, ellos crecen — y el Perú lo siente.',
-      en: 'Regional growers who farm with respect. You buy, they grow — and Peru feels it.',
-      pt: 'Vendedores regionais que cultivam com respeito. Você compra, eles crescem — e o Peru sente.',
+      es: 'Del ceviche al ají de gallina — equipá tu cocina para la celebración.',
+      en: 'From ceviche to ají de gallina — equip your kitchen for the celebration.',
+      pt: 'Do ceviche ao ají de gallina — equipe sua cozinha para a celebração.',
     },
-    cta: { es: 'Ver alimentos', en: 'See food', pt: 'Ver alimentos' },
-    img: 'https://images.unsplash.com/photo-1442550528053-c431ecb55509?w=1600&q=80&auto=format&fit=crop',
-    categoriaId: 3,
+    cta: { es: 'Ver menaje', en: 'See cookware', pt: 'Ver utensílios' },
+    img: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 5,
   },
   {
-    id: 'alimentos-granos-andinos',
-    theme: 'terra',
-    tag: { es: 'GRANOS ANDINOS', en: 'ANDEAN GRAINS', pt: 'GRÃOS ANDINOS' },
-    region: 'Sierra peruana',
+    id: 'patrias-registro-2',
+    theme: 'peru',
+    tag: { es: 'MARKETPLACE PERUANO', en: 'PERUVIAN MARKETPLACE', pt: 'MARKETPLACE PERUANO' },
+    region: 'merkao.org',
     title: {
-      es: ['Granos andinos,', 'fuerza milenaria'],
-      en: ['Andean grains,', 'thousand-year strength'],
-      pt: ['Grãos andinos,', 'força milenar'],
+      es: ['Regístrate', 'en Merkao.org', '¡Es gratis!'],
+      en: ['Sign up at', 'Merkao.org', "It's free!"],
+      pt: ['Cadastre-se', 'em Merkao.org', 'É grátis!'],
     },
     sub: {
-      es: 'Quinua, kiwicha y semillas de la sierra',
-      en: 'Quinoa, kiwicha and seeds from the highlands',
-      pt: 'Quinua, kiwicha e sementes da serra',
+      es: 'Comprá, vendé y celebrá el 28 en Merkao',
+      en: 'Buy, sell and celebrate July 28 on Merkao',
+      pt: 'Compre, venda e celebre o 28 no Merkao',
     },
     body: {
-      es: 'Lo mejor del campo peruano: productos naturales, sin intermediarios, del pueblo a tu cocina.',
-      en: 'The best of the Peruvian countryside: natural products, no middlemen, from the village to your kitchen.',
-      pt: 'O melhor do campo peruano: produtos naturais, sem intermediários, do povoado à sua cozinha.',
+      es: 'Más de 200 vendedores peruanos te esperan — y vos podés ser el próximo.',
+      en: 'Over 200 Peruvian sellers await you — and you could be the next one.',
+      pt: 'Mais de 200 vendedores peruanos esperam por você — e você pode ser o próximo.',
     },
-    cta: { es: 'Ver alimentos', en: 'See food', pt: 'Ver alimentos' },
-    img: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=1600&q=80&auto=format&fit=crop',
-    categoriaId: 3,
+    cta: { es: 'Crear cuenta gratis', en: 'Create free account', pt: 'Criar conta grátis' },
+    ctaHref: '/register',
+    img: 'https://images.unsplash.com/photo-1556761175-4b46a572b786?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 0,
+  },
+]
+
+// ─── SET 4 ─ Fiestas Patrias: accesorios, regalos y vende ────────────
+// ──────────────────────────────────────────────────────────────────────
+const SET_4_PATRIAS: Slide[] = [
+  {
+    id: 'patrias-accesorios',
+    theme: 'peru',
+    tag: { es: 'ACCESORIOS DE FIESTA', en: 'CELEBRATION ACCESSORIES', pt: 'ACESSÓRIOS DE FESTA' },
+    region: 'Bolsos y accesorios',
+    title: {
+      es: ['Accesorios', 'para brillar', 'el 28'],
+      en: ['Accessories', 'to shine', 'on July 28'],
+      pt: ['Acessórios', 'para brilhar', 'no 28'],
+    },
+    sub: {
+      es: 'Bolsos, carteras y complementos de moda',
+      en: 'Bags, wallets and fashion accessories',
+      pt: 'Bolsas, carteiras e acessórios de moda',
+    },
+    body: {
+      es: 'Completá tu look para las fiestas patrias — desde bolsos hasta bisutería.',
+      en: 'Complete your look for independence day — from bags to jewelry.',
+      pt: 'Complete seu look para as festas pátrias — de bolsas a bijuterias.',
+    },
+    cta: { es: 'Ver accesorios', en: 'See accessories', pt: 'Ver acessórios' },
+    img: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 1,
+  },
+  {
+    id: 'patrias-juguetes',
+    theme: 'peru',
+    tag: { es: 'PARA LOS CHICOS', en: 'FOR THE KIDS', pt: 'PARA AS CRIANÇAS' },
+    region: 'Juguetes y regalos',
+    title: {
+      es: ['Sorpresas', 'para el 28', 'de julio'],
+      en: ['Surprises', 'for July', '28th'],
+      pt: ['Surpresas', 'para o 28', 'de julho'],
+    },
+    sub: {
+      es: 'Juguetes y regalos para toda la familia',
+      en: 'Toys and gifts for the whole family',
+      pt: 'Brinquedos e presentes para toda a família',
+    },
+    body: {
+      es: 'Hacé que el 28 de julio sea especial para los más chicos de la casa.',
+      en: 'Make July 28 special for the youngest members of the family.',
+      pt: 'Torne o 28 de julho especial para os mais novos da família.',
+    },
+    cta: { es: 'Ver juguetes y regalos', en: 'See toys & gifts', pt: 'Ver brinquedos e presentes' },
+    img: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 8,
+  },
+  {
+    id: 'patrias-vende',
+    theme: 'peru',
+    tag: { es: '¡VENDE EN MERKAO!', en: 'SELL ON MERKAO!', pt: 'VENDA NO MERKAO!' },
+    region: 'Emprendedores peruanos',
+    title: {
+      es: ['Tu negocio', 'merece', 'brillar'],
+      en: ['Your business', 'deserves', 'to shine'],
+      pt: ['Seu negócio', 'merece', 'brilhar'],
+    },
+    sub: {
+      es: 'Registrá tu tienda en Merkao y llegá a todo el Perú',
+      en: 'Register your store on Merkao and reach all of Peru',
+      pt: 'Registre sua loja no Merkao e alcance todo o Peru',
+    },
+    body: {
+      es: 'Este 28 de julio, dale a tu emprendimiento el impulso que merece.',
+      en: 'This July 28, give your business the boost it deserves.',
+      pt: 'Neste 28 de julho, dê ao seu empreendimento o impulso que merece.',
+    },
+    cta: { es: 'Registra tu tienda', en: 'Register your store', pt: 'Registre sua loja' },
+    ctaHref: '/vendedor',
+    img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 0,
   },
 ]
 
 // Array ordenado de los 4 sets. NO cambiar el orden a menos que quieras
 // desplazar el calendario de rotación.
-const SETS: Slide[][] = [SET_1_FUTBOL, SET_2, SET_3, SET_4]
+const SETS: Slide[][] = [SET_1_PATRIAS, SET_2_PATRIAS, SET_3_PATRIAS, SET_4_PATRIAS]
 
 /**
  * Devuelve el set de slides activo según la fecha actual.
@@ -674,6 +671,12 @@ export default function Home() {
         <div className="mk-hdr-top">
           <div className="mk-hdr-inner">
             <a className="mk-logo" href="/">merkao<span className="mk-logo-dot">.pe</span></a>
+            {new Date().getMonth() === 6 && (
+              <span className="mk-fiestas" aria-label="Felices Fiestas Patrias Peru">
+                <span className="mk-fiestas-red">¡Felices Fiestas</span>
+                <span className="mk-fiestas-white">Patrias!</span>
+              </span>
+            )}
 
             <div className="mk-ship-from">
               <span className="mk-ship-label">{tr.delivering_from}</span>
@@ -803,9 +806,15 @@ export default function Home() {
                 </h1>
                 <p className="mk-hero-sub">{sl.sub[lang]}</p>
                 <p className="mk-hero-body">{sl.body[lang]}</p>
-                <button className="mk-hero-cta" onClick={() => goToShop(sl.categoriaId)}>
-                  {sl.cta[lang]} <Icon name="arrowRight" size={18} />
-                </button>
+                {sl.ctaHref ? (
+                  <a className="mk-hero-cta" href={sl.ctaHref}>
+                    {sl.cta[lang]} <Icon name="arrowRight" size={18} />
+                  </a>
+                ) : (
+                  <button className="mk-hero-cta" onClick={() => goToShop(sl.categoriaId)}>
+                    {sl.cta[lang]} <Icon name="arrowRight" size={18} />
+                  </button>
+                )}
               </div>
               <div className="mk-hslide-media">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
