@@ -1,7 +1,7 @@
 {
-  "lastIndex": 2,
-  "lastPostedDate": "2026-07-04",
-  "totalPosts": 30,
+  "lastIndex": 3,
+  "lastPostedDate": "2026-07-05",
+  "totalPosts": 31,
   "history": [
     {
       "fecha": "2026-06-07T15:23:06.606Z",
@@ -729,6 +729,33 @@
         "containerId": "18131364967564725",
         "permalink": "https://www.instagram.com/p/DaX-j0SoDk8/",
         "elapsedMs": 8836
+      }
+    },
+    {
+      "fecha": "2026-07-05T14:46:01.887Z",
+      "fechaPeru": "2026-07-05",
+      "variantIndex": 3,
+      "variantId": 4,
+      "enfoque": "Pregunta abierta a la comunidad",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122126291535345830",
+      "fbPhotoId": "122126291511345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122126291535345830",
+      "image": {
+        "source": "unsplash",
+        "query": "paisaje peru",
+        "theme": "general",
+        "photo_id": "fqqGUuEodc8",
+        "photo_url": "https://images.unsplash.com/photo-1739210856310-b50baecfa9f1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxNHx8cGFpc2FqZSUyMHBlcnV8ZW58MXwwfHx8MTc4MzI2Mjc0N3ww&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Anyela Málaga Lazarte",
+        "photographer_url": "https://unsplash.com/@capturando_maravillas",
+        "alt": "A large body of water with a mountain in the background"
+      },
+      "ig": {
+        "mediaId": "17861632497644689",
+        "containerId": "18131704078564725",
+        "permalink": "https://www.instagram.com/p/DaakAuelWH5/",
+        "elapsedMs": 10350
       }
     }
   ]
