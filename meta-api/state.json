@@ -1,7 +1,7 @@
 {
-  "lastIndex": 3,
-  "lastPostedDate": "2026-07-05",
-  "totalPosts": 31,
+  "lastIndex": 4,
+  "lastPostedDate": "2026-07-06",
+  "totalPosts": 32,
   "history": [
     {
       "fecha": "2026-06-07T15:23:06.606Z",
@@ -756,6 +756,33 @@
         "containerId": "18131704078564725",
         "permalink": "https://www.instagram.com/p/DaakAuelWH5/",
         "elapsedMs": 10350
+      }
+    },
+    {
+      "fecha": "2026-07-06T16:23:09.369Z",
+      "fechaPeru": "2026-07-06",
+      "variantIndex": 4,
+      "variantId": 5,
+      "enfoque": "Testimonio en primera persona",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122126598813345830",
+      "fbPhotoId": "122126598789345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122126598813345830",
+      "image": {
+        "source": "unsplash",
+        "query": "peruvian market fruits",
+        "theme": "alimentos",
+        "photo_id": "WSsEj4oqXWo",
+        "photo_url": "https://images.unsplash.com/photo-1760726361439-4afaa0d26808?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxfHxwZXJ1dmlhbiUyMG1hcmtldCUyMGZydWl0c3xlbnwxfDB8fHwxNzgzMzU0OTcyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Darya Luganskaya",
+        "photographer_url": "https://unsplash.com/@dlugansky",
+        "alt": "Street vendor with drinks and snacks for sale"
+      },
+      "ig": {
+        "mediaId": "17880219585609653",
+        "containerId": "18132080899564725",
+        "permalink": "https://www.instagram.com/p/DadT7JklF3P/",
+        "elapsedMs": 8452
       }
     }
   ]
