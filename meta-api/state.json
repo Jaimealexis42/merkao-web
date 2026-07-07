@@ -1,7 +1,7 @@
 {
-  "lastIndex": 4,
-  "lastPostedDate": "2026-07-06",
-  "totalPosts": 32,
+  "lastIndex": 5,
+  "lastPostedDate": "2026-07-07",
+  "totalPosts": 33,
   "history": [
     {
       "fecha": "2026-06-07T15:23:06.606Z",
@@ -783,6 +783,30 @@
         "containerId": "18132080899564725",
         "permalink": "https://www.instagram.com/p/DadT7JklF3P/",
         "elapsedMs": 8452
+      }
+    },
+    {
+      "fecha": "2026-07-07T15:44:38.019Z",
+      "fechaPeru": "2026-07-07",
+      "variantIndex": 5,
+      "variantId": 6,
+      "enfoque": "Tip de venta + mención natural",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122126861865345830",
+      "fbPhotoId": "122126861841345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122126861865345830",
+      "image": {
+        "source": "unsplash",
+        "query": "coffee plantation peru",
+        "theme": "cafe",
+        "photo_id": "d4XGsVnkiXo",
+        "photo_url": "https://images.unsplash.com/photo-1749062149286-01111a8108f9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxOXx8Y29mZmVlJTIwcGxhbnRhdGlvbiUyMHBlcnV8ZW58MXwwfHx8MTc4MzQzOTA2MHww&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Sven Träger",
+        "photographer_url": "https://unsplash.com/@sven87",
+        "alt": "Green fields nestled in a valley under a cloudy sky."
+      },
+      "ig": {
+        "error": "container 400: The aspect ratio is not supported."
       }
     }
   ]
