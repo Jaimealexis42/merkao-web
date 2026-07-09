@@ -1,7 +1,7 @@
 {
-  "lastIndex": 5,
-  "lastPostedDate": "2026-07-07",
-  "totalPosts": 33,
+  "lastIndex": 6,
+  "lastPostedDate": "2026-07-09",
+  "totalPosts": 34,
   "history": [
     {
       "fecha": "2026-06-07T15:23:06.606Z",
@@ -807,6 +807,33 @@
       },
       "ig": {
         "error": "container 400: The aspect ratio is not supported."
+      }
+    },
+    {
+      "fecha": "2026-07-09T15:58:39.052Z",
+      "fechaPeru": "2026-07-09",
+      "variantIndex": 6,
+      "variantId": 7,
+      "enfoque": "Invitación corta y cálida",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122127658389345830",
+      "fbPhotoId": "122127658359345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122127658389345830",
+      "image": {
+        "source": "unsplash",
+        "query": "ropa colorida peru",
+        "theme": "moda",
+        "photo_id": "Sv_ZXYB6azs",
+        "photo_url": "https://images.unsplash.com/photo-1759354776662-16b2448225a7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHw5fHxyb3BhJTIwY29sb3JpZGElMjBwZXJ1fGVufDF8MHx8fDE3ODM2MTI2OTh8MA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Gustavo Leighton",
+        "photographer_url": "https://unsplash.com/@g_leighton",
+        "alt": "Woman in traditional andean clothing under a blue sky."
+      },
+      "ig": {
+        "mediaId": "17918021184409564",
+        "containerId": "18133102681564725",
+        "permalink": "https://www.instagram.com/p/Dak_gANoBlM/",
+        "elapsedMs": 11399
       }
     }
   ]
