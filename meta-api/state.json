@@ -1,7 +1,7 @@
 {
-  "lastIndex": 0,
-  "lastPostedDate": "2026-07-10",
-  "totalPosts": 35,
+  "lastIndex": 1,
+  "lastPostedDate": "2026-07-11",
+  "totalPosts": 36,
   "history": [
     {
       "fecha": "2026-06-07T15:23:06.606Z",
@@ -861,6 +861,33 @@
         "containerId": "18133393717564725",
         "permalink": "https://www.instagram.com/p/DanhaQyIEVK/",
         "elapsedMs": 13510
+      }
+    },
+    {
+      "fecha": "2026-07-11T14:23:37.824Z",
+      "fechaPeru": "2026-07-11",
+      "variantIndex": 1,
+      "variantId": 2,
+      "enfoque": "Para la que recién empieza",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122128287879345830",
+      "fbPhotoId": "122128287831345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122128287879345830",
+      "image": {
+        "source": "unsplash",
+        "query": "paisaje peru",
+        "theme": "general",
+        "photo_id": "fvptwPZ2Fqo",
+        "photo_url": "https://images.unsplash.com/photo-1563818708336-3e3449ca7eb4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxMXx8cGFpc2FqZSUyMHBlcnV8ZW58MXwwfHx8MTc4MzY5NzU4Nnww&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Amilcar Alvarez Garcia",
+        "photographer_url": "https://unsplash.com/@amil_style",
+        "alt": "mountain under blue sky"
+      },
+      "ig": {
+        "mediaId": "17911854228242207",
+        "containerId": "18133655905564725",
+        "permalink": "https://www.instagram.com/p/Dap-N91Ft7Z/",
+        "elapsedMs": 9693
       }
     }
   ]

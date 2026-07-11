@@ -1,6 +1,6 @@
 {
-  "lastReelDate": "2026-07-10",
-  "totalReels": 29,
+  "lastReelDate": "2026-07-11",
+  "totalReels": 30,
   "history": [
     {
       "fecha": "2026-06-14T17:13:17.318Z",
@@ -591,6 +591,24 @@
         "videoId": "1526843212572530",
         "permalink": "https://www.facebook.com/reel/1526843212572530",
         "elapsedMs": 10237
+      }
+    },
+    {
+      "fecha": "2026-07-11T14:25:53.332Z",
+      "fechaPeru": "2026-07-11",
+      "product": {
+        "id": "0cf6af2c-0c1c-4b44-b070-478129251122",
+        "nombre": "Cacao puro en polvo Amazonas 1 kg — Orgánico",
+        "ciudad": "San Martín",
+        "precio": 28
+      },
+      "ig": {
+        "error": "ig container status=ERROR status=\"ERROR\""
+      },
+      "fb": {
+        "videoId": "925975360518279",
+        "permalink": "https://www.facebook.com/reel/925975360518279",
+        "elapsedMs": 23283
       }
     }
   ]
