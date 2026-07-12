@@ -1,7 +1,7 @@
 {
-  "lastIndex": 1,
-  "lastPostedDate": "2026-07-11",
-  "totalPosts": 36,
+  "lastIndex": 2,
+  "lastPostedDate": "2026-07-12",
+  "totalPosts": 37,
   "history": [
     {
       "fecha": "2026-06-07T15:23:06.606Z",
@@ -888,6 +888,33 @@
         "containerId": "18133655905564725",
         "permalink": "https://www.instagram.com/p/Dap-N91Ft7Z/",
         "elapsedMs": 9693
+      }
+    },
+    {
+      "fecha": "2026-07-12T14:27:20.452Z",
+      "fechaPeru": "2026-07-12",
+      "variantIndex": 2,
+      "variantId": 3,
+      "enfoque": "Artesana / productora regional",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122129263749345830",
+      "fbPhotoId": "122129263701345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122129263749345830",
+      "image": {
+        "source": "unsplash",
+        "query": "weaving peru",
+        "theme": "artesania",
+        "photo_id": "3cax0qcYQ8s",
+        "photo_url": "https://images.unsplash.com/photo-1631554240706-ab68578bc6ac?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxMHx8d2VhdmluZyUyMHBlcnV8ZW58MXwwfHx8MTc4Mzg2NjQyM3ww&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Neto Torres",
+        "photographer_url": "https://unsplash.com/@torres82",
+        "alt": "a man riding a bike with a colorful blanket on the back of it"
+      },
+      "ig": {
+        "mediaId": "17947050195216054",
+        "containerId": "18133930390564725",
+        "permalink": "https://www.instagram.com/p/DasjcCGmmeN/",
+        "elapsedMs": 9948
       }
     }
   ]
