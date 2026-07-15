@@ -1,6 +1,6 @@
 {
-  "lastReelDate": "2026-07-14",
-  "totalReels": 33,
+  "lastReelDate": "2026-07-15",
+  "totalReels": 34,
   "history": [
     {
       "fecha": "2026-06-14T17:13:17.318Z",
@@ -663,6 +663,24 @@
         "videoId": "1045457054491262",
         "permalink": "https://www.facebook.com/reel/1045457054491262",
         "elapsedMs": 6421
+      }
+    },
+    {
+      "fecha": "2026-07-15T14:54:41.566Z",
+      "fechaPeru": "2026-07-15",
+      "product": {
+        "id": "a6a26730-79db-4615-b02f-9f22fb2cd6d9",
+        "nombre": "Polo de algodón pima peruano — Pack x3",
+        "ciudad": "Lima",
+        "precio": 65
+      },
+      "ig": {
+        "error": "ig container status=ERROR status=\"ERROR\""
+      },
+      "fb": {
+        "videoId": "1048459181194929",
+        "permalink": "https://www.facebook.com/reel/1048459181194929",
+        "elapsedMs": 16576
       }
     }
   ]
