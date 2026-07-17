@@ -1,7 +1,7 @@
 {
-  "lastIndex": 6,
-  "lastPostedDate": "2026-07-16",
-  "totalPosts": 41,
+  "lastIndex": 0,
+  "lastPostedDate": "2026-07-17",
+  "totalPosts": 42,
   "history": [
     {
       "fecha": "2026-06-07T15:23:06.606Z",
@@ -1023,6 +1023,33 @@
         "containerId": "18134957173564725",
         "permalink": "https://www.instagram.com/p/Da264mHmtf0/",
         "elapsedMs": 8412
+      }
+    },
+    {
+      "fecha": "2026-07-17T14:45:14.386Z",
+      "fechaPeru": "2026-07-17",
+      "variantIndex": 0,
+      "variantId": 1,
+      "enfoque": "Comparativa con números",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122131475601345830",
+      "fbPhotoId": "122131475487345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122131475601345830",
+      "image": {
+        "source": "unsplash",
+        "query": "paisaje peru",
+        "theme": "general",
+        "photo_id": "sQHSqHC3yl8",
+        "photo_url": "https://images.unsplash.com/photo-1580530719779-9492fd167363?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHw4fHxwYWlzYWplJTIwcGVydXxlbnwxfDB8fHwxNzg0Mjk5NDk5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Eduardo Garcia",
+        "photographer_url": "https://unsplash.com/@eduardoxxvlll",
+        "alt": "silhouette of mountain under blue sky and white clouds during daytime"
+      },
+      "ig": {
+        "mediaId": "18162687154415274",
+        "containerId": "18135191236564725",
+        "permalink": "https://www.instagram.com/p/Da5ddxQDW6J/",
+        "elapsedMs": 7815
       }
     }
   ]
