@@ -250,7 +250,7 @@ function RegisterForm() {
                 >
                   {PAISES.map((p) => (
                     <option key={p.code} value={p.dialCode}>
-                      {p.flag} {p.dialCode} {p.nombre}
+                      {p.flag} {p.dialCode}
                     </option>
                   ))}
                 </select>
