@@ -7,28 +7,6 @@ import { Icon, type IconName } from '@/lib/icons'
 
 type Rol = 'comprador' | 'vendedor'
 
-const PAISES = [
-  { code: 'PE', dialCode: '+51',  flag: '🇵🇪', nombre: 'Perú' },
-  { code: 'CO', dialCode: '+57',  flag: '🇨🇴', nombre: 'Colombia' },
-  { code: 'MX', dialCode: '+52',  flag: '🇲🇽', nombre: 'México' },
-  { code: 'EC', dialCode: '+593', flag: '🇪🇨', nombre: 'Ecuador' },
-  { code: 'CL', dialCode: '+56',  flag: '🇨🇱', nombre: 'Chile' },
-  { code: 'AR', dialCode: '+54',  flag: '🇦🇷', nombre: 'Argentina' },
-  { code: 'BO', dialCode: '+591', flag: '🇧🇴', nombre: 'Bolivia' },
-  { code: 'VE', dialCode: '+58',  flag: '🇻🇪', nombre: 'Venezuela' },
-  { code: 'BR', dialCode: '+55',  flag: '🇧🇷', nombre: 'Brasil' },
-  { code: 'UY', dialCode: '+598', flag: '🇺🇾', nombre: 'Uruguay' },
-  { code: 'PY', dialCode: '+595', flag: '🇵🇾', nombre: 'Paraguay' },
-  { code: 'PA', dialCode: '+507', flag: '🇵🇦', nombre: 'Panamá' },
-  { code: 'CR', dialCode: '+506', flag: '🇨🇷', nombre: 'Costa Rica' },
-  { code: 'GT', dialCode: '+502', flag: '🇬🇹', nombre: 'Guatemala' },
-  { code: 'SV', dialCode: '+503', flag: '🇸🇻', nombre: 'El Salvador' },
-  { code: 'HN', dialCode: '+504', flag: '🇭🇳', nombre: 'Honduras' },
-  { code: 'NI', dialCode: '+505', flag: '🇳🇮', nombre: 'Nicaragua' },
-  { code: 'DO', dialCode: '+1',   flag: '🇩🇴', nombre: 'Rep. Dominicana' },
-  { code: 'CU', dialCode: '+53',  flag: '🇨🇺', nombre: 'Cuba' },
-  { code: 'US', dialCode: '+1',   flag: '🇺🇸', nombre: 'EE.UU.' },
-] as const
 
 type Feat = { icon: IconName; tone: 'brand' | 'green'; text: string }
 
@@ -66,7 +44,6 @@ function RegisterForm() {
   const [email, setEmail] = useState('')
   const [telefono, setTelefono] = useState('')
   const [password, setPassword] = useState('')
-  const [dialCode, setDialCode] = useState('+51')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -83,14 +60,13 @@ function RegisterForm() {
     setLoading(true)
     setError('')
 
-    const tel = telefono.replace(/\D/g, '')
     const { error: authError } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: {
           nombre: nombre.trim(),
-          telefono: tel ? `${dialCode}${tel}` : null,
+          telefono: telefono.trim() || null,
           tipo: rol,
         },
       },
@@ -240,29 +216,14 @@ function RegisterForm() {
             </label>
 
             <label className="mk-field">
-              <span>Teléfono / WhatsApp</span>
-              <div className="mk-field-tel">
-                <select
-                  className="mk-field-tel-select"
-                  value={dialCode}
-                  onChange={(e) => setDialCode(e.target.value)}
-                  aria-label="Código de país"
-                >
-                  {PAISES.map((p) => (
-                    <option key={p.code} value={p.dialCode}>
-                      {p.flag} {p.dialCode}
-                    </option>
-                  ))}
-                </select>
-                <input
-                  type="tel"
-                  value={telefono}
-                  onChange={(e) => setTelefono(e.target.value)}
-                  placeholder="987 654 321"
-                  autoComplete="tel-national"
-                  inputMode="numeric"
-                />
-              </div>
+              <span>Teléfono / WhatsApp <small style={{ fontWeight: 400, color: 'var(--muted-2)' }}>(opcional)</small></span>
+              <input
+                type="tel"
+                value={telefono}
+                onChange={(e) => setTelefono(e.target.value)}
+                placeholder="+51 987 654 321"
+                autoComplete="tel"
+              />
             </label>
 
             <label className="mk-field">
