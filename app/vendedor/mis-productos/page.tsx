@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/lib/useAuth'
 import { getPct } from '@/lib/comisiones'
 import { fmt } from '@/lib/precios'
 import { Icon } from '@/lib/icons'
@@ -32,6 +33,7 @@ const TABS: { id: Tab; label: string }[] = [
 ]
 
 export default function MisProductos() {
+  const { user } = useAuth()
   const [productos, setProductos]   = useState<Producto[]>([])
   const [loading, setLoading]       = useState(true)
   const [error, setError]           = useState('')
@@ -39,12 +41,13 @@ export default function MisProductos() {
   const [busqueda, setBusqueda]     = useState('')
   const [eliminando, setEliminando] = useState<string | null>(null)
 
-  const cargarProductos = async () => {
+  const cargarProductos = async (vendedorId: string) => {
     setLoading(true)
     setError('')
     const { data, error: sbError } = await supabase
       .from('productos')
       .select('*')
+      .eq('vendedor_id', vendedorId)
       .order('created_at', { ascending: false })
 
     if (sbError) {
@@ -56,8 +59,8 @@ export default function MisProductos() {
   }
 
   useEffect(() => {
-    cargarProductos()
-  }, [])
+    if (user?.id) cargarProductos(user.id)
+  }, [user?.id])
 
   const toggleEstado = async (id: string, estadoActual: string) => {
     const nuevoEstado = estadoActual === 'activo' ? 'inactivo' : 'activo'
@@ -138,7 +141,7 @@ export default function MisProductos() {
         <div className="mk-vempty" style={{ color: '#B91C1C', borderColor: '#FECACA', background: '#FEF2F2' }}>
           <Icon name="lock" size={24} />
           <p>{error}</p>
-          <button onClick={cargarProductos} className="mk-btn mk-btn-ghost">Reintentar</button>
+          <button onClick={() => user?.id && cargarProductos(user.id)} className="mk-btn mk-btn-ghost">Reintentar</button>
         </div>
       )}
 

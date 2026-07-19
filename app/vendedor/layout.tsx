@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/useAuth'
+import { isAdminEmail } from '@/lib/admin'
 import { Icon, type IconName } from '@/lib/icons'
 
 type NavItem = { href: string; label: string; icon: IconName }
@@ -23,10 +24,21 @@ export default function VendedorLayout({ children }: { children: React.ReactNode
   const { user, loading } = useAuth()
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login')
-    }
+    if (loading) return
+    if (!user) { router.push('/login'); return }
+    const tipo = user.user_metadata?.tipo as string | undefined
+    const isAdmin = isAdminEmail(user.email)
+    if (!isAdmin && tipo === 'comprador') router.push('/')
   }, [user, loading, router])
+
+  useEffect(() => {
+    if (!user || user.user_metadata?.tipo) return
+    const pending = localStorage.getItem('mk_pending_rol')
+    if (pending === 'vendedor' || pending === 'comprador') {
+      localStorage.removeItem('mk_pending_rol')
+      supabase.auth.updateUser({ data: { tipo: pending } })
+    }
+  }, [user])
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()

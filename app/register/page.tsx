@@ -84,6 +84,7 @@ function RegisterForm() {
   const handleGoogleSignup = async () => {
     setLoading(true)
     setError('')
+    localStorage.setItem('mk_pending_rol', rol)
     const { error: authError } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: `${window.location.origin}/auth/callback` },

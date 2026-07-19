@@ -45,3 +45,5 @@ next-env.d.ts
 
 # sensitive backup codes (MFA / recovery)
 Backup-codes-merkao.org.txt
+
+.vercel
