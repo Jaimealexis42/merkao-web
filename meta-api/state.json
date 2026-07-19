@@ -1,7 +1,7 @@
 {
-  "lastIndex": 1,
-  "lastPostedDate": "2026-07-18",
-  "totalPosts": 43,
+  "lastIndex": 2,
+  "lastPostedDate": "2026-07-19",
+  "totalPosts": 44,
   "history": [
     {
       "fecha": "2026-06-07T15:23:06.606Z",
@@ -1077,6 +1077,33 @@
         "containerId": "18135425977564725",
         "permalink": "https://www.instagram.com/p/Da7_fR0IKN_/",
         "elapsedMs": 8889
+      }
+    },
+    {
+      "fecha": "2026-07-19T14:25:05.654Z",
+      "fechaPeru": "2026-07-19",
+      "variantIndex": 2,
+      "variantId": 3,
+      "enfoque": "Artesana / productora regional",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122132040507345830",
+      "fbPhotoId": "122132040483345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122132040507345830",
+      "image": {
+        "source": "unsplash",
+        "query": "weaving peru",
+        "theme": "artesania",
+        "photo_id": "kNsAF3gcyeY",
+        "photo_url": "https://images.unsplash.com/photo-1563837738662-c86ef2ba99f8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxfHx3ZWF2aW5nJTIwcGVydXxlbnwxfDB8fHwxNzg0NDcxMDg2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Jean Vella",
+        "photographer_url": "https://unsplash.com/@jean_vella",
+        "alt": "person waving"
+      },
+      "ig": {
+        "mediaId": "18356310787209468",
+        "containerId": "18135666556564725",
+        "permalink": "https://www.instagram.com/p/Da-kwBFlOjp/",
+        "elapsedMs": 7068
       }
     }
   ]

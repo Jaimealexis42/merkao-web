@@ -1,6 +1,6 @@
 {
-  "lastReelDate": "2026-07-18",
-  "totalReels": 37,
+  "lastReelDate": "2026-07-19",
+  "totalReels": 38,
   "history": [
     {
       "fecha": "2026-06-14T17:13:17.318Z",
@@ -735,6 +735,24 @@
         "videoId": "1905008026861537",
         "permalink": "https://www.facebook.com/reel/1905008026861537",
         "elapsedMs": 11864
+      }
+    },
+    {
+      "fecha": "2026-07-19T14:27:50.901Z",
+      "fechaPeru": "2026-07-19",
+      "product": {
+        "id": "48a73792-c9cc-4dc6-b48a-b8d67997b97e",
+        "nombre": "Cuadro shipibo-conibo original 40×60 cm",
+        "ciudad": "Ucayali",
+        "precio": 180
+      },
+      "ig": {
+        "error": "ig container no llegó a FINISHED en 30 intentos"
+      },
+      "fb": {
+        "videoId": "4267370576908506",
+        "permalink": "https://www.facebook.com/reel/4267370576908506",
+        "elapsedMs": 8393
       }
     }
   ]
