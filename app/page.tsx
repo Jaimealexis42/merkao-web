@@ -529,7 +529,9 @@ export default function Home() {
   const [lang, setLang]                       = useState<Lang>('es')
   const [favoritos, setFavoritos]             = useState<Set<string>>(new Set())
   const [toast, setToast]                     = useState('')
-  const toastRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const toastRef       = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false)
+  const accountMenuRef = useRef<HTMLDivElement>(null)
 
   const { user }  = useAuth()
   const tr        = T[lang]
@@ -632,6 +634,16 @@ export default function Home() {
     window.location.reload()
   }
 
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (accountMenuRef.current && !accountMenuRef.current.contains(e.target as Node)) {
+        setAccountMenuOpen(false)
+      }
+    }
+    if (accountMenuOpen) document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [accountMenuOpen])
+
   const goToShop = (catId: number) => {
     setCategoriaFiltro(catId)
     setSlideLocked(true)
@@ -647,6 +659,7 @@ export default function Home() {
 
   const arancelInfo = ARANCELES[pais]
   const userLabel   = user?.email ? user.email.split('@')[0] : null
+  const esVendedor  = ((user?.user_metadata?.tipo as string | undefined) ?? '').toLowerCase() === 'vendedor'
   const cartCount   = totalItems()
 
   return (
@@ -707,19 +720,54 @@ export default function Home() {
             </div>
 
             {userLabel ? (
-              <a className="mk-hdr-link mk-account" href="/perfil">
-                <Icon name="user" size={22} stroke={1.8} />
-                <span className="mk-hdr-link-txt">
-                  <small>{tr.hello_user} {userLabel}</small>
-                  <strong>{tr.account.replace('▾', '').trim()} <Icon name="chevronDown" size={12} /></strong>
-                </span>
-              </a>
+              <div className="mk-account-wrap" ref={accountMenuRef}>
+                <button
+                  type="button"
+                  className={'mk-hdr-link mk-account' + (accountMenuOpen ? ' open' : '')}
+                  onClick={() => setAccountMenuOpen((v) => !v)}
+                  aria-haspopup="true"
+                  aria-expanded={accountMenuOpen}
+                >
+                  <Icon name="user" size={22} stroke={1.8} />
+                  <span className="mk-hdr-link-txt">
+                    <small>{tr.hello_user} {userLabel}</small>
+                    <strong>
+                      {tr.account.replace('▾', '').trim()}
+                      <Icon name="chevronDown" size={13} className={'mk-acct-chevron' + (accountMenuOpen ? ' up' : '')} />
+                    </strong>
+                  </span>
+                </button>
+                {accountMenuOpen && (
+                  <div className="mk-account-menu" role="menu">
+                    <a href="/perfil" className="mk-account-item" role="menuitem" onClick={() => setAccountMenuOpen(false)}>
+                      <Icon name="user" size={15} stroke={2} /> {lang === 'en' ? 'My profile' : lang === 'pt' ? 'Meu perfil' : 'Mi perfil'}
+                    </a>
+                    <a href="/mis-pedidos" className="mk-account-item" role="menuitem" onClick={() => setAccountMenuOpen(false)}>
+                      <Icon name="box" size={15} stroke={2} /> {lang === 'en' ? 'My orders' : lang === 'pt' ? 'Meus pedidos' : 'Mis pedidos'}
+                    </a>
+                    {esVendedor && (
+                      <a href="/vendedor" className="mk-account-item" role="menuitem" onClick={() => setAccountMenuOpen(false)}>
+                        <Icon name="store" size={15} stroke={2} /> {lang === 'en' ? 'Seller panel' : lang === 'pt' ? 'Painel vendedor' : 'Panel vendedor'}
+                      </a>
+                    )}
+                    <div className="mk-account-divider" />
+                    <button
+                      type="button"
+                      className="mk-account-item mk-account-signout"
+                      role="menuitem"
+                      onClick={() => { setAccountMenuOpen(false); handleSignOut() }}
+                    >
+                      <Icon name="logout" size={15} stroke={2} /> {tr.sign_out}
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
               <a className="mk-hdr-link mk-account" href="/login">
                 <Icon name="user" size={22} stroke={1.8} />
                 <span className="mk-hdr-link-txt">
                   <small>{tr.hello_sign_in}</small>
-                  <strong>{tr.account.replace('▾', '').trim()} <Icon name="chevronDown" size={12} /></strong>
+                  <strong>{tr.account.replace('▾', '').trim()} <Icon name="chevronDown" size={13} /></strong>
                 </span>
               </a>
             )}

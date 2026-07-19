@@ -97,7 +97,30 @@ img { display: block; max-width: 100%; }
 .mk-hdr-link-txt.right { text-align: right; }
 .mk-hdr-link-txt small { font-size: 11px; color: var(--muted-2); font-weight: 500; }
 .mk-hdr-link-txt strong { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 3px; }
+.mk-account { background: none; border: none; cursor: pointer; padding: 0; font-family: inherit; }
 .mk-account:hover { color: var(--brand-700); }
+.mk-account.open { color: var(--brand-700); }
+.mk-acct-chevron { transition: transform .18s; flex-shrink: 0; }
+.mk-acct-chevron.up { transform: rotate(180deg); }
+
+.mk-account-wrap { position: relative; }
+.mk-account-menu {
+  position: absolute; top: calc(100% + 8px); right: 0;
+  background: var(--bg); border: 1px solid var(--line); border-radius: 12px;
+  box-shadow: 0 8px 28px rgba(0,0,0,.12); min-width: 200px;
+  padding: 6px; z-index: 200;
+}
+.mk-account-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 9px 12px; border-radius: 8px; font-size: 14px; font-weight: 500;
+  color: var(--ink); text-decoration: none; width: 100%;
+  background: none; border: none; cursor: pointer; font-family: inherit; text-align: left;
+  transition: background .12s;
+}
+.mk-account-item:hover { background: var(--bg-2); }
+.mk-account-divider { height: 1px; background: var(--line); margin: 4px 0; }
+.mk-account-signout { color: #d93025; }
+.mk-account-signout:hover { background: #fff1f0; }
 
 .mk-cart-btn { display: flex; align-items: center; gap: 9px; background: var(--ink); color: #fff; padding: 9px 16px; border-radius: var(--radius-sm); font-weight: 700; font-size: 14px; }
 .mk-cart-btn:hover { background: var(--ink-2); }
