@@ -51,409 +51,395 @@ type Slide = {
 }
 
 // ══════════════════════════════════════════════════════════════════════
-// ROTACIÓN AUTOMÁTICA DE 4 SETS DE HERO (cambia cada 2 días)
+// ROTACIÓN AUTOMÁTICA DE 7 SETS DE HERO (cambia cada 1 día)
 // ──────────────────────────────────────────────────────────────────────
-// El hero rota cíclicamente entre 4 sets distintos en función de la fecha
-// actual. La rotación es 100% determinística: solo depende del reloj del
-// sistema, no requiere cron job, DB ni intervención manual.
+// Ciclo de 7 días: cada día muestra un set distinto.
+//   indiceSet = diasTranscurridos % 7
+// Determinístico: misma fecha → mismo set, sin cron ni DB.
 //
-// Cómo funciona getSetActivo():
-//   1) diasTranscurridos = días enteros desde FECHA_BASE (UTC).
-//   2) indiceSet = Math.floor(diasTranscurridos / 2) % 4
-//   3) Resultado: cambia cada 2 días y cicla SET 1 → SET 2 → SET 3 → SET 4 → SET 1 ...
-//
-// Calendario (desde FECHA_BASE = mié 24 jun 2026 UTC):
-//   día 0–1   → SET 1 (fútbol)
-//   día 2–3   → SET 2
-//   día 4–5   → SET 3
-//   día 6–7   → SET 4
-//   día 8–9   → SET 1 (vuelve a empezar)
-//
-// Para cargar contenido: editar los objetos dentro de cada SET (SET_2,
-// SET_3, SET_4 abajo). NO tocar getSetActivo() ni FECHA_BASE — la lógica
-// se mantiene estable.
 // ══════════════════════════════════════════════════════════════════════
 
-// Fecha de referencia para el cálculo del set activo. UTC para evitar
-// que SSR (Vercel UTC) y cliente (timezone local) caigan en sets
-// distintos durante la hidratación.
-const FECHA_BASE = new Date('2026-06-24T00:00:00Z') // miércoles 24 jun 2026 UTC
-const DIAS_POR_SET = 2
-const MS_POR_DIA = 1000 * 60 * 60 * 24
+// UTC para evitar que SSR (Vercel UTC) y cliente (timezone local) difieran.
+const FECHA_BASE   = new Date('2026-06-24T00:00:00Z')
+const DIAS_POR_SET = 1
+const MS_POR_DIA   = 1000 * 60 * 60 * 24
 
-// ─── SET 1 ─ Fiestas Patrias: apertura festiva ───────────────────────
-// Tema: polos peruanos, deporte, tech y CTA de registro.
-// ──────────────────────────────────────────────────────────────────────
-const SET_1_PATRIAS: Slide[] = [
+// ─── SET 1 ─ Fiestas Patrias: moda y electrónicos ────────────────────
+const SET_1: Slide[] = [
   {
-    id: 'patrias-polo-peru',
+    id: 's1-polo',
     theme: 'peru',
-    tag: { es: 'EDICIÓN ESPECIAL 28 DE JULIO', en: 'JULY 28 SPECIAL EDITION', pt: 'EDIÇÃO ESPECIAL 28 DE JULHO' },
+    tag:    { es: 'EDICIÓN 28 DE JULIO', en: 'JULY 28 EDITION', pt: 'EDIÇÃO 28 DE JULHO' },
     region: 'Algodón pima peruano',
-    title: {
-      es: ['Polos del Perú', 'para el 28'],
-      en: ['Peruvian polos', 'for July 28'],
-      pt: ['Polos do Peru', 'para o 28'],
-    },
-    sub: {
-      es: 'Algodón pima en rojo y blanco — el más suave del mundo',
-      en: 'Pima cotton in red and white — the softest in the world',
-      pt: 'Algodão pima em vermelho e branco — o mais macio do mundo',
-    },
-    body: {
-      es: 'Las mejores prendas peruanas para celebrar la independencia con orgullo.',
-      en: 'The finest Peruvian garments to celebrate independence with pride.',
-      pt: 'As melhores roupas peruanas para celebrar a independência com orgulho.',
-    },
-    cta: { es: 'Ver polos y camisetas', en: 'See polos & tees', pt: 'Ver polos e camisetas' },
-    img: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&q=80&auto=format&fit=crop',
+    title:  { es: ['Polos del Perú', 'para el 28'], en: ['Peruvian polos', 'for July 28'], pt: ['Polos do Peru', 'para o 28'] },
+    sub:    { es: 'Ropa peruana en rojo y blanco', en: 'Peruvian clothing in red and white', pt: 'Roupas peruanas em vermelho e branco' },
+    body:   { es: 'Las mejores prendas para celebrar la independencia con orgullo.', en: 'The finest garments to celebrate independence with pride.', pt: 'As melhores roupas para celebrar a independência com orgulho.' },
+    cta:    { es: 'Ver moda', en: 'See fashion', pt: 'Ver moda' },
+    img:    'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&q=80&auto=format&fit=crop',
     categoriaId: 1,
   },
   {
-    id: 'patrias-deporte',
+    id: 's1-bandera',
     theme: 'peru',
-    tag: { es: 'DEPORTE PERUANO', en: 'PERUVIAN SPORT', pt: 'ESPORTE PERUANO' },
-    region: 'Equipamiento deportivo',
-    title: {
-      es: ['Actívate', 'estas fiestas'],
-      en: ['Get active', 'this July'],
-      pt: ['Ative-se', 'nestas festas'],
-    },
-    sub: {
-      es: 'Ropa y equipamiento deportivo peruano',
-      en: 'Peruvian sports clothing and gear',
-      pt: 'Roupas e equipamentos esportivos peruanos',
-    },
-    body: {
-      es: 'Celebrá el 28 de julio moviéndote — con prendas hechas en el Perú.',
-      en: 'Celebrate July 28 staying active — with garments made in Peru.',
-      pt: 'Celebre o 28 de julho se movimentando — com roupas feitas no Peru.',
-    },
-    cta: { es: 'Ver ropa deportiva', en: 'See sportswear', pt: 'Ver roupa esportiva' },
-    img: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=1600&q=80&auto=format&fit=crop',
+    tag:    { es: 'MODA PATRIA', en: 'PATRIOTIC STYLE', pt: 'MODA PATRIÓTICA' },
+    region: 'Ropa y accesorios',
+    title:  { es: ['Luce los colores', 'de tu bandera'], en: ['Wear the colors', 'of your flag'], pt: ['Vista as cores', 'da sua bandeira'] },
+    sub:    { es: 'Prendas en rojo y blanco para el 28', en: 'Red and white outfits for July 28', pt: 'Roupas em vermelho e branco para o 28' },
+    body:   { es: 'Vestite de fiesta nacional con ropa hecha en el Perú.', en: 'Dress for the national holiday with garments made in Peru.', pt: 'Vista-se para a festa nacional com roupas feitas no Peru.' },
+    cta:    { es: 'Ver ropa', en: 'See clothing', pt: 'Ver roupas' },
+    img:    'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=1600&q=80&auto=format&fit=crop',
     categoriaId: 1,
   },
   {
-    id: 'patrias-tech',
-    theme: 'peru',
-    tag: { es: '¡FIESTAS PATRIAS!', en: 'PERU INDEPENDENCE!', pt: 'FESTAS PÁTRIAS!' },
-    region: 'Tecnología peruana',
-    title: {
-      es: ['Tecnología', 'a precio', 'peruano'],
-      en: ['Tech at', 'Peruvian', 'prices'],
-      pt: ['Tecnologia', 'a preço', 'peruano'],
-    },
-    sub: {
-      es: 'Los mejores electrónicos, directo de vendedores locales',
-      en: 'The best electronics, direct from local sellers',
-      pt: 'Os melhores eletrônicos, direto de vendedores locais',
-    },
-    body: {
-      es: 'Regala o regálate lo último en tech estas fiestas patrias.',
-      en: 'Give or treat yourself to the latest tech this independence day.',
-      pt: 'Presenteie ou se presenteie com o melhor em tech nessas festas pátrias.',
-    },
-    cta: { es: 'Ver tecnología', en: 'See electronics', pt: 'Ver tecnologia' },
-    img: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=1600&q=80&auto=format&fit=crop',
+    id: 's1-tech',
+    theme: 'stone',
+    tag:    { es: 'TECNOLOGÍA', en: 'ELECTRONICS', pt: 'TECNOLOGIA' },
+    region: 'Electrónicos',
+    title:  { es: ['Electrónicos', 'a precio peruano'], en: ['Electronics', 'at Peruvian prices'], pt: ['Eletrônicos', 'a preço peruano'] },
+    sub:    { es: 'Laptops, celulares y más — directo de vendedores locales', en: 'Laptops, phones and more — direct from local sellers', pt: 'Laptops, celulares e mais — direto de vendedores locais' },
+    body:   { es: 'La mejor tecnología disponible en Merkao, con escrow protegido.', en: 'The best technology available on Merkao, with escrow protection.', pt: 'A melhor tecnologia disponível no Merkao, com escrow protegido.' },
+    cta:    { es: 'Ver electrónicos', en: 'See electronics', pt: 'Ver eletrônicos' },
+    img:    'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=1600&q=80&auto=format&fit=crop',
     categoriaId: 2,
   },
   {
-    id: 'patrias-registro-1',
-    theme: 'peru',
-    tag: { es: 'ÚNETE A MERKAO', en: 'JOIN MERKAO', pt: 'JUNTE-SE AO MERKAO' },
-    region: 'Marketplace peruano',
-    title: {
-      es: ['Vende y compra', 'con orgullo', 'peruano'],
-      en: ['Buy and sell', 'with Peruvian', 'pride'],
-      pt: ['Compre e venda', 'com orgulho', 'peruano'],
-    },
-    sub: {
-      es: 'Regístrate gratis en merkao.org',
-      en: 'Sign up free at merkao.org',
-      pt: 'Cadastre-se grátis em merkao.org',
-    },
-    body: {
-      es: 'El marketplace del Perú te espera. Creá tu cuenta y empezá a comprar o vender hoy.',
-      en: "Peru's marketplace awaits you. Create your account and start buying or selling today.",
-      pt: 'O marketplace do Peru espera por você. Crie sua conta e comece a comprar ou vender hoje.',
-    },
-    cta: { es: 'Regístrate gratis', en: 'Sign up free', pt: 'Cadastre-se grátis' },
-    ctaHref: '/register',
-    img: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1600&q=80&auto=format&fit=crop',
+    id: 's1-proveedores',
+    theme: 'gold',
+    tag:    { es: 'MERKAO BUSCA PROVEEDORES', en: 'MERKAO SEEKS SUPPLIERS', pt: 'MERKAO BUSCA FORNECEDORES' },
+    region: 'Vendé sin comisiones',
+    title:  { es: ['Vendé gratis', '1 año en', 'Merkao'], en: ['Sell free', '1 year on', 'Merkao'], pt: ['Venda grátis', '1 ano no', 'Merkao'] },
+    sub:    { es: '0% comisión durante los primeros 12 meses', en: '0% commission for the first 12 months', pt: '0% comissão nos primeiros 12 meses' },
+    body:   { es: 'Llegá a compradores de todo el Perú desde el día 1, sin pagar comisiones.', en: 'Reach buyers across Peru from day 1, without paying commissions.', pt: 'Alcance compradores em todo o Peru desde o dia 1, sem pagar comissões.' },
+    cta:    { es: 'Quiero vender', en: 'I want to sell', pt: 'Quero vender' },
+    ctaHref: '/vendedor',
+    img:    'https://images.unsplash.com/photo-1552664730-d307ca884978?w=1600&q=80&auto=format&fit=crop',
     categoriaId: 0,
   },
 ]
 
-// ─── SET 2 ─ Fiestas Patrias: artesanía, moda y relojes ──────────────
-// ──────────────────────────────────────────────────────────────────────
-const SET_2_PATRIAS: Slide[] = [
+// ─── SET 2 ─ Sabores del Perú: cacao, café, quinua ───────────────────
+const SET_2: Slide[] = [
   {
-    id: 'patrias-artesania',
-    theme: 'peru',
-    tag: { es: 'HECHO EN PERÚ', en: 'MADE IN PERU', pt: 'FEITO NO PERU' },
+    id: 's2-cacao',
+    theme: 'terra',
+    tag:    { es: 'CACAO DE AMAZONAS', en: 'AMAZON CACAO', pt: 'CACAU DA AMAZÔNIA' },
+    region: 'Amazonas · San Martín',
+    title:  { es: ['Cacao puro', 'de Amazonas'], en: ['Pure cacao', 'from the Amazon'], pt: ['Cacau puro', 'da Amazônia'] },
+    sub:    { es: 'Chocolate y cacao orgánico peruano', en: 'Organic Peruvian chocolate and cacao', pt: 'Chocolate e cacau orgânico peruano' },
+    body:   { es: 'El mejor cacao del mundo viene del Perú — encontralo en Merkao.', en: "The world's best cacao comes from Peru — find it on Merkao.", pt: 'O melhor cacau do mundo vem do Peru — encontre no Merkao.' },
+    cta:    { es: 'Ver alimentos', en: 'See food', pt: 'Ver alimentos' },
+    img:    'https://images.unsplash.com/photo-1606312619070-d48b9d92b3f4?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 3,
+  },
+  {
+    id: 's2-cafe',
+    theme: 'terra',
+    tag:    { es: 'CAFÉ DE ALTURA', en: 'HIGH-ALTITUDE COFFEE', pt: 'CAFÉ DE ALTITUDE' },
+    region: 'Cajamarca · Cusco',
+    title:  { es: ['Café peruano', 'de altura'], en: ['Peruvian coffee', 'from the highlands'], pt: ['Café peruano', 'de altitude'] },
+    sub:    { es: 'Granos cultivados sobre los 1,500 msnm', en: 'Beans grown above 1,500 m above sea level', pt: 'Grãos cultivados acima de 1.500 m de altitude' },
+    body:   { es: 'El café peruano ganó premios mundiales — pedilo directo del productor.', en: 'Peruvian coffee has won world awards — order it direct from the producer.', pt: 'O café peruano ganhou prêmios mundiais — peça direto do produtor.' },
+    cta:    { es: 'Ver alimentos', en: 'See food', pt: 'Ver alimentos' },
+    img:    'https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 3,
+  },
+  {
+    id: 's2-quinua',
+    theme: 'terra',
+    tag:    { es: 'SUPERALIMENTOS ANDINOS', en: 'ANDEAN SUPERFOODS', pt: 'SUPERALIMENTOS ANDINOS' },
+    region: 'Puno · Cusco · Arequipa',
+    title:  { es: ['Quinua y granos', 'andinos'], en: ['Quinoa and', 'Andean grains'], pt: ['Quinoa e grãos', 'andinos'] },
+    sub:    { es: 'Kiwicha, cañihua, maca y más superalimentos', en: 'Kiwicha, cañihua, maca and more superfoods', pt: 'Kiwicha, cañihua, maca e mais superalimentos' },
+    body:   { es: 'Los superalimentos más potentes del planeta, cultivados en los Andes peruanos.', en: "The planet's most powerful superfoods, grown in the Peruvian Andes.", pt: 'Os superalimentos mais poderosos do planeta, cultivados nos Andes peruanos.' },
+    cta:    { es: 'Ver alimentos', en: 'See food', pt: 'Ver alimentos' },
+    img:    'https://images.unsplash.com/photo-1547592180-85f173990554?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 3,
+  },
+  {
+    id: 's2-registro',
+    theme: 'gold',
+    tag:    { es: '¿VENDÉS PRODUCTOS?', en: 'DO YOU SELL PRODUCTS?', pt: 'VOCÊ VENDE PRODUTOS?' },
+    region: 'Regístrate gratis',
+    title:  { es: ['Registrate', 'en Merkao', '¡Es gratis!'], en: ['Sign up', 'on Merkao', "It's free!"], pt: ['Cadastre-se', 'no Merkao', 'É grátis!'] },
+    sub:    { es: 'Vendé tus productos a todo el Perú sin comisiones', en: 'Sell your products across Peru without commissions', pt: 'Venda seus produtos em todo o Peru sem comissões' },
+    body:   { es: 'Creá tu tienda gratis hoy y empezá a vender mañana.', en: 'Create your free store today and start selling tomorrow.', pt: 'Crie sua loja grátis hoje e comece a vender amanhã.' },
+    cta:    { es: 'Registrarme', en: 'Sign me up', pt: 'Cadastrar-me' },
+    ctaHref: '/register',
+    img:    'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 0,
+  },
+]
+
+// ─── SET 3 ─ Artesanía y cultura peruana ─────────────────────────────
+const SET_3: Slide[] = [
+  {
+    id: 's3-artesania',
+    theme: 'jungle',
+    tag:    { es: 'HECHO EN PERÚ', en: 'MADE IN PERU', pt: 'FEITO NO PERU' },
     region: 'Cusco · Puno · Ayacucho',
-    title: {
-      es: ['Artesanía', 'peruana', 'auténtica'],
-      en: ['Authentic', 'Peruvian', 'crafts'],
-      pt: ['Artesanato', 'peruano', 'autêntico'],
-    },
-    sub: {
-      es: 'Textiles, tejidos y cerámica de cada región',
-      en: 'Textiles, weavings and ceramics from every region',
-      pt: 'Têxteis, tecelagens e cerâmicas de cada região',
-    },
-    body: {
-      es: 'Estas fiestas patrias, llevate algo hecho con manos peruanas.',
-      en: 'This independence day, take home something made with Peruvian hands.',
-      pt: 'Nestas festas pátrias, leve para casa algo feito com mãos peruanas.',
-    },
-    cta: { es: 'Ver artesanías', en: 'See crafts', pt: 'Ver artesanato' },
-    img: 'https://images.unsplash.com/photo-1582582494705-f8ce0b0c24f0?w=1600&q=80&auto=format&fit=crop',
+    title:  { es: ['Artesanía peruana', 'auténtica'], en: ['Authentic', 'Peruvian crafts'], pt: ['Artesanato', 'peruano autêntico'] },
+    sub:    { es: 'Textiles, tejidos y cerámica de cada región', en: 'Textiles, weavings and ceramics from every region', pt: 'Têxteis, tecelagens e cerâmicas de cada região' },
+    body:   { es: 'Llevate algo hecho con manos peruanas — único, irrepetible.', en: 'Take home something made with Peruvian hands — unique, unrepeatable.', pt: 'Leve para casa algo feito com mãos peruanas — único, inigualável.' },
+    cta:    { es: 'Ver artesanías', en: 'See crafts', pt: 'Ver artesanato' },
+    img:    'https://images.unsplash.com/photo-1582582494705-f8ce0b0c24f0?w=1600&q=80&auto=format&fit=crop',
     categoriaId: 4,
   },
   {
-    id: 'patrias-moda',
-    theme: 'peru',
-    tag: { es: 'MODA PATRIA', en: 'PATRIOTIC STYLE', pt: 'MODA PATRIÓTICA' },
-    region: 'Moda peruana',
-    title: {
-      es: ['Luce los', 'colores de', 'tu bandera'],
-      en: ['Wear the', 'colors of', 'your flag'],
-      pt: ['Vista as', 'cores da', 'sua bandeira'],
-    },
-    sub: {
-      es: 'Ropa y accesorios en rojo y blanco',
-      en: 'Clothing and accessories in red and white',
-      pt: 'Roupas e acessórios em vermelho e branco',
-    },
-    body: {
-      es: 'Vestite de fiesta nacional — prendas para el 28 de julio.',
-      en: 'Dress for the national holiday — outfits for July 28.',
-      pt: 'Vista-se para a festa nacional — roupas para o 28 de julho.',
-    },
-    cta: { es: 'Ver moda', en: 'See fashion', pt: 'Ver moda' },
-    img: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=1600&q=80&auto=format&fit=crop',
-    categoriaId: 1,
+    id: 's3-textiles',
+    theme: 'jungle',
+    tag:    { es: 'TEXTILES ANDINOS', en: 'ANDEAN TEXTILES', pt: 'TÊXTEIS ANDINOS' },
+    region: 'Tejedores de los Andes',
+    title:  { es: ['Textiles y tejidos', 'peruanos'], en: ['Peruvian textiles', 'and weavings'], pt: ['Têxteis e tecelagens', 'peruanos'] },
+    sub:    { es: 'Alpaca, lana y algodón nativo de los Andes', en: 'Alpaca, wool and native Andean cotton', pt: 'Alpaca, lã e algodão nativo dos Andes' },
+    body:   { es: 'Chales, mantas, alfombras y tapices tejidos a mano por artesanos.', en: 'Shawls, blankets, rugs and tapestries handwoven by artisans.', pt: 'Xales, cobertores, tapetes e tapeçarias tecidos à mão por artesãos.' },
+    cta:    { es: 'Ver artesanías', en: 'See crafts', pt: 'Ver artesanato' },
+    img:    'https://images.unsplash.com/photo-1544942557-b7a0e50a5d7b?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 4,
   },
   {
-    id: 'patrias-relojes',
-    theme: 'peru',
-    tag: { es: 'REGALO ESPECIAL', en: 'SPECIAL GIFT', pt: 'PRESENTE ESPECIAL' },
-    region: 'Relojes y accesorios',
-    title: {
-      es: ['Relojes', 'para celebrar', 'en grande'],
-      en: ['Watches', 'to celebrate', 'in style'],
-      pt: ['Relógios', 'para celebrar', 'com estilo'],
-    },
-    sub: {
-      es: 'El regalo perfecto para el 28 de julio',
-      en: 'The perfect gift for July 28',
-      pt: 'O presente perfeito para o 28 de julho',
-    },
-    body: {
-      es: 'Dale el tiempo que merece esta independencia. Relojes para todos los presupuestos.',
-      en: 'Give the time this independence deserves. Watches for every budget.',
-      pt: 'Dê o tempo que esta independência merece. Relógios para todos os bolsos.',
-    },
-    cta: { es: 'Ver relojes', en: 'See watches', pt: 'Ver relógios' },
-    img: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=1600&q=80&auto=format&fit=crop',
-    categoriaId: 8,
-  },
-  {
-    id: 'patrias-registro-set2',
-    theme: 'peru',
-    tag: { es: 'CREA TU CUENTA', en: 'CREATE YOUR ACCOUNT', pt: 'CRIE SUA CONTA' },
-    region: 'Marketplace peruano',
-    title: {
-      es: ['Crea tu cuenta', 'en Merkao', 'es gratis'],
-      en: ['Create your', 'Merkao account', 'it\'s free'],
-      pt: ['Crie sua conta', 'no Merkao', 'e gratis'],
-    },
-    sub: {
-      es: 'Comprá y vendé en el marketplace del Peru',
-      en: 'Buy and sell on Peru\'s marketplace',
-      pt: 'Compre e venda no marketplace do Peru',
-    },
-    body: {
-      es: 'Miles de productos peruanos te esperan. Registrate hoy y celebra el 28 comprando con orgullo.',
-      en: 'Thousands of Peruvian products await you. Sign up today and celebrate July 28 with pride.',
-      pt: 'Milhares de produtos peruanos esperam por voce. Cadastre-se hoje e celebre o 28 com orgulho.',
-    },
-    cta: { es: 'Registrate gratis', en: 'Sign up free', pt: 'Cadastre-se gratis' },
-    ctaHref: '/register',
-    img: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1600&q=80&auto=format&fit=crop',
-    categoriaId: 0,
-  },
-]
-
-// ─── SET 3 ─ Fiestas Patrias: hogar, gastronomía y registro ──────────
-// ──────────────────────────────────────────────────────────────────────
-const SET_3_PATRIAS: Slide[] = [
-  {
-    id: 'patrias-hogar',
-    theme: 'peru',
-    tag: { es: 'HOGAR FESTIVO', en: 'FESTIVE HOME', pt: 'LAR FESTIVO' },
-    region: 'Decoración y hogar',
-    title: {
-      es: ['Decora', 'tu hogar', 'para el 28'],
-      en: ['Decorate', 'your home', 'for July 28'],
-      pt: ['Decore', 'sua casa', 'para o 28'],
-    },
-    sub: {
-      es: 'Muebles y deco para las fiestas patrias',
-      en: 'Furniture and decor for independence day',
-      pt: 'Móveis e decoração para as festas pátrias',
-    },
-    body: {
-      es: 'Ambientá tu casa para recibir a la familia estas fiestas.',
-      en: 'Set up your home to welcome the family this holidays.',
-      pt: 'Prepare sua casa para receber a família nestas festas.',
-    },
-    cta: { es: 'Ver hogar', en: 'See home décor', pt: 'Ver decoração' },
-    img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1600&q=80&auto=format&fit=crop',
+    id: 's3-deco',
+    theme: 'desert',
+    tag:    { es: 'HOGAR Y DECORACIÓN', en: 'HOME & DECORATION', pt: 'CASA E DECORAÇÃO' },
+    region: 'Todo el Perú',
+    title:  { es: ['Decoración', 'para tu hogar'], en: ['Decoration', 'for your home'], pt: ['Decoração', 'para sua casa'] },
+    sub:    { es: 'Muebles y accesorios para cada ambiente', en: 'Furniture and accessories for every room', pt: 'Móveis e acessórios para cada ambiente' },
+    body:   { es: 'Transformá tu espacio con productos peruanos de calidad.', en: 'Transform your space with quality Peruvian products.', pt: 'Transforme seu espaço com produtos peruanos de qualidade.' },
+    cta:    { es: 'Ver hogar', en: 'See home décor', pt: 'Ver decoração' },
+    img:    'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1600&q=80&auto=format&fit=crop',
     categoriaId: 5,
   },
   {
-    id: 'patrias-gastronomia',
-    theme: 'peru',
-    tag: { es: 'SABORES PERUANOS', en: 'PERUVIAN FLAVORS', pt: 'SABORES PERUANOS' },
-    region: 'Gastronomía y cocina',
-    title: {
-      es: ['Cocina lo', 'mejor del', 'Perú'],
-      en: ['Cook the', 'best of', 'Peru'],
-      pt: ['Cozinhe o', 'melhor do', 'Peru'],
-    },
-    sub: {
-      es: 'Menaje y utensilios para la cocina peruana',
-      en: 'Cookware and utensils for Peruvian cuisine',
-      pt: 'Utensílios de cozinha para a culinária peruana',
-    },
-    body: {
-      es: 'Del ceviche al ají de gallina — equipá tu cocina para la celebración.',
-      en: 'From ceviche to ají de gallina — equip your kitchen for the celebration.',
-      pt: 'Do ceviche ao ají de gallina — equipe sua cozinha para a celebração.',
-    },
-    cta: { es: 'Ver menaje', en: 'See cookware', pt: 'Ver utensílios' },
-    img: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1600&q=80&auto=format&fit=crop',
-    categoriaId: 5,
-  },
-  {
-    id: 'patrias-registro-2',
-    theme: 'peru',
-    tag: { es: 'MARKETPLACE PERUANO', en: 'PERUVIAN MARKETPLACE', pt: 'MARKETPLACE PERUANO' },
-    region: 'merkao.org',
-    title: {
-      es: ['Regístrate', 'en Merkao.org', '¡Es gratis!'],
-      en: ['Sign up at', 'Merkao.org', "It's free!"],
-      pt: ['Cadastre-se', 'em Merkao.org', 'É grátis!'],
-    },
-    sub: {
-      es: 'Comprá, vendé y celebrá el 28 en Merkao',
-      en: 'Buy, sell and celebrate July 28 on Merkao',
-      pt: 'Compre, venda e celebre o 28 no Merkao',
-    },
-    body: {
-      es: 'Más de 200 vendedores peruanos te esperan — y vos podés ser el próximo.',
-      en: 'Over 200 Peruvian sellers await you — and you could be the next one.',
-      pt: 'Mais de 200 vendedores peruanos esperam por você — e você pode ser o próximo.',
-    },
-    cta: { es: 'Crear cuenta gratis', en: 'Create free account', pt: 'Criar conta grátis' },
-    ctaHref: '/register',
-    img: 'https://images.unsplash.com/photo-1556761175-4b46a572b786?w=1600&q=80&auto=format&fit=crop',
-    categoriaId: 0,
-  },
-]
-
-// ─── SET 4 ─ Fiestas Patrias: accesorios, regalos y vende ────────────
-// ──────────────────────────────────────────────────────────────────────
-const SET_4_PATRIAS: Slide[] = [
-  {
-    id: 'patrias-accesorios',
-    theme: 'peru',
-    tag: { es: 'ACCESORIOS DE FIESTA', en: 'CELEBRATION ACCESSORIES', pt: 'ACESSÓRIOS DE FESTA' },
-    region: 'Bolsos y accesorios',
-    title: {
-      es: ['Accesorios', 'para brillar', 'el 28'],
-      en: ['Accessories', 'to shine', 'on July 28'],
-      pt: ['Acessórios', 'para brilhar', 'no 28'],
-    },
-    sub: {
-      es: 'Bolsos, carteras y complementos de moda',
-      en: 'Bags, wallets and fashion accessories',
-      pt: 'Bolsas, carteiras e acessórios de moda',
-    },
-    body: {
-      es: 'Completá tu look para las fiestas patrias — desde bolsos hasta bisutería.',
-      en: 'Complete your look for independence day — from bags to jewelry.',
-      pt: 'Complete seu look para as festas pátrias — de bolsas a bijuterias.',
-    },
-    cta: { es: 'Ver accesorios', en: 'See accessories', pt: 'Ver acessórios' },
-    img: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=1600&q=80&auto=format&fit=crop',
-    categoriaId: 1,
-  },
-  {
-    id: 'patrias-juguetes',
-    theme: 'peru',
-    tag: { es: 'PARA LOS CHICOS', en: 'FOR THE KIDS', pt: 'PARA AS CRIANÇAS' },
-    region: 'Juguetes y regalos',
-    title: {
-      es: ['Sorpresas', 'para el 28', 'de julio'],
-      en: ['Surprises', 'for July', '28th'],
-      pt: ['Surpresas', 'para o 28', 'de julho'],
-    },
-    sub: {
-      es: 'Juguetes y regalos para toda la familia',
-      en: 'Toys and gifts for the whole family',
-      pt: 'Brinquedos e presentes para toda a família',
-    },
-    body: {
-      es: 'Hacé que el 28 de julio sea especial para los más chicos de la casa.',
-      en: 'Make July 28 special for the youngest members of the family.',
-      pt: 'Torne o 28 de julho especial para os mais novos da família.',
-    },
-    cta: { es: 'Ver juguetes y regalos', en: 'See toys & gifts', pt: 'Ver brinquedos e presentes' },
-    img: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=1600&q=80&auto=format&fit=crop',
-    categoriaId: 8,
-  },
-  {
-    id: 'patrias-vende',
-    theme: 'peru',
-    tag: { es: '¡VENDE EN MERKAO!', en: 'SELL ON MERKAO!', pt: 'VENDA NO MERKAO!' },
+    id: 's3-proveedores',
+    theme: 'gold',
+    tag:    { es: 'TU NEGOCIO MERECE BRILLAR', en: 'YOUR BUSINESS DESERVES TO SHINE', pt: 'SEU NEGÓCIO MERECE BRILHAR' },
     region: 'Emprendedores peruanos',
-    title: {
-      es: ['Tu negocio', 'merece', 'brillar'],
-      en: ['Your business', 'deserves', 'to shine'],
-      pt: ['Seu negócio', 'merece', 'brilhar'],
-    },
-    sub: {
-      es: 'Registrá tu tienda en Merkao y llegá a todo el Perú',
-      en: 'Register your store on Merkao and reach all of Peru',
-      pt: 'Registre sua loja no Merkao e alcance todo o Peru',
-    },
-    body: {
-      es: 'Este 28 de julio, dale a tu emprendimiento el impulso que merece.',
-      en: 'This July 28, give your business the boost it deserves.',
-      pt: 'Neste 28 de julho, dê ao seu empreendimento o impulso que merece.',
-    },
-    cta: { es: 'Registra tu tienda', en: 'Register your store', pt: 'Registre sua loja' },
+    title:  { es: ['Tu negocio', 'merece brillar', 'en Merkao'], en: ['Your business', 'deserves', 'to shine'], pt: ['Seu negócio', 'merece', 'brilhar'] },
+    sub:    { es: 'Registrá tu tienda y llegá a todo el Perú', en: 'Register your store and reach all of Peru', pt: 'Registre sua loja e alcance todo o Peru' },
+    body:   { es: 'Más de 200 vendedores activos confían en Merkao. Únete hoy.', en: 'Over 200 active sellers trust Merkao. Join today.', pt: 'Mais de 200 vendedores ativos confiam no Merkao. Junte-se hoje.' },
+    cta:    { es: 'Registra tu tienda', en: 'Register your store', pt: 'Registre sua loja' },
     ctaHref: '/vendedor',
-    img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1600&q=80&auto=format&fit=crop',
+    img:    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1600&q=80&auto=format&fit=crop',
     categoriaId: 0,
   },
 ]
 
-// Array ordenado de los 4 sets. NO cambiar el orden a menos que quieras
-// desplazar el calendario de rotación.
-const SETS: Slide[][] = [SET_1_PATRIAS, SET_2_PATRIAS, SET_3_PATRIAS, SET_4_PATRIAS]
+// ─── SET 4 ─ Hogar peruano ────────────────────────────────────────────
+const SET_4: Slide[] = [
+  {
+    id: 's4-hogar28',
+    theme: 'desert',
+    tag:    { es: 'HOGAR FESTIVO', en: 'FESTIVE HOME', pt: 'LAR FESTIVO' },
+    region: 'Decoración y muebles',
+    title:  { es: ['Decora tu hogar', 'para el 28'], en: ['Decorate your home', 'for July 28'], pt: ['Decore sua casa', 'para o 28'] },
+    sub:    { es: 'Muebles y decoración para recibir a la familia', en: 'Furniture and décor to welcome the family', pt: 'Móveis e decoração para receber a família' },
+    body:   { es: 'Ambientá tu casa para las fiestas con productos de vendedores peruanos.', en: 'Set up your home for the holidays with products from Peruvian sellers.', pt: 'Prepare sua casa para as festas com produtos de vendedores peruanos.' },
+    cta:    { es: 'Ver hogar', en: 'See home', pt: 'Ver casa' },
+    img:    'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 5,
+  },
+  {
+    id: 's4-muebles',
+    theme: 'desert',
+    tag:    { es: 'MUEBLES Y DECO', en: 'FURNITURE & DÉCOR', pt: 'MÓVEIS E DECORAÇÃO' },
+    region: 'Hogar y muebles',
+    title:  { es: ['Muebles y', 'decoración'], en: ['Furniture', 'and decoration'], pt: ['Móveis e', 'decoração'] },
+    sub:    { es: 'Salas, comedores y dormitorios para cada presupuesto', en: 'Living rooms, dining rooms and bedrooms for every budget', pt: 'Salas, salas de jantar e quartos para cada orçamento' },
+    body:   { es: 'Renová tu hogar con muebles de calidad a precios peruanos.', en: 'Renew your home with quality furniture at Peruvian prices.', pt: 'Renove sua casa com móveis de qualidade a preços peruanos.' },
+    cta:    { es: 'Ver muebles', en: 'See furniture', pt: 'Ver móveis' },
+    img:    'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 5,
+  },
+  {
+    id: 's4-casa',
+    theme: 'desert',
+    tag:    { es: 'TODO PARA TU CASA', en: 'EVERYTHING FOR YOUR HOME', pt: 'TUDO PARA SUA CASA' },
+    region: 'Hogar completo',
+    title:  { es: ['Todo para', 'tu casa'], en: ['Everything', 'for your home'], pt: ['Tudo para', 'sua casa'] },
+    sub:    { es: 'Cocina, baño, jardín y más en un solo lugar', en: 'Kitchen, bathroom, garden and more in one place', pt: 'Cozinha, banheiro, jardim e mais em um só lugar' },
+    body:   { es: 'Encontrá todo lo que necesitás para tu hogar en Merkao.', en: 'Find everything you need for your home on Merkao.', pt: 'Encontre tudo que você precisa para sua casa no Merkao.' },
+    cta:    { es: 'Ver hogar', en: 'See home', pt: 'Ver casa' },
+    img:    'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 5,
+  },
+  {
+    id: 's4-registro',
+    theme: 'gold',
+    tag:    { es: 'MERKAO NECESITA VENDEDORES', en: 'MERKAO NEEDS SELLERS', pt: 'MERKAO PRECISA DE VENDEDORES' },
+    region: 'Gratis por 1 año',
+    title:  { es: ['Vendé en Merkao', 'gratis', '1 año entero'], en: ['Sell on Merkao', 'free for', 'a full year'], pt: ['Venda no Merkao', 'grátis', '1 ano inteiro'] },
+    sub:    { es: '0% comisión · Sin mensualidad · Sin contrato', en: '0% commission · No monthly fee · No contract', pt: '0% comissão · Sem mensalidade · Sem contrato' },
+    body:   { es: 'Publicá tus productos hoy y empezá a recibir pedidos de todo el Perú.', en: 'List your products today and start receiving orders from all over Peru.', pt: 'Publique seus produtos hoje e comece a receber pedidos de todo o Peru.' },
+    cta:    { es: 'Registrarme', en: 'Sign me up', pt: 'Cadastrar-me' },
+    ctaHref: '/register',
+    img:    'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 0,
+  },
+]
 
-/**
- * Devuelve el set de slides activo según la fecha actual.
- * Determinístico: misma fecha → mismo set, en cualquier zona horaria.
- */
+// ─── SET 5 ─ Del campo peruano ────────────────────────────────────────
+const SET_5: Slide[] = [
+  {
+    id: 's5-agricola',
+    theme: 'jungle',
+    tag:    { es: 'DIRECTO DEL PRODUCTOR', en: 'DIRECT FROM PRODUCER', pt: 'DIRETO DO PRODUTOR' },
+    region: 'Campos del Perú',
+    title:  { es: ['Productos', 'agrícolas frescos'], en: ['Fresh', 'agricultural products'], pt: ['Produtos', 'agrícolas frescos'] },
+    sub:    { es: 'Frutas, verduras y tubérculos de productores peruanos', en: 'Fruits, vegetables and tubers from Peruvian producers', pt: 'Frutas, legumes e tubérculos de produtores peruanos' },
+    body:   { es: 'Comprá directo al productor — sin intermediarios, más fresco y más barato.', en: 'Buy direct from the producer — no middlemen, fresher and cheaper.', pt: 'Compre direto do produtor — sem intermediários, mais fresco e mais barato.' },
+    cta:    { es: 'Ver agrícolas', en: 'See produce', pt: 'Ver agrícolas' },
+    img:    'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 7,
+  },
+  {
+    id: 's5-productor',
+    theme: 'jungle',
+    tag:    { es: 'DEL CAMPO A TU MESA', en: 'FROM FIELD TO YOUR TABLE', pt: 'DO CAMPO À SUA MESA' },
+    region: 'Productores locales',
+    title:  { es: ['Del productor', 'a tu mesa'], en: ['From producer', 'to your table'], pt: ['Do produtor', 'à sua mesa'] },
+    sub:    { es: 'Mercado digital de productores peruanos', en: 'Digital marketplace of Peruvian producers', pt: 'Mercado digital de produtores peruanos' },
+    body:   { es: 'Apoyá al agricultor peruano comprando directo en Merkao.', en: 'Support the Peruvian farmer by buying directly on Merkao.', pt: 'Apoie o agricultor peruano comprando diretamente no Merkao.' },
+    cta:    { es: 'Ver agrícolas', en: 'See produce', pt: 'Ver agrícolas' },
+    img:    'https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 7,
+  },
+  {
+    id: 's5-campo',
+    theme: 'terra',
+    tag:    { es: 'LO MEJOR DEL CAMPO', en: 'THE BEST OF THE FIELD', pt: 'O MELHOR DO CAMPO' },
+    region: 'Alimentos peruanos',
+    title:  { es: ['Lo mejor del', 'campo peruano'], en: ['The best of', 'the Peruvian field'], pt: ['O melhor do', 'campo peruano'] },
+    sub:    { es: 'Alimentos naturales cultivados en suelo peruano', en: 'Natural foods grown in Peruvian soil', pt: 'Alimentos naturais cultivados em solo peruano' },
+    body:   { es: 'Superalimentos, especias y productos naturales de todo el Perú.', en: 'Superfoods, spices and natural products from all over Peru.', pt: 'Superalimentos, especiarias e produtos naturais de todo o Peru.' },
+    cta:    { es: 'Ver alimentos', en: 'See food', pt: 'Ver alimentos' },
+    img:    'https://images.unsplash.com/photo-1498557850523-fd3d118b962e?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 3,
+  },
+  {
+    id: 's5-proveedores',
+    theme: 'gold',
+    tag:    { es: 'VENDÉ SIN COMISIONES', en: 'SELL WITHOUT COMMISSIONS', pt: 'VENDA SEM COMISSÕES' },
+    region: 'Para productores y agricultores',
+    title:  { es: ['Vendé tus', 'productos sin', 'comisiones'], en: ['Sell your', 'products without', 'commissions'], pt: ['Venda seus', 'produtos sem', 'comissões'] },
+    sub:    { es: 'Ideal para productores agrícolas y proveedores de alimentos', en: 'Ideal for agricultural producers and food suppliers', pt: 'Ideal para produtores agrícolas e fornecedores de alimentos' },
+    body:   { es: 'Publicá tus cosechas y productos en Merkao — gratis el primer año.', en: 'List your harvests and products on Merkao — free for the first year.', pt: 'Publique suas colheitas e produtos no Merkao — grátis no primeiro ano.' },
+    cta:    { es: 'Quiero vender', en: 'I want to sell', pt: 'Quero vender' },
+    ctaHref: '/vendedor',
+    img:    'https://images.unsplash.com/photo-1471193945509-9ad0617afabf?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 0,
+  },
+]
+
+// ─── SET 6 ─ Tecnología ───────────────────────────────────────────────
+const SET_6: Slide[] = [
+  {
+    id: 's6-electronicos',
+    theme: 'stone',
+    tag:    { es: 'ELECTRÓNICOS', en: 'ELECTRONICS', pt: 'ELETRÔNICOS' },
+    region: 'Laptops y computadoras',
+    title:  { es: ['Electrónicos', 'para el 28'], en: ['Electronics', 'for July 28'], pt: ['Eletrônicos', 'para o 28'] },
+    sub:    { es: 'Las mejores laptops y equipos al mejor precio', en: 'The best laptops and equipment at the best price', pt: 'Os melhores laptops e equipamentos ao melhor preço' },
+    body:   { es: 'Equipá tu trabajo o el de tu familia este 28 de julio.', en: "Equip your work or your family's this July 28.", pt: 'Equipe seu trabalho ou o da sua família neste 28 de julho.' },
+    cta:    { es: 'Ver electrónicos', en: 'See electronics', pt: 'Ver eletrônicos' },
+    img:    'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 2,
+  },
+  {
+    id: 's6-celulares',
+    theme: 'stone',
+    tag:    { es: 'CELULARES Y GADGETS', en: 'PHONES & GADGETS', pt: 'CELULARES E GADGETS' },
+    region: 'Smartphones y accesorios',
+    title:  { es: ['Celulares', 'y gadgets'], en: ['Phones', 'and gadgets'], pt: ['Celulares', 'e gadgets'] },
+    sub:    { es: 'Smartphones, audífonos y accesorios tech', en: 'Smartphones, headphones and tech accessories', pt: 'Smartphones, fones de ouvido e acessórios tech' },
+    body:   { es: 'Encontrá el celular que buscás a precio peruano en Merkao.', en: "Find the phone you're looking for at Peruvian prices on Merkao.", pt: 'Encontre o celular que você procura a preço peruano no Merkao.' },
+    cta:    { es: 'Ver electrónicos', en: 'See electronics', pt: 'Ver eletrônicos' },
+    img:    'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 2,
+  },
+  {
+    id: 's6-tech',
+    theme: 'stone',
+    tag:    { es: 'TECNOLOGÍA PERUANA', en: 'PERUVIAN TECHNOLOGY', pt: 'TECNOLOGIA PERUANA' },
+    region: 'Todo en tecnología',
+    title:  { es: ['Tecnología', 'peruana'], en: ['Peruvian', 'technology'], pt: ['Tecnologia', 'peruana'] },
+    sub:    { es: 'Vendedores peruanos de electrónicos con garantía', en: 'Peruvian electronics sellers with guarantee', pt: 'Vendedores peruanos de eletrônicos com garantia' },
+    body:   { es: 'Comprá tecnología con escrow protegido — si no llega, te devolvemos el dinero.', en: "Buy tech with escrow protection — if it doesn't arrive, we refund you.", pt: 'Compre tecnologia com escrow protegido — se não chegar, devolvemos o dinheiro.' },
+    cta:    { es: 'Ver electrónicos', en: 'See electronics', pt: 'Ver eletrônicos' },
+    img:    'https://images.unsplash.com/photo-1518770660439-4636190af475?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 2,
+  },
+  {
+    id: 's6-registro',
+    theme: 'gold',
+    tag:    { es: 'REGISTRATE COMO VENDEDOR', en: 'REGISTER AS A SELLER', pt: 'CADASTRE-SE COMO VENDEDOR' },
+    region: 'Panel de vendedor gratis',
+    title:  { es: ['Registrate', 'como vendedor', 'gratis'], en: ['Register', 'as a seller', 'for free'], pt: ['Cadastre-se', 'como vendedor', 'grátis'] },
+    sub:    { es: 'Panel completo · Pedidos · Estadísticas · Sin costo', en: 'Full dashboard · Orders · Stats · No cost', pt: 'Painel completo · Pedidos · Estatísticas · Sem custo' },
+    body:   { es: 'Abrí tu tienda en minutos y llegá a compradores de todo el Perú.', en: 'Open your store in minutes and reach buyers from all over Peru.', pt: 'Abra sua loja em minutos e alcance compradores de todo o Peru.' },
+    cta:    { es: 'Registrarme', en: 'Sign me up', pt: 'Cadastrar-me' },
+    ctaHref: '/register',
+    img:    'https://images.unsplash.com/photo-1556761175-4b46a572b786?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 0,
+  },
+]
+
+// ─── SET 7 ─ Motor y estilo ───────────────────────────────────────────
+const SET_7: Slide[] = [
+  {
+    id: 's7-autos',
+    theme: 'terra',
+    tag:    { es: 'AUTOS Y MOTOS', en: 'CARS & MOTORCYCLES', pt: 'CARROS E MOTOS' },
+    region: 'Motor peruano',
+    title:  { es: ['Autos y motos', 'en Merkao'], en: ['Cars and motorcycles', 'on Merkao'], pt: ['Carros e motos', 'no Merkao'] },
+    sub:    { es: 'Vehículos, repuestos y accesorios para tu auto', en: 'Vehicles, spare parts and accessories for your car', pt: 'Veículos, peças e acessórios para o seu carro' },
+    body:   { es: 'Encontrá lo que necesitás para tu vehículo en vendedores peruanos de confianza.', en: 'Find what you need for your vehicle from trusted Peruvian sellers.', pt: 'Encontre o que você precisa para seu veículo em vendedores peruanos de confiança.' },
+    cta:    { es: 'Ver autos y motos', en: 'See cars & motos', pt: 'Ver carros e motos' },
+    img:    'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 6,
+  },
+  {
+    id: 's7-vehiculo',
+    theme: 'terra',
+    tag:    { es: 'TODO PARA TU VEHÍCULO', en: 'EVERYTHING FOR YOUR VEHICLE', pt: 'TUDO PARA SEU VEÍCULO' },
+    region: 'Repuestos y accesorios',
+    title:  { es: ['Todo para', 'tu vehículo'], en: ['Everything', 'for your vehicle'], pt: ['Tudo para', 'seu veículo'] },
+    sub:    { es: 'Repuestos, aceites y accesorios de auto y moto', en: 'Spare parts, oils and car & motorcycle accessories', pt: 'Peças de reposição, óleos e acessórios de carro e moto' },
+    body:   { es: 'Mantenimiento, tuning y más — todo en Merkao con garantía de escrow.', en: 'Maintenance, tuning and more — all on Merkao with escrow guarantee.', pt: 'Manutenção, tuning e mais — tudo no Merkao com garantia escrow.' },
+    cta:    { es: 'Ver autos y motos', en: 'See cars & motos', pt: 'Ver carros e motos' },
+    img:    'https://images.unsplash.com/photo-1530046339160-ce3e530c7d2f?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 6,
+  },
+  {
+    id: 's7-moda',
+    theme: 'peru',
+    tag:    { es: 'MODA PERUANA', en: 'PERUVIAN FASHION', pt: 'MODA PERUANA' },
+    region: 'Ropa y estilo',
+    title:  { es: ['Moda peruana', 'para cada ocasión'], en: ['Peruvian fashion', 'for every occasion'], pt: ['Moda peruana', 'para cada ocasião'] },
+    sub:    { es: 'Prendas únicas de diseñadores y marcas peruanas', en: 'Unique garments from Peruvian designers and brands', pt: 'Roupas únicas de designers e marcas peruanas' },
+    body:   { es: 'Descubrí la moda peruana — moderna, colorida y con identidad propia.', en: 'Discover Peruvian fashion — modern, colorful and with its own identity.', pt: 'Descubra a moda peruana — moderna, colorida e com identidade própria.' },
+    cta:    { es: 'Ver moda', en: 'See fashion', pt: 'Ver moda' },
+    img:    'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 1,
+  },
+  {
+    id: 's7-proveedores',
+    theme: 'gold',
+    tag:    { es: 'MERKAO BUSCA PROVEEDORES', en: 'MERKAO SEEKS SUPPLIERS', pt: 'MERKAO BUSCA FORNECEDORES' },
+    region: 'Únete hoy',
+    title:  { es: ['Merkao busca', 'proveedores', '· Únete hoy'], en: ['Merkao seeks', 'suppliers', '· Join today'], pt: ['Merkao busca', 'fornecedores', '· Junte-se hoje'] },
+    sub:    { es: 'Vendé desde cualquier rincón del Perú, sin comisiones el primer año', en: 'Sell from any corner of Peru, without commissions the first year', pt: 'Venda de qualquer canto do Peru, sem comissões no primeiro ano' },
+    body:   { es: 'Registrá tu tienda gratis y empezá a recibir pedidos de todo el país.', en: 'Register your store for free and start receiving orders from all over the country.', pt: 'Registre sua loja gratuitamente e comece a receber pedidos de todo o país.' },
+    cta:    { es: 'Quiero vender', en: 'I want to sell', pt: 'Quero vender' },
+    ctaHref: '/vendedor',
+    img:    'https://images.unsplash.com/photo-1560472355-536de3962603?w=1600&q=80&auto=format&fit=crop',
+    categoriaId: 0,
+  },
+]
+
+const SETS: Slide[][] = [SET_1, SET_2, SET_3, SET_4, SET_5, SET_6, SET_7]
+
 function getSetActivo(): Slide[] {
   const diasTranscurridos = Math.floor((Date.now() - FECHA_BASE.getTime()) / MS_POR_DIA)
   const crudo = Math.floor(diasTranscurridos / DIAS_POR_SET)
-  // Módulo positivo: cubre el caso en que el reloj cliente esté antes de FECHA_BASE.
   const indiceSet = ((crudo % SETS.length) + SETS.length) % SETS.length
   return SETS[indiceSet]
 }
