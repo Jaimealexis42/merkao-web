@@ -1129,7 +1129,7 @@ img { display: block; max-width: 100%; }
   padding-right: 26px; min-width: 88px; height: 44px;
 }
 .mk-field-tel-select:focus { outline: none; border-color: var(--brand); }
-.mk-field-tel input { flex: 1; }
+.mk-field-tel input { flex: 1; min-width: 0; width: auto; }
 .mk-field-hint { font-size: 11.5px; color: var(--muted-2); margin-top: 4px; }
 .mk-field-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
