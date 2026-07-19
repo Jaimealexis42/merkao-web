@@ -111,7 +111,7 @@ const SET_1: Slide[] = [
     sub:    { es: '0% comisión durante los primeros 12 meses', en: '0% commission for the first 12 months', pt: '0% comissão nos primeiros 12 meses' },
     body:   { es: 'Llegá a compradores de todo el Perú desde el día 1, sin pagar comisiones.', en: 'Reach buyers across Peru from day 1, without paying commissions.', pt: 'Alcance compradores em todo o Peru desde o dia 1, sem pagar comissões.' },
     cta:    { es: 'Quiero vender', en: 'I want to sell', pt: 'Quero vender' },
-    ctaHref: '/vendedor',
+    ctaHref: '/register?role=vendedor',
     img:    'https://images.unsplash.com/photo-1552664730-d307ca884978?w=1600&q=80&auto=format&fit=crop',
     categoriaId: 0,
   },
@@ -217,7 +217,7 @@ const SET_3: Slide[] = [
     sub:    { es: 'Registrá tu tienda y llegá a todo el Perú', en: 'Register your store and reach all of Peru', pt: 'Registre sua loja e alcance todo o Peru' },
     body:   { es: 'Más de 200 vendedores activos confían en Merkao. Únete hoy.', en: 'Over 200 active sellers trust Merkao. Join today.', pt: 'Mais de 200 vendedores ativos confiam no Merkao. Junte-se hoje.' },
     cta:    { es: 'Registra tu tienda', en: 'Register your store', pt: 'Registre sua loja' },
-    ctaHref: '/vendedor',
+    ctaHref: '/register?role=vendedor',
     img:    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1600&q=80&auto=format&fit=crop',
     categoriaId: 0,
   },
@@ -323,7 +323,7 @@ const SET_5: Slide[] = [
     sub:    { es: 'Ideal para productores agrícolas y proveedores de alimentos', en: 'Ideal for agricultural producers and food suppliers', pt: 'Ideal para produtores agrícolas e fornecedores de alimentos' },
     body:   { es: 'Publicá tus cosechas y productos en Merkao — gratis el primer año.', en: 'List your harvests and products on Merkao — free for the first year.', pt: 'Publique suas colheitas e produtos no Merkao — grátis no primeiro ano.' },
     cta:    { es: 'Quiero vender', en: 'I want to sell', pt: 'Quero vender' },
-    ctaHref: '/vendedor',
+    ctaHref: '/register?role=vendedor',
     img:    'https://images.unsplash.com/photo-1471193945509-9ad0617afabf?w=1600&q=80&auto=format&fit=crop',
     categoriaId: 0,
   },
@@ -429,7 +429,7 @@ const SET_7: Slide[] = [
     sub:    { es: 'Vendé desde cualquier rincón del Perú, sin comisiones el primer año', en: 'Sell from any corner of Peru, without commissions the first year', pt: 'Venda de qualquer canto do Peru, sem comissões no primeiro ano' },
     body:   { es: 'Registrá tu tienda gratis y empezá a recibir pedidos de todo el país.', en: 'Register your store for free and start receiving orders from all over the country.', pt: 'Registre sua loja gratuitamente e comece a receber pedidos de todo o país.' },
     cta:    { es: 'Quiero vender', en: 'I want to sell', pt: 'Quero vender' },
-    ctaHref: '/vendedor',
+    ctaHref: '/register?role=vendedor',
     img:    'https://images.unsplash.com/photo-1560472355-536de3962603?w=1600&q=80&auto=format&fit=crop',
     categoriaId: 0,
   },
@@ -766,7 +766,7 @@ export default function Home() {
                 </a>
               ))}
             </div>
-            <a className="mk-nav-sell" href="/vendedor">
+            <a className="mk-nav-sell" href="/register?role=vendedor">
               <Icon name="store" size={17} stroke={1.8} />
               {lang === 'en' ? 'Sell on Merkao' : lang === 'pt' ? 'Vender no Merkao' : 'Vende en Merkao'}
             </a>
@@ -1054,7 +1054,7 @@ export default function Home() {
               </span>
             </a>
 
-            <a href="/vendedor" className="mk-ad mk-ad-sell">
+            <a href="/register?role=vendedor" className="mk-ad mk-ad-sell">
               <span className="mk-ad-pill"><Icon name="store" size={12} stroke={2} /> {tr.want_to_sell.replace('¿', '').replace('?', '').replace('¡', '')}</span>
               <h3 className="mk-ad-head">{tr.start_store}</h3>
               <p className="mk-ad-sub">
