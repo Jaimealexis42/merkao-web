@@ -7,6 +7,29 @@ import { Icon, type IconName } from '@/lib/icons'
 
 type Rol = 'comprador' | 'vendedor'
 
+const PAISES = [
+  { code: 'PE', dialCode: '+51',  flag: '🇵🇪' },
+  { code: 'CO', dialCode: '+57',  flag: '🇨🇴' },
+  { code: 'MX', dialCode: '+52',  flag: '🇲🇽' },
+  { code: 'EC', dialCode: '+593', flag: '🇪🇨' },
+  { code: 'CL', dialCode: '+56',  flag: '🇨🇱' },
+  { code: 'AR', dialCode: '+54',  flag: '🇦🇷' },
+  { code: 'BO', dialCode: '+591', flag: '🇧🇴' },
+  { code: 'VE', dialCode: '+58',  flag: '🇻🇪' },
+  { code: 'BR', dialCode: '+55',  flag: '🇧🇷' },
+  { code: 'UY', dialCode: '+598', flag: '🇺🇾' },
+  { code: 'PY', dialCode: '+595', flag: '🇵🇾' },
+  { code: 'PA', dialCode: '+507', flag: '🇵🇦' },
+  { code: 'CR', dialCode: '+506', flag: '🇨🇷' },
+  { code: 'GT', dialCode: '+502', flag: '🇬🇹' },
+  { code: 'SV', dialCode: '+503', flag: '🇸🇻' },
+  { code: 'HN', dialCode: '+504', flag: '🇭🇳' },
+  { code: 'NI', dialCode: '+505', flag: '🇳🇮' },
+  { code: 'DO', dialCode: '+1',   flag: '🇩🇴' },
+  { code: 'CU', dialCode: '+53',  flag: '🇨🇺' },
+  { code: 'US', dialCode: '+1',   flag: '🇺🇸' },
+] as const
+
 
 type Feat = { icon: IconName; tone: 'brand' | 'green'; text: string }
 
@@ -44,6 +67,7 @@ function RegisterForm() {
   const [email, setEmail] = useState('')
   const [telefono, setTelefono] = useState('')
   const [password, setPassword] = useState('')
+  const [dialCode, setDialCode] = useState('+51')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -66,7 +90,7 @@ function RegisterForm() {
       options: {
         data: {
           nombre: nombre.trim(),
-          telefono: telefono.trim() || null,
+          telefono: telefono.trim() ? `${dialCode}${telefono.trim()}` : null,
           tipo: rol,
         },
       },
@@ -217,13 +241,28 @@ function RegisterForm() {
 
             <label className="mk-field">
               <span>Teléfono / WhatsApp <small style={{ fontWeight: 400, color: 'var(--muted-2)' }}>(opcional)</small></span>
-              <input
-                type="tel"
-                value={telefono}
-                onChange={(e) => setTelefono(e.target.value)}
-                placeholder="+51 987 654 321"
-                autoComplete="tel"
-              />
+              <div style={{ position: 'relative' }}>
+                <select
+                  value={dialCode}
+                  onChange={(e) => setDialCode(e.target.value)}
+                  aria-label="Código de país"
+                  className="mk-tel-overlay-select"
+                >
+                  {PAISES.map((p) => (
+                    <option key={p.code} value={p.dialCode}>
+                      {p.flag} {p.dialCode}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  type="tel"
+                  value={telefono}
+                  onChange={(e) => setTelefono(e.target.value)}
+                  placeholder="987 654 321"
+                  autoComplete="tel"
+                  className="mk-tel-overlay-input"
+                />
+              </div>
             </label>
 
             <label className="mk-field">
