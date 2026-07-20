@@ -1,7 +1,7 @@
 {
-  "lastIndex": 2,
-  "lastPostedDate": "2026-07-19",
-  "totalPosts": 44,
+  "lastIndex": 3,
+  "lastPostedDate": "2026-07-20",
+  "totalPosts": 45,
   "history": [
     {
       "fecha": "2026-06-07T15:23:06.606Z",
@@ -1104,6 +1104,33 @@
         "containerId": "18135666556564725",
         "permalink": "https://www.instagram.com/p/Da-kwBFlOjp/",
         "elapsedMs": 7068
+      }
+    },
+    {
+      "fecha": "2026-07-20T15:13:24.120Z",
+      "fechaPeru": "2026-07-20",
+      "variantIndex": 3,
+      "variantId": 4,
+      "enfoque": "Pregunta abierta a la comunidad",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122132259663345830",
+      "fbPhotoId": "122132259639345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122132259663345830",
+      "image": {
+        "source": "unsplash",
+        "query": "paisaje peru",
+        "theme": "general",
+        "photo_id": "qTHRF2rvGjA",
+        "photo_url": "https://images.unsplash.com/photo-1570553603941-c50de855fdac?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwzfHxwYWlzYWplJTIwcGVydXxlbnwxfDB8fHwxNzg0NTYwMzg3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Wolfgang Lutz",
+        "photographer_url": "https://unsplash.com/@wolfi",
+        "alt": "river between mountain"
+      },
+      "ig": {
+        "mediaId": "18399739612089196",
+        "containerId": "18135938464564725",
+        "permalink": "https://www.instagram.com/p/DbBPEiRoMFP/",
+        "elapsedMs": 8817
       }
     }
   ]
