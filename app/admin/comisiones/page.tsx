@@ -6,6 +6,14 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/useAuth'
 import { isAdminEmail } from '@/lib/admin'
 
+type DatosPago = {
+  nombre_titular: string | null
+  banco: string | null
+  num_cuenta: string | null
+  cci: string | null
+  yape_plin: string | null
+}
+
 type ComisionItem = {
   id: string
   pedido_id: string
@@ -19,6 +27,7 @@ type ComisionItem = {
   created_at: string
   pagado_a_vendedor: boolean
   pagado_at: string | null
+  pago_vendedor?: DatosPago | null
 }
 
 type PorVendedor = {
@@ -393,10 +402,41 @@ export default function AdminComisionesPage() {
               <strong>{money(confirmPay.monto_vendedor)}</strong>{' '}
               a <strong>{confirmPay.vendedor_nombre}</strong>?
             </h3>
-            <p style={{ margin: '0 0 20px', color: '#52607a', fontSize: 13, textAlign: 'center' }}>
+            <p style={{ margin: '0 0 12px', color: '#52607a', fontSize: 13, textAlign: 'center' }}>
               Esto marca la comisión como pagada al vendedor y queda registrado en el ledger.
               Solo confírmalo si ya hiciste la transferencia.
             </p>
+            {confirmPay.pago_vendedor && (
+              <div style={{
+                background: '#f4f6fb', borderRadius: 10, padding: '12px 14px',
+                marginBottom: 20, fontSize: 13, lineHeight: 1.6,
+              }}>
+                <div style={{ fontWeight: 600, marginBottom: 6, color: '#0b1220' }}>Datos de pago del vendedor</div>
+                {confirmPay.pago_vendedor.nombre_titular && (
+                  <div><span style={{ color: '#52607a' }}>Titular:</span> {confirmPay.pago_vendedor.nombre_titular}</div>
+                )}
+                {confirmPay.pago_vendedor.banco && (
+                  <div>
+                    <span style={{ color: '#52607a' }}>Banco:</span> {confirmPay.pago_vendedor.banco}
+                    {confirmPay.pago_vendedor.num_cuenta && <> — Cta: <code style={{ fontSize: 12 }}>{confirmPay.pago_vendedor.num_cuenta}</code></>}
+                  </div>
+                )}
+                {confirmPay.pago_vendedor.cci && (
+                  <div><span style={{ color: '#52607a' }}>CCI:</span> <code style={{ fontSize: 12 }}>{confirmPay.pago_vendedor.cci}</code></div>
+                )}
+                {confirmPay.pago_vendedor.yape_plin && (
+                  <div><span style={{ color: '#52607a' }}>Yape/Plin:</span> {confirmPay.pago_vendedor.yape_plin}</div>
+                )}
+              </div>
+            )}
+            {!confirmPay.pago_vendedor && (
+              <div style={{
+                background: '#fff6e0', borderRadius: 10, padding: '10px 14px',
+                marginBottom: 20, fontSize: 12, color: '#7a4a00',
+              }}>
+                Este vendedor aún no registró sus datos de pago.
+              </div>
+            )}
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
               <button
                 type="button"

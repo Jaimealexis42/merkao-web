@@ -42,6 +42,14 @@ type ComisionRow = {
   pedidos: { vendedor_id: string | null; nombre_comprador: string | null } | null
 }
 
+type DatosPago = {
+  nombre_titular: string | null
+  banco: string | null
+  num_cuenta: string | null
+  cci: string | null
+  yape_plin: string | null
+}
+
 type ComisionOut = {
   id: string
   pedido_id: string
@@ -55,6 +63,7 @@ type ComisionOut = {
   created_at: string
   pagado_a_vendedor: boolean
   pagado_at: string | null
+  pago_vendedor: DatosPago | null
 }
 
 export async function GET(req: NextRequest) {
@@ -110,6 +119,19 @@ export async function GET(req: NextRequest) {
     )
   }
 
+  // Datos bancarios del vendedor (para mostrar en modal de pago admin).
+  const pagosMap = new Map<string, DatosPago>()
+  if (vendedorIds.length > 0) {
+    const { data: perfiles } = await admin
+      .from('perfiles')
+      .select('id, nombre_titular, banco, num_cuenta, cci, yape_plin')
+      .in('id', vendedorIds)
+    ;(perfiles as (DatosPago & { id: string })[] | null)?.forEach((p) => {
+      const { id, ...datos } = p
+      pagosMap.set(id, datos)
+    })
+  }
+
   const items: ComisionOut[] = rows.map((r) => ({
     id: r.id,
     pedido_id: r.pedido_id,
@@ -125,6 +147,7 @@ export async function GET(req: NextRequest) {
     created_at: r.created_at,
     pagado_a_vendedor: !!r.pagado_a_vendedor,
     pagado_at: r.pagado_at,
+    pago_vendedor: r.pedidos?.vendedor_id ? (pagosMap.get(r.pedidos.vendedor_id) ?? null) : null,
   }))
 
   // Agregados.
