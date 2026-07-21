@@ -1,6 +1,6 @@
 {
-  "lastReelDate": "2026-07-20",
-  "totalReels": 39,
+  "lastReelDate": "2026-07-21",
+  "totalReels": 40,
   "history": [
     {
       "fecha": "2026-06-14T17:13:17.318Z",
@@ -771,6 +771,24 @@
         "videoId": "1723550492218619",
         "permalink": "https://www.facebook.com/reel/1723550492218619",
         "elapsedMs": 10980
+      }
+    },
+    {
+      "fecha": "2026-07-21T15:06:39.882Z",
+      "fechaPeru": "2026-07-21",
+      "product": {
+        "id": "4f45299d-7db1-41d8-8d74-cb8bc4640787",
+        "nombre": "Café especial Villa Rica 500 g — Molido",
+        "ciudad": "Pasco",
+        "precio": 35
+      },
+      "ig": {
+        "error": "ig container status=ERROR status=\"ERROR\""
+      },
+      "fb": {
+        "videoId": "28711376905129547",
+        "permalink": "https://www.facebook.com/reel/28711376905129547",
+        "elapsedMs": 11954
       }
     }
   ]
