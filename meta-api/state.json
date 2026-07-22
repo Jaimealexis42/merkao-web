@@ -1,7 +1,7 @@
 {
-  "lastIndex": 4,
-  "lastPostedDate": "2026-07-21",
-  "totalPosts": 46,
+  "lastIndex": 5,
+  "lastPostedDate": "2026-07-22",
+  "totalPosts": 47,
   "history": [
     {
       "fecha": "2026-06-07T15:23:06.606Z",
@@ -1158,6 +1158,33 @@
         "containerId": "18136154905564725",
         "permalink": "https://www.instagram.com/p/DbDy-HRG_07/",
         "elapsedMs": 10101
+      }
+    },
+    {
+      "fecha": "2026-07-22T15:07:16.532Z",
+      "fechaPeru": "2026-07-22",
+      "variantIndex": 5,
+      "variantId": 6,
+      "enfoque": "Tip de venta + mención natural",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122132638947345830",
+      "fbPhotoId": "122132638923345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122132638947345830",
+      "image": {
+        "source": "unsplash",
+        "query": "coffee plantation peru",
+        "theme": "cafe",
+        "photo_id": "L0gY-TjXhTY",
+        "photo_url": "https://images.unsplash.com/photo-1567797054386-de604997e0cb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxMnx8Y29mZmVlJTIwcGxhbnRhdGlvbiUyMHBlcnV8ZW58MXwwfHx8MTc4NDczMjgyMXww&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "chaandersoon",
+        "photographer_url": "https://unsplash.com/@chaandersoon",
+        "alt": "view of rural area during daytime"
+      },
+      "ig": {
+        "mediaId": "18102304793607921",
+        "containerId": "18136383622564725",
+        "permalink": "https://www.instagram.com/p/DbGX9cKGpoM/",
+        "elapsedMs": 8538
       }
     }
   ]
