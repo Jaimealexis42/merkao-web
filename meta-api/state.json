@@ -1,7 +1,7 @@
 {
-  "lastIndex": 5,
-  "lastPostedDate": "2026-07-22",
-  "totalPosts": 47,
+  "lastIndex": 6,
+  "lastPostedDate": "2026-07-23",
+  "totalPosts": 48,
   "history": [
     {
       "fecha": "2026-06-07T15:23:06.606Z",
@@ -1185,6 +1185,33 @@
         "containerId": "18136383622564725",
         "permalink": "https://www.instagram.com/p/DbGX9cKGpoM/",
         "elapsedMs": 8538
+      }
+    },
+    {
+      "fecha": "2026-07-23T15:11:10.729Z",
+      "fechaPeru": "2026-07-23",
+      "variantIndex": 6,
+      "variantId": 7,
+      "enfoque": "Invitación corta y cálida",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122132832591345830",
+      "fbPhotoId": "122132832549345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122132832591345830",
+      "image": {
+        "source": "unsplash",
+        "query": "ropa colorida peru",
+        "theme": "moda",
+        "photo_id": "HkrirTHELjE",
+        "photo_url": "https://images.unsplash.com/photo-1519074598089-6436475c7f8f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwyfHxyb3BhJTIwY29sb3JpZGElMjBwZXJ1fGVufDF8MHx8fDE3ODQ4MTk0NDF8MA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Ben Ostrower",
+        "photographer_url": "https://unsplash.com/@benostrower",
+        "alt": "boy in traditional costume in shallow focus photography"
+      },
+      "ig": {
+        "mediaId": "18140676589529740",
+        "containerId": "18136600840564725",
+        "permalink": "https://www.instagram.com/p/DbI9M34F6SJ/",
+        "elapsedMs": 9052
       }
     }
   ]
