@@ -1,17 +1,8 @@
 {
-  "lastIndex": 1,
-  "lastPostedDate": "2026-07-25",
-  "totalPosts": 50,
+  "lastIndex": 2,
+  "lastPostedDate": "2026-07-27",
+  "totalPosts": 51,
   "history": [
-    {
-      "fecha": "2026-06-07T15:23:06.606Z",
-      "fechaPeru": "2026-06-07",
-      "variantIndex": 1,
-      "variantId": 2,
-      "enfoque": "Para la que recién empieza",
-      "fbPostId": "1177766395421729_122106717621345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122106717621345830"
-    },
     {
       "fecha": "2026-06-07T20:13:20.328Z",
       "fechaPeru": "2026-06-07",
@@ -1266,6 +1257,33 @@
         "containerId": "18137040991564725",
         "permalink": "https://www.instagram.com/p/DbODEyfGskU/",
         "elapsedMs": 10173
+      }
+    },
+    {
+      "fecha": "2026-07-27T15:50:38.687Z",
+      "fechaPeru": "2026-07-27",
+      "variantIndex": 2,
+      "variantId": 3,
+      "enfoque": "Artesana / productora regional",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122133720297345830",
+      "fbPhotoId": "122133720273345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122133720297345830",
+      "image": {
+        "source": "unsplash",
+        "query": "weaving peru",
+        "theme": "artesania",
+        "photo_id": "fqur_YKkxI4",
+        "photo_url": "https://images.unsplash.com/photo-1524876564579-55d0eeeb00f3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxM3x8d2VhdmluZyUyMHBlcnV8ZW58MXwwfHx8MTc4NTA3NjcxNHww&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Willian Justen de Vasconcellos",
+        "photographer_url": "https://unsplash.com/@willianjusten",
+        "alt": "woman sitting on chair"
+      },
+      "ig": {
+        "mediaId": "18437101090125480",
+        "containerId": "18137547694564725",
+        "permalink": "https://www.instagram.com/p/DbTU5cTGi0a/",
+        "elapsedMs": 8614
       }
     }
   ]
