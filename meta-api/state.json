@@ -1,20 +1,8 @@
 {
-  "lastIndex": 2,
-  "lastPostedDate": "2026-07-27",
-  "totalPosts": 51,
+  "lastIndex": 3,
+  "lastPostedDate": "2026-07-28",
+  "totalPosts": 52,
   "history": [
-    {
-      "fecha": "2026-06-07T20:13:20.328Z",
-      "fechaPeru": "2026-06-07",
-      "variantIndex": 2,
-      "variantId": 3,
-      "enfoque": "Artesana / productora regional",
-      "endpoint": "feed",
-      "fbPostId": "1177766395421729_122107080531345830",
-      "fbPhotoId": null,
-      "url": "https://www.facebook.com/1177766395421729/posts/122107080531345830",
-      "image": null
-    },
     {
       "fecha": "2026-06-07T20:17:32.380Z",
       "fechaPeru": "2026-06-07",
@@ -1285,6 +1273,19 @@
         "permalink": "https://www.instagram.com/p/DbTU5cTGi0a/",
         "elapsedMs": 8614
       }
+    },
+    {
+      "fecha": "2026-07-28T15:23:29.831Z",
+      "fechaPeru": "2026-07-28",
+      "variantIndex": 3,
+      "variantId": 4,
+      "enfoque": "Pregunta abierta a la comunidad",
+      "endpoint": "feed",
+      "fbPostId": "1177766395421729_122133896043345830",
+      "fbPhotoId": null,
+      "url": "https://www.facebook.com/1177766395421729/posts/122133896043345830",
+      "image": null,
+      "ig": null
     }
   ]
 }
