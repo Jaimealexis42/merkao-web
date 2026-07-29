@@ -1,28 +1,8 @@
 {
-  "lastIndex": 3,
-  "lastPostedDate": "2026-07-28",
-  "totalPosts": 52,
+  "lastIndex": 4,
+  "lastPostedDate": "2026-07-29",
+  "totalPosts": 53,
   "history": [
-    {
-      "fecha": "2026-06-07T20:17:32.380Z",
-      "fechaPeru": "2026-06-07",
-      "variantIndex": 2,
-      "variantId": 3,
-      "enfoque": "Artesana / productora regional",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122107086105345830",
-      "fbPhotoId": "122107086027345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122107086105345830",
-      "image": {
-        "query": "weaving peru",
-        "theme": "artesania",
-        "photo_id": "JU04xdXUTV4",
-        "photo_url": "https://images.unsplash.com/photo-1589682449071-d13c27d1c298?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwzfHx3ZWF2aW5nJTIwcGVydXxlbnwxfDB8fHwxNzgwODYzNDQ2fDA&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Deb Dowd",
-        "photographer_url": "https://unsplash.com/@fin777",
-        "alt": "woman in blue and red dress wearing red and white hat"
-      }
-    },
     {
       "fecha": "2026-06-09T22:46:33.115Z",
       "fechaPeru": "2026-06-09",
@@ -1286,6 +1266,33 @@
       "url": "https://www.facebook.com/1177766395421729/posts/122133896043345830",
       "image": null,
       "ig": null
+    },
+    {
+      "fecha": "2026-07-29T15:32:22.643Z",
+      "fechaPeru": "2026-07-29",
+      "variantIndex": 4,
+      "variantId": 5,
+      "enfoque": "Testimonio en primera persona",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122134382637345830",
+      "fbPhotoId": "122134382613345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122134382637345830",
+      "image": {
+        "source": "unsplash",
+        "query": "peruvian market fruits",
+        "theme": "alimentos",
+        "photo_id": "WSsEj4oqXWo",
+        "photo_url": "https://images.unsplash.com/photo-1760726361439-4afaa0d26808?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxfHxwZXJ1dmlhbiUyMG1hcmtldCUyMGZydWl0c3xlbnwxfDB8fHwxNzg1MzM5MTI5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Darya Luganskaya",
+        "photographer_url": "https://unsplash.com/@dlugansky",
+        "alt": "Street vendor with drinks and snacks for sale"
+      },
+      "ig": {
+        "mediaId": "18129459718729167",
+        "containerId": "18138012274564725",
+        "permalink": "https://www.instagram.com/p/DbYcZo9lIlL/",
+        "elapsedMs": 6365
+      }
     }
   ]
 }
