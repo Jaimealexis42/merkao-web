@@ -1,6 +1,6 @@
 {
-  "lastReelDate": "2026-07-29",
-  "totalReels": 47,
+  "lastReelDate": "2026-07-30",
+  "totalReels": 48,
   "history": [
     {
       "fecha": "2026-06-14T17:13:17.318Z",
@@ -915,6 +915,24 @@
         "videoId": "1565702541660249",
         "permalink": "https://www.facebook.com/reel/1565702541660249",
         "elapsedMs": 11060
+      }
+    },
+    {
+      "fecha": "2026-07-30T15:13:11.974Z",
+      "fechaPeru": "2026-07-30",
+      "product": {
+        "id": "1a3394c1-f45f-4312-8482-b79421abcaf2",
+        "nombre": "Cerámica Chulucanas — Jarrón decorativo grande",
+        "ciudad": "Piura",
+        "precio": 220
+      },
+      "ig": {
+        "error": "ig container status=ERROR status=\"ERROR\""
+      },
+      "fb": {
+        "videoId": "2199016240896793",
+        "permalink": "https://www.facebook.com/reel/2199016240896793",
+        "elapsedMs": 9400
       }
     }
   ]
