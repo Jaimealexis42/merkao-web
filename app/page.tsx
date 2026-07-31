@@ -291,11 +291,11 @@ const SETS_F1: Slide[][] = [
   [
     {
       id: 's1f1-moda', theme: 'stone',
-      tag:    { es: 'FERIADO 6 DE AGOSTO', en: 'AUGUST 6 HOLIDAY', pt: 'FERIADO 6 DE AGOSTO' },
+      tag:    { es: 'BATALLA DE JUNÍN · 6 DE AGOSTO', en: 'BATTLE OF JUNÍN · AUGUST 6', pt: 'BATALHA DE JUNÍN · 6 DE AGOSTO' },
       region: 'Ropa y accesorios',
       title:  { es: ['Vestite con', 'lo peruano'], en: ['Dress Peruvian', 'this holiday'], pt: ['Vista o que é', 'peruano'] },
-      sub:    { es: 'Moda peruana para el feriado largo del 6 de agosto', en: 'Peruvian fashion for the August 6 long weekend', pt: 'Moda peruana para o feriado de 6 de agosto' },
-      body:   { es: 'Feriado largo: el momento ideal para renovar tu ropa con prendas de vendedores peruanos.', en: 'Long weekend: the perfect time to refresh your wardrobe with Peruvian sellers.', pt: 'Feriado longo: o momento ideal para renovar seu guarda-roupa com vendedores peruanos.' },
+      sub:    { es: 'Moda peruana para la Batalla de Junín', en: 'Peruvian fashion for the Battle of Junín', pt: 'Moda peruana para a Batalha de Junín' },
+      body:   { es: 'Batalla de Junín: el momento ideal para renovar tu ropa con prendas de vendedores peruanos.', en: 'Battle of Junín: the perfect time to refresh your wardrobe with Peruvian sellers.', pt: 'Batalha de Junín: o momento ideal para renovar seu guarda-roupa com vendedores peruanos.' },
       cta:    { es: 'Ver moda', en: 'See fashion', pt: 'Ver moda' },
       img:    'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&q=80&auto=format&fit=crop',
       categoriaId: 1,
@@ -313,11 +313,11 @@ const SETS_F1: Slide[][] = [
     },
     {
       id: 's1f1-alimentos', theme: 'jungle',
-      tag:    { es: 'FERIADO LARGO · SABORES DEL PERÚ', en: 'LONG WEEKEND · FLAVORS OF PERU', pt: 'FERIADO LONGO · SABORES DO PERU' },
+      tag:    { es: 'BATALLA DE JUNÍN · SABORES DEL PERÚ', en: 'BATTLE OF JUNÍN · FLAVORS OF PERU', pt: 'BATALHA DE JUNÍN · SABORES DO PERU' },
       region: 'Campos del Perú',
       title:  { es: ['Alimentos frescos', 'para el feriado'], en: ['Fresh food', 'for the holiday'], pt: ['Alimentos frescos', 'para o feriado'] },
       sub:    { es: 'Cacao, café, quinua y más productos del campo peruano', en: 'Cacao, coffee, quinoa and more Peruvian field products', pt: 'Cacau, café, quinoa e mais produtos do campo peruano' },
-      body:   { es: 'Aprovechá el feriado largo para abastecerte con los mejores alimentos peruanos, directo del productor.', en: 'Take advantage of the long weekend to stock up on the best Peruvian food, direct from the producer.', pt: 'Aproveite o feriado longo para abastecer-se com os melhores alimentos peruanos, direto do produtor.' },
+      body:   { es: 'Aprovechá la Batalla de Junín para abastecerte con los mejores alimentos peruanos, directo del productor.', en: 'Make the most of Battle of Junín to stock up on the best Peruvian food, direct from the producer.', pt: 'Aproveite a Batalha de Junín para abastecer-se com os melhores alimentos peruanos, direto do produtor.' },
       cta:    { es: 'Ver alimentos', en: 'See food', pt: 'Ver alimentos' },
       img:    'https://images.unsplash.com/photo-1547592180-85f173990554?w=1600&q=80&auto=format&fit=crop',
       categoriaId: 3,
@@ -340,11 +340,11 @@ const SETS_F1: Slide[][] = [
   [
     {
       id: 's2f1-cacao', theme: 'terra',
-      tag:    { es: 'FERIADO LARGO · SUPERALIMENTOS ANDINOS', en: 'LONG WEEKEND · ANDEAN SUPERFOODS', pt: 'FERIADO LONGO · SUPERALIMENTOS ANDINOS' },
+      tag:    { es: 'BATALLA DE JUNÍN · SUPERALIMENTOS ANDINOS', en: 'BATTLE OF JUNÍN · ANDEAN SUPERFOODS', pt: 'BATALHA DE JUNÍN · SUPERALIMENTOS ANDINOS' },
       region: 'Amazonas · San Martín',
       title:  { es: ['Cacao puro', 'de los Andes'], en: ['Pure cacao', 'from the Andes'], pt: ['Cacau puro', 'dos Andes'] },
-      sub:    { es: 'Chocolate y cacao orgánico peruano — aprovechá el feriado', en: 'Organic Peruvian chocolate and cacao — make the most of the holiday', pt: 'Chocolate e cacau orgânico peruano — aproveite o feriado' },
-      body:   { es: 'El mejor cacao del mundo viene del Perú. Aprovechá el feriado largo y pedilo directo del productor.', en: "The world's best cacao comes from Peru. Take advantage of the long weekend and order direct from the producer.", pt: 'O melhor cacau do mundo vem do Peru. Aproveite o feriado longo e peça direto do produtor.' },
+      sub:    { es: 'Chocolate y cacao orgánico peruano — aprovechá la Batalla de Junín', en: 'Organic Peruvian chocolate and cacao — make the most of Battle of Junín', pt: 'Chocolate e cacau orgânico peruano — aproveite a Batalha de Junín' },
+      body:   { es: 'El mejor cacao del mundo viene del Perú. Aprovechá la Batalla de Junín y pedilo directo del productor.', en: "The world's best cacao comes from Peru. Make the most of Battle of Junín and order direct from the producer.", pt: 'O melhor cacau do mundo vem do Peru. Aproveite a Batalha de Junín e peça direto do produtor.' },
       cta:    { es: 'Ver alimentos', en: 'See food', pt: 'Ver alimentos' },
       img:    'https://images.unsplash.com/photo-1606312619070-d48b9d92b3f4?w=1600&q=80&auto=format&fit=crop',
       categoriaId: 3,
@@ -355,11 +355,11 @@ const SETS_F1: Slide[][] = [
   [
     {
       id: 's3f1-artesania', theme: 'jungle',
-      tag:    { es: 'HECHO EN PERÚ · FERIADO 6 DE AGOSTO', en: 'MADE IN PERU · AUG 6 HOLIDAY', pt: 'FEITO NO PERU · FERIADO 6 DE AGOSTO' },
+      tag:    { es: 'HECHO EN PERÚ · BATALLA DE JUNÍN', en: 'MADE IN PERU · BATTLE OF JUNÍN', pt: 'FEITO NO PERU · BATALHA DE JUNÍN' },
       region: 'Cusco · Puno · Ayacucho',
       title:  { es: ['Artesanía peruana', 'auténtica'], en: ['Authentic', 'Peruvian crafts'], pt: ['Artesanato', 'peruano autêntico'] },
       sub:    { es: 'Textiles, tejidos y cerámica de cada región — perfecto para regalar', en: 'Textiles, weavings and ceramics from every region — perfect for gifts', pt: 'Têxteis, tecelagens e cerâmicas de cada região — perfeito para presentear' },
-      body:   { es: 'Feriado largo para comprar algo especial. Llevate artesanía hecha con manos peruanas — única, irrepetible.', en: 'Long weekend to buy something special. Take home crafts made with Peruvian hands — unique, unrepeatable.', pt: 'Feriado longo para comprar algo especial. Leve artesanato feito com mãos peruanas — único, inigualável.' },
+      body:   { es: 'Batalla de Junín para comprar algo especial. Llevate artesanía hecha con manos peruanas — única, irrepetible.', en: 'Battle of Junín to buy something special. Take home crafts made with Peruvian hands — unique, unrepeatable.', pt: 'Batalha de Junín para comprar algo especial. Leve artesanato feito com mãos peruanas — único, inigualável.' },
       cta:    { es: 'Ver artesanías', en: 'See crafts', pt: 'Ver artesanato' },
       img:    'https://images.unsplash.com/photo-1582582494705-f8ce0b0c24f0?w=1600&q=80&auto=format&fit=crop',
       categoriaId: 4,
@@ -370,11 +370,11 @@ const SETS_F1: Slide[][] = [
   [
     {
       id: 's4f1-hogar', theme: 'desert',
-      tag:    { es: 'FERIADO LARGO · HOGAR PERUANO', en: 'LONG WEEKEND · PERUVIAN HOME', pt: 'FERIADO LONGO · LAR PERUANO' },
+      tag:    { es: 'BATALLA DE JUNÍN · HOGAR PERUANO', en: 'BATTLE OF JUNÍN · PERUVIAN HOME', pt: 'BATALHA DE JUNÍN · LAR PERUANO' },
       region: 'Decoración y muebles',
       title:  { es: ['Decorá tu hogar', 'para el feriado'], en: ['Decorate your home', 'for the holiday'], pt: ['Decore sua casa', 'para o feriado'] },
       sub:    { es: 'Muebles y decoración para recibir a la familia', en: 'Furniture and décor to welcome the family', pt: 'Móveis e decoração para receber a família' },
-      body:   { es: 'El 6 de agosto es feriado largo. Aprovechá para renovar tu hogar con productos de vendedores peruanos.', en: 'August 6 is a long holiday. Take advantage to renew your home with products from Peruvian sellers.', pt: '6 de agosto é feriado longo. Aproveite para renovar sua casa com produtos de vendedores peruanos.' },
+      body:   { es: 'El 6 de agosto es la Batalla de Junín. Aprovechá para renovar tu hogar con productos de vendedores peruanos.', en: 'August 6 is the Battle of Junín. Take advantage to renew your home with products from Peruvian sellers.', pt: '6 de agosto é a Batalha de Junín. Aproveite para renovar sua casa com produtos de vendedores peruanos.' },
       cta:    { es: 'Ver hogar', en: 'See home', pt: 'Ver casa' },
       img:    'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1600&q=80&auto=format&fit=crop',
       categoriaId: 5,
@@ -385,11 +385,11 @@ const SETS_F1: Slide[][] = [
   [
     {
       id: 's5f1-campo', theme: 'jungle',
-      tag:    { es: 'FERIADO LARGO · CAMPO PERUANO', en: 'LONG WEEKEND · PERUVIAN FIELD', pt: 'FERIADO LONGO · CAMPO PERUANO' },
+      tag:    { es: 'BATALLA DE JUNÍN · CAMPO PERUANO', en: 'BATTLE OF JUNÍN · PERUVIAN FIELD', pt: 'BATALHA DE JUNÍN · CAMPO PERUANO' },
       region: 'Campos del Perú',
       title:  { es: ['Productos frescos', 'para el feriado'], en: ['Fresh products', 'for the holiday'], pt: ['Produtos frescos', 'para o feriado'] },
       sub:    { es: 'Frutas, verduras y tubérculos de productores peruanos', en: 'Fruits, vegetables and tubers from Peruvian producers', pt: 'Frutas, legumes e tubérculos de produtores peruanos' },
-      body:   { es: 'Feriado largo: el momento perfecto para abastecerte con productos frescos directo del productor peruano.', en: 'Long weekend: the perfect moment to stock up on fresh products direct from the Peruvian producer.', pt: 'Feriado longo: o momento perfeito para abastecer-se com produtos frescos direto do produtor peruano.' },
+      body:   { es: 'Batalla de Junín: el momento perfecto para abastecerte con productos frescos directo del productor peruano.', en: 'Battle of Junín: the perfect moment to stock up on fresh products direct from the Peruvian producer.', pt: 'Batalha de Junín: o momento perfeito para abastecer-se com produtos frescos direto do produtor peruano.' },
       cta:    { es: 'Ver agrícolas', en: 'See produce', pt: 'Ver agrícolas' },
       img:    'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=1600&q=80&auto=format&fit=crop',
       categoriaId: 7,
@@ -400,11 +400,11 @@ const SETS_F1: Slide[][] = [
   [
     {
       id: 's6f1-tech', theme: 'stone',
-      tag:    { es: 'FERIADO LARGO · TECNOLOGÍA', en: 'LONG WEEKEND · ELECTRONICS', pt: 'FERIADO LONGO · TECNOLOGIA' },
+      tag:    { es: 'BATALLA DE JUNÍN · TECNOLOGÍA', en: 'BATTLE OF JUNÍN · ELECTRONICS', pt: 'BATALHA DE JUNÍN · TECNOLOGIA' },
       region: 'Laptops y computadoras',
       title:  { es: ['Electrónicos', 'al mejor precio'], en: ['Electronics', 'at the best price'], pt: ['Eletrônicos', 'ao melhor preço'] },
-      sub:    { es: 'Las mejores laptops y equipos para el feriado largo', en: 'The best laptops and equipment for the long weekend', pt: 'Os melhores laptops e equipamentos para o feriado longo' },
-      body:   { es: 'Feriado del 6 de agosto: el momento perfecto para renovar tu tecnología. Comprá con escrow protegido.', en: 'August 6 holiday: the perfect moment to upgrade your tech. Buy with escrow protection.', pt: 'Feriado de 6 de agosto: o momento perfeito para renovar sua tecnologia. Compre com escrow protegido.' },
+      sub:    { es: 'Las mejores laptops y equipos para la Batalla de Junín', en: 'The best laptops and equipment for Battle of Junín', pt: 'Os melhores laptops e equipamentos para a Batalha de Junín' },
+      body:   { es: 'Batalla de Junín: el momento perfecto para renovar tu tecnología. Comprá con escrow protegido.', en: 'Battle of Junín: the perfect moment to upgrade your tech. Buy with escrow protection.', pt: 'Batalha de Junín: o momento perfeito para renovar sua tecnologia. Compre com escrow protegido.' },
       cta:    { es: 'Ver electrónicos', en: 'See electronics', pt: 'Ver eletrônicos' },
       img:    'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=1600&q=80&auto=format&fit=crop',
       categoriaId: 2,
@@ -415,11 +415,11 @@ const SETS_F1: Slide[][] = [
   [
     {
       id: 's7f1-autos', theme: 'terra',
-      tag:    { es: 'FERIADO 6 DE AGOSTO · MOTOR PERUANO', en: 'AUG 6 HOLIDAY · PERUVIAN MOTOR', pt: 'FERIADO 6 DE AGOSTO · MOTOR PERUANO' },
+      tag:    { es: 'BATALLA DE JUNÍN · MOTOR PERUANO', en: 'BATTLE OF JUNÍN · PERUVIAN MOTOR', pt: 'BATALHA DE JUNÍN · MOTOR PERUANO' },
       region: 'Motor peruano',
       title:  { es: ['Autos y motos', 'para el feriado'], en: ['Cars and motorcycles', 'for the holiday'], pt: ['Carros e motos', 'para o feriado'] },
       sub:    { es: 'Vehículos, repuestos y accesorios para tu auto', en: 'Vehicles, spare parts and accessories for your car', pt: 'Veículos, peças e acessórios para o seu carro' },
-      body:   { es: 'Feriado largo del 6 de agosto: preparate para el viaje con repuestos y accesorios de vendedores peruanos.', en: 'August 6 long weekend: get ready for the trip with spare parts and accessories from Peruvian sellers.', pt: 'Feriado longo de 6 de agosto: prepare-se para a viagem com peças e acessórios de vendedores peruanos.' },
+      body:   { es: 'Batalla de Junín: preparate para el viaje con repuestos y accesorios de vendedores peruanos.', en: 'Battle of Junín: get ready for the trip with spare parts and accessories from Peruvian sellers.', pt: 'Batalha de Junín: prepare-se para a viagem com peças e acessórios de vendedores peruanos.' },
       cta:    { es: 'Ver autos y motos', en: 'See cars & motos', pt: 'Ver carros e motos' },
       img:    'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=1600&q=80&auto=format&fit=crop',
       categoriaId: 6,
@@ -948,9 +948,9 @@ export default function Home() {
           <div className="mk-hdr-inner">
             <a className="mk-logo" href="/">merkao<span className="mk-logo-dot">.pe</span></a>
             {FASE === 'feriado6ago' && (
-              <span className="mk-fiestas" aria-label="Feriado 6 de Agosto">
-                <span className="mk-fiestas-red">¡Feriado</span>
-                <span className="mk-fiestas-white">6 de Agosto!</span>
+              <span className="mk-fiestas" aria-label="Batalla de Junín 6 de Agosto">
+                <span className="mk-fiestas-red">¡Batalla de Junín!</span>
+                <span className="mk-fiestas-white">6 de Agosto</span>
               </span>
             )}
             {FASE === 'rosa' && (
