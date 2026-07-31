@@ -1,28 +1,8 @@
 {
-  "lastIndex": 5,
-  "lastPostedDate": "2026-07-30",
-  "totalPosts": 54,
+  "lastIndex": 6,
+  "lastPostedDate": "2026-07-31",
+  "totalPosts": 55,
   "history": [
-    {
-      "fecha": "2026-06-10T16:36:31.782Z",
-      "fechaPeru": "2026-06-10",
-      "variantIndex": 5,
-      "variantId": 6,
-      "enfoque": "Tip de venta + mención natural",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122110498275345830",
-      "fbPhotoId": "122110498227345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122110498275345830",
-      "image": {
-        "query": "cafe peru plantacion",
-        "theme": "cafe",
-        "photo_id": "KU7C4W330CY",
-        "photo_url": "https://images.unsplash.com/photo-1722962884239-ae1583767578?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxMHx8Y2FmZSUyMHBlcnUlMjBwbGFudGFjaW9ufGVufDF8MHx8fDE3ODExMDkzODZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Shelby Murphy Figueroa",
-        "photographer_url": "https://unsplash.com/@shelbyfigueroa",
-        "alt": "A person picking berries from a bush in a forest"
-      }
-    },
     {
       "fecha": "2026-06-11T16:56:35.282Z",
       "fechaPeru": "2026-06-11",
@@ -1299,6 +1279,33 @@
         "containerId": "18138235720564725",
         "permalink": "https://www.instagram.com/p/Dba-4ipG344/",
         "elapsedMs": 8421
+      }
+    },
+    {
+      "fecha": "2026-07-31T15:21:21.889Z",
+      "fechaPeru": "2026-07-31",
+      "variantIndex": 6,
+      "variantId": 7,
+      "enfoque": "Invitación corta y cálida",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122134759251345830",
+      "fbPhotoId": "122134759227345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122134759251345830",
+      "image": {
+        "source": "unsplash",
+        "query": "ropa colorida peru",
+        "theme": "moda",
+        "photo_id": "WEME5LOrLpE",
+        "photo_url": "https://images.unsplash.com/photo-1545206085-d0e519bdcecd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxfHxyb3BhJTIwY29sb3JpZGElMjBwZXJ1fGVufDF8MHx8fDE3ODU1MTEyNjl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Peter Livesey",
+        "photographer_url": "https://unsplash.com/@plivesey",
+        "alt": "woman in store with display of assorted shirts and textiles"
+      },
+      "ig": {
+        "mediaId": "18122212489808458",
+        "containerId": "18138462538564725",
+        "permalink": "https://www.instagram.com/p/DbdkuizoM3h/",
+        "elapsedMs": 8313
       }
     }
   ]
