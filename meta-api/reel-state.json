@@ -1,25 +1,7 @@
 {
-  "lastReelDate": "2026-08-01",
-  "totalReels": 50,
+  "lastReelDate": "2026-08-02",
+  "totalReels": 51,
   "history": [
-    {
-      "fecha": "2026-06-14T17:13:17.318Z",
-      "fechaPeru": "2026-06-14",
-      "product": {
-        "id": "c9ff34e4-23c2-479d-8fe7-e93c669838bc",
-        "nombre": "Samsung Galaxy A54 5G 128GB — Negro",
-        "ciudad": "Lima",
-        "precio": 1199
-      },
-      "ig": {
-        "error": "ig container 400: The parameter video_url is required"
-      },
-      "fb": {
-        "videoId": "2467181697057454",
-        "permalink": "https://www.facebook.com/reel/2467181697057454",
-        "elapsedMs": 7831
-      }
-    },
     {
       "fecha": "2026-06-14T17:17:47.269Z",
       "fechaPeru": "2026-06-14",
@@ -969,6 +951,24 @@
         "videoId": "1358644145703298",
         "permalink": "https://www.facebook.com/reel/1358644145703298",
         "elapsedMs": 8130
+      }
+    },
+    {
+      "fecha": "2026-08-02T14:39:13.770Z",
+      "fechaPeru": "2026-08-02",
+      "product": {
+        "id": "9d8833c9-e109-4dcf-95ac-0a650f34385c",
+        "nombre": "Vestido bordado ayacuchano multicolor",
+        "ciudad": "Ayacucho",
+        "precio": 120
+      },
+      "ig": {
+        "error": "ig container status=ERROR status=\"ERROR\""
+      },
+      "fb": {
+        "videoId": "1545400616425610",
+        "permalink": "https://www.facebook.com/reel/1545400616425610",
+        "elapsedMs": 18202
       }
     }
   ]

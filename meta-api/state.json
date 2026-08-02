@@ -1,28 +1,8 @@
 {
-  "lastIndex": 0,
-  "lastPostedDate": "2026-08-01",
-  "totalPosts": 56,
+  "lastIndex": 1,
+  "lastPostedDate": "2026-08-02",
+  "totalPosts": 57,
   "history": [
-    {
-      "fecha": "2026-06-12T16:21:22.082Z",
-      "fechaPeru": "2026-06-12",
-      "variantIndex": 0,
-      "variantId": 1,
-      "enfoque": "Comparativa con números",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122112815691345830",
-      "fbPhotoId": "122112815661345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122112815691345830",
-      "image": {
-        "query": "paisaje peru",
-        "theme": "general",
-        "photo_id": "9dmycbFE7mQ",
-        "photo_url": "https://images.unsplash.com/photo-1497106636505-e4fd6e16d74c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwyfHxwYWlzYWplJTIwcGVydXxlbnwxfDB8fHwxNzgxMjgxMjc3fDA&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Jeremiah Berman",
-        "photographer_url": "https://unsplash.com/@calibre9001",
-        "alt": "Machu Picchu"
-      }
-    },
     {
       "fecha": "2026-06-13T15:03:05.220Z",
       "fechaPeru": "2026-06-13",
@@ -1313,6 +1293,33 @@
         "containerId": "18138672202564725",
         "permalink": "https://www.instagram.com/p/DbgDbszINIL/",
         "elapsedMs": 6885
+      }
+    },
+    {
+      "fecha": "2026-08-02T14:38:07.068Z",
+      "fechaPeru": "2026-08-02",
+      "variantIndex": 1,
+      "variantId": 2,
+      "enfoque": "Para la que recién empieza",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122135142393345830",
+      "fbPhotoId": "122135142369345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122135142393345830",
+      "image": {
+        "source": "unsplash",
+        "query": "paisaje peru",
+        "theme": "general",
+        "photo_id": "LDQl11-GNU8",
+        "photo_url": "https://images.unsplash.com/photo-1725413531426-0d41136f5eb5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHw1fHxwYWlzYWplJTIwcGVydXxlbnwxfDB8fHwxNzg1NjgxNDY5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Josep Garip",
+        "photographer_url": "https://unsplash.com/@josep_garip",
+        "alt": "A scenic view of a valley and mountains"
+      },
+      "ig": {
+        "mediaId": "18087502943163597",
+        "containerId": "18138918382564725",
+        "permalink": "https://www.instagram.com/p/DbipXjFmpoD/",
+        "elapsedMs": 8149
       }
     }
   ]
