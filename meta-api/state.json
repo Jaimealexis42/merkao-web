@@ -1,28 +1,8 @@
 {
-  "lastIndex": 1,
-  "lastPostedDate": "2026-08-02",
-  "totalPosts": 57,
+  "lastIndex": 2,
+  "lastPostedDate": "2026-08-03",
+  "totalPosts": 58,
   "history": [
-    {
-      "fecha": "2026-06-13T15:03:05.220Z",
-      "fechaPeru": "2026-06-13",
-      "variantIndex": 1,
-      "variantId": 2,
-      "enfoque": "Para la que recién empieza",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122114051685345830",
-      "fbPhotoId": "122114051655345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122114051685345830",
-      "image": {
-        "query": "paisaje peru",
-        "theme": "general",
-        "photo_id": "fqqGUuEodc8",
-        "photo_url": "https://images.unsplash.com/photo-1739210856310-b50baecfa9f1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxOHx8cGFpc2FqZSUyMHBlcnV8ZW58MXwwfHx8MTc4MTI4MTI3N3ww&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Anyela Málaga Lazarte",
-        "photographer_url": "https://unsplash.com/@capturando_maravillas",
-        "alt": "A large body of water with a mountain in the background"
-      }
-    },
     {
       "fecha": "2026-06-14T15:08:05.993Z",
       "fechaPeru": "2026-06-14",
@@ -1320,6 +1300,33 @@
         "containerId": "18138918382564725",
         "permalink": "https://www.instagram.com/p/DbipXjFmpoD/",
         "elapsedMs": 8149
+      }
+    },
+    {
+      "fecha": "2026-08-03T15:44:56.029Z",
+      "fechaPeru": "2026-08-03",
+      "variantIndex": 2,
+      "variantId": 3,
+      "enfoque": "Artesana / productora regional",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122135347725345830",
+      "fbPhotoId": "122135347701345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122135347725345830",
+      "image": {
+        "source": "unsplash",
+        "query": "weaving peru",
+        "theme": "artesania",
+        "photo_id": "3cax0qcYQ8s",
+        "photo_url": "https://images.unsplash.com/photo-1631554240706-ab68578bc6ac?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHw5fHx3ZWF2aW5nJTIwcGVydXxlbnwxfDB8fHwxNzg1NzcxODgzfDA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Neto Torres",
+        "photographer_url": "https://unsplash.com/@torres82",
+        "alt": "a man riding a bike with a colorful blanket on the back of it"
+      },
+      "ig": {
+        "mediaId": "18112841003477487",
+        "containerId": "18139163401564725",
+        "permalink": "https://www.instagram.com/p/DblVz2dFHqf/",
+        "elapsedMs": 7472
       }
     }
   ]

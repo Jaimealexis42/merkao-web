@@ -1,25 +1,7 @@
 {
-  "lastReelDate": "2026-08-02",
-  "totalReels": 51,
+  "lastReelDate": "2026-08-03",
+  "totalReels": 52,
   "history": [
-    {
-      "fecha": "2026-06-14T17:17:47.269Z",
-      "fechaPeru": "2026-06-14",
-      "product": {
-        "id": "faa152bc-5038-44fb-83ca-ca93a2cc95f9",
-        "nombre": "Sofá 2 cuerpos tela antimanchas gris Oxford",
-        "ciudad": "Lima",
-        "precio": 890
-      },
-      "ig": {
-        "error": "0x0.st 503: uploads disabled because it’s been almost nothing but AI botnet spam for the past few months. will be back with a few changes at some point. no ETA."
-      },
-      "fb": {
-        "videoId": "1034273592590427",
-        "permalink": "https://www.facebook.com/reel/1034273592590427",
-        "elapsedMs": 13678
-      }
-    },
     {
       "fecha": "2026-06-14T17:21:24.809Z",
       "fechaPeru": "2026-06-14",
@@ -969,6 +951,24 @@
         "videoId": "1545400616425610",
         "permalink": "https://www.facebook.com/reel/1545400616425610",
         "elapsedMs": 18202
+      }
+    },
+    {
+      "fecha": "2026-08-03T15:46:25.184Z",
+      "fechaPeru": "2026-08-03",
+      "product": {
+        "id": "a6a26730-79db-4615-b02f-9f22fb2cd6d9",
+        "nombre": "Polo de algodón pima peruano — Pack x3",
+        "ciudad": "Lima",
+        "precio": 65
+      },
+      "ig": {
+        "error": "ig container status=ERROR status=\"ERROR\""
+      },
+      "fb": {
+        "videoId": "1034752966027610",
+        "permalink": "https://www.facebook.com/reel/1034752966027610",
+        "elapsedMs": 12036
       }
     }
   ]
