@@ -1,28 +1,7 @@
 {
-  "lastReelDate": "2026-08-03",
-  "totalReels": 52,
+  "lastReelDate": "2026-08-04",
+  "totalReels": 53,
   "history": [
-    {
-      "fecha": "2026-06-14T17:21:24.809Z",
-      "fechaPeru": "2026-06-14",
-      "product": {
-        "id": "a28de1f5-fe52-4382-b21a-e52e6cd036a9",
-        "nombre": "Retablo ayacuchano — Escena costumbrista",
-        "ciudad": "Ayacucho",
-        "precio": 150
-      },
-      "ig": {
-        "mediaId": "17894840436530744",
-        "containerId": "18125626576564725",
-        "permalink": "https://www.instagram.com/reel/DZkxCpujDeE/",
-        "elapsedMs": 71809
-      },
-      "fb": {
-        "videoId": "1560953108710024",
-        "permalink": "https://www.facebook.com/reel/1560953108710024",
-        "elapsedMs": 9255
-      }
-    },
     {
       "fecha": "2026-06-14T18:21:29.943Z",
       "fechaPeru": "2026-06-14",
@@ -969,6 +948,24 @@
         "videoId": "1034752966027610",
         "permalink": "https://www.facebook.com/reel/1034752966027610",
         "elapsedMs": 12036
+      }
+    },
+    {
+      "fecha": "2026-08-04T15:27:42.132Z",
+      "fechaPeru": "2026-08-04",
+      "product": {
+        "id": "1a3394c1-f45f-4312-8482-b79421abcaf2",
+        "nombre": "Cerámica Chulucanas — Jarrón decorativo grande",
+        "ciudad": "Piura",
+        "precio": 220
+      },
+      "ig": {
+        "error": "ig container status=ERROR status=\"ERROR\""
+      },
+      "fb": {
+        "videoId": "1056593106877533",
+        "permalink": "https://www.facebook.com/reel/1056593106877533",
+        "elapsedMs": 11505
       }
     }
   ]
