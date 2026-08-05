@@ -1,28 +1,7 @@
 {
-  "lastReelDate": "2026-08-04",
-  "totalReels": 53,
+  "lastReelDate": "2026-08-05",
+  "totalReels": 54,
   "history": [
-    {
-      "fecha": "2026-06-14T18:21:29.943Z",
-      "fechaPeru": "2026-06-14",
-      "product": {
-        "id": "a6a26730-79db-4615-b02f-9f22fb2cd6d9",
-        "nombre": "Polo de algodón pima peruano — Pack x3",
-        "ciudad": "Lima",
-        "precio": 65
-      },
-      "ig": {
-        "mediaId": "18408767017145635",
-        "containerId": "18125637391564725",
-        "permalink": "https://www.instagram.com/reel/DZk368TkrE_/",
-        "elapsedMs": 40673
-      },
-      "fb": {
-        "videoId": "1907019723325666",
-        "permalink": "https://www.facebook.com/reel/1907019723325666",
-        "elapsedMs": 10638
-      }
-    },
     {
       "fecha": "2026-06-15T17:59:57.652Z",
       "fechaPeru": "2026-06-15",
@@ -966,6 +945,24 @@
         "videoId": "1056593106877533",
         "permalink": "https://www.facebook.com/reel/1056593106877533",
         "elapsedMs": 11505
+      }
+    },
+    {
+      "fecha": "2026-08-05T15:17:06.937Z",
+      "fechaPeru": "2026-08-05",
+      "product": {
+        "id": "0cf6af2c-0c1c-4b44-b070-478129251122",
+        "nombre": "Cacao puro en polvo Amazonas 1 kg — Orgánico",
+        "ciudad": "San Martín",
+        "precio": 28
+      },
+      "ig": {
+        "error": "ig container status=ERROR status=\"ERROR\""
+      },
+      "fb": {
+        "videoId": "1740317567306257",
+        "permalink": "https://www.facebook.com/reel/1740317567306257",
+        "elapsedMs": 7852
       }
     }
   ]
