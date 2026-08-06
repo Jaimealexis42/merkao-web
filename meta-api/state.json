@@ -1,35 +1,8 @@
 {
-  "lastIndex": 4,
-  "lastPostedDate": "2026-08-05",
-  "totalPosts": 60,
+  "lastIndex": 5,
+  "lastPostedDate": "2026-08-06",
+  "totalPosts": 61,
   "history": [
-    {
-      "fecha": "2026-06-15T17:58:45.866Z",
-      "fechaPeru": "2026-06-15",
-      "variantIndex": 4,
-      "variantId": 5,
-      "enfoque": "Testimonio en primera persona",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122115217347345830",
-      "fbPhotoId": "122115217281345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122115217347345830",
-      "image": {
-        "source": "unsplash",
-        "query": "peruvian market fruits",
-        "theme": "alimentos",
-        "photo_id": "BWUvkv93HU4",
-        "photo_url": "https://images.unsplash.com/photo-1774082290292-eeef41f4d889?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwyfHxwZXJ1dmlhbiUyMG1hcmtldCUyMGZydWl0c3xlbnwxfDB8fHwxNzgxNTQ2MzAzfDA&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Sheila C",
-        "photographer_url": "https://unsplash.com/@qld_traveller",
-        "alt": "Woman selling colorful textiles at a market stall."
-      },
-      "ig": {
-        "mediaId": "18103354136024485",
-        "containerId": "18125834344564725",
-        "permalink": "https://www.instagram.com/p/DZnaK3Fm4Y1/",
-        "elapsedMs": 10549
-      }
-    },
     {
       "fecha": "2026-06-16T18:06:34.567Z",
       "fechaPeru": "2026-06-16",
@@ -1334,6 +1307,33 @@
         "containerId": "18139596346564725",
         "permalink": "https://www.instagram.com/p/DbqcH99oJmx/",
         "elapsedMs": 8958
+      }
+    },
+    {
+      "fecha": "2026-08-06T15:20:14.704Z",
+      "fechaPeru": "2026-08-06",
+      "variantIndex": 5,
+      "variantId": 6,
+      "enfoque": "Tip de venta + mención natural",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122135911965345830",
+      "fbPhotoId": "122135911941345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122135911965345830",
+      "image": {
+        "source": "unsplash",
+        "query": "cafe peru plantacion",
+        "theme": "cafe",
+        "photo_id": "xbyUjteHOd0",
+        "photo_url": "https://images.unsplash.com/photo-1677125671399-65852c6dfb05?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxMXx8Y2FmZSUyMHBlcnUlMjBwbGFudGFjaW9ufGVufDF8MHx8fDE3ODYwMjk2MDJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Quang Nguyen Vinh",
+        "photographer_url": "https://unsplash.com/@quangpraha",
+        "alt": "a bunch of coffee beans hanging from a tree"
+      },
+      "ig": {
+        "mediaId": "18093664211566172",
+        "containerId": "18139817344564725",
+        "permalink": "https://www.instagram.com/p/DbtBXi6keFD/",
+        "elapsedMs": 8697
       }
     }
   ]

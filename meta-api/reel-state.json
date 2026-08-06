@@ -1,28 +1,7 @@
 {
-  "lastReelDate": "2026-08-05",
-  "totalReels": 54,
+  "lastReelDate": "2026-08-06",
+  "totalReels": 55,
   "history": [
-    {
-      "fecha": "2026-06-15T17:59:57.652Z",
-      "fechaPeru": "2026-06-15",
-      "product": {
-        "id": "f6d3d48d-6fb5-4ac2-b2e9-da0b80040e79",
-        "nombre": "Quinua orgánica blanca Puno — 5 kg",
-        "ciudad": "Puno",
-        "precio": 45
-      },
-      "ig": {
-        "mediaId": "17875224465613437",
-        "containerId": "18125834386564725",
-        "permalink": "https://www.instagram.com/reel/DZnaPXUjgWQ/",
-        "elapsedMs": 37985
-      },
-      "fb": {
-        "videoId": "1630332329098646",
-        "permalink": "https://www.facebook.com/reel/1630332329098646",
-        "elapsedMs": 13777
-      }
-    },
     {
       "fecha": "2026-06-16T18:08:11.437Z",
       "fechaPeru": "2026-06-16",
@@ -963,6 +942,24 @@
         "videoId": "1740317567306257",
         "permalink": "https://www.facebook.com/reel/1740317567306257",
         "elapsedMs": 7852
+      }
+    },
+    {
+      "fecha": "2026-08-06T15:22:08.829Z",
+      "fechaPeru": "2026-08-06",
+      "product": {
+        "id": "79d0e769-b856-4de9-83ab-321266096a70",
+        "nombre": "Chompa de alpaca tejida a mano — Cusco",
+        "ciudad": "Cusco",
+        "precio": 85
+      },
+      "ig": {
+        "error": "ig container status=ERROR status=\"ERROR\""
+      },
+      "fb": {
+        "videoId": "926245817164558",
+        "permalink": "https://www.facebook.com/reel/926245817164558",
+        "elapsedMs": 7940
       }
     }
   ]
