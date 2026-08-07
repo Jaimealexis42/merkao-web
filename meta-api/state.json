@@ -1,35 +1,8 @@
 {
-  "lastIndex": 5,
-  "lastPostedDate": "2026-08-06",
-  "totalPosts": 61,
+  "lastIndex": 6,
+  "lastPostedDate": "2026-08-07",
+  "totalPosts": 62,
   "history": [
-    {
-      "fecha": "2026-06-16T18:06:34.567Z",
-      "fechaPeru": "2026-06-16",
-      "variantIndex": 5,
-      "variantId": 6,
-      "enfoque": "Tip de venta + mención natural",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122115767313345830",
-      "fbPhotoId": "122115767283345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122115767313345830",
-      "image": {
-        "source": "unsplash",
-        "query": "cafe peru plantacion",
-        "theme": "cafe",
-        "photo_id": "_salGOxyB-I",
-        "photo_url": "https://images.unsplash.com/photo-1652019815309-95821b00084c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHw5fHxjYWZlJTIwcGVydSUyMHBsYW50YWNpb258ZW58MXwwfHx8MTc4MTYzMzE3OHww&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "PROJETO CAFÉ GATO-MOURISCO",
-        "photographer_url": "https://unsplash.com/@projetocafegatomourisco",
-        "alt": "a tree with berries"
-      },
-      "ig": {
-        "mediaId": "18096791287951749",
-        "containerId": "18126042781564725",
-        "permalink": "https://www.instagram.com/p/DZp_26CGkHG/",
-        "elapsedMs": 10898
-      }
-    },
     {
       "fecha": "2026-06-17T16:40:42.964Z",
       "fechaPeru": "2026-06-17",
@@ -1334,6 +1307,33 @@
         "containerId": "18139817344564725",
         "permalink": "https://www.instagram.com/p/DbtBXi6keFD/",
         "elapsedMs": 8697
+      }
+    },
+    {
+      "fecha": "2026-08-07T14:14:18.196Z",
+      "fechaPeru": "2026-08-07",
+      "variantIndex": 6,
+      "variantId": 7,
+      "enfoque": "Invitación corta y cálida",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122136120237345830",
+      "fbPhotoId": "122136120207345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122136120237345830",
+      "image": {
+        "source": "unsplash",
+        "query": "ropa colorida peru",
+        "theme": "moda",
+        "photo_id": "3cax0qcYQ8s",
+        "photo_url": "https://images.unsplash.com/photo-1631554240706-ab68578bc6ac?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxMXx8cm9wYSUyMGNvbG9yaWRhJTIwcGVydXxlbnwxfDB8fHwxNzg2MTEyMDQzfDA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Neto Torres",
+        "photographer_url": "https://unsplash.com/@torres82",
+        "alt": "a man riding a bike with a colorful blanket on the back of it"
+      },
+      "ig": {
+        "mediaId": "17862790185658450",
+        "containerId": "18140010574564725",
+        "permalink": "https://www.instagram.com/p/Dbvena5ILHh/",
+        "elapsedMs": 8566
       }
     }
   ]
