@@ -1,28 +1,7 @@
 {
-  "lastReelDate": "2026-08-07",
-  "totalReels": 56,
+  "lastReelDate": "2026-08-08",
+  "totalReels": 57,
   "history": [
-    {
-      "fecha": "2026-06-17T16:41:44.746Z",
-      "fechaPeru": "2026-06-17",
-      "product": {
-        "id": "f6d3d48d-6fb5-4ac2-b2e9-da0b80040e79",
-        "nombre": "Quinua orgánica blanca Puno — 5 kg",
-        "ciudad": "Puno",
-        "precio": 45
-      },
-      "ig": {
-        "mediaId": "18070497119698148",
-        "containerId": "18126261907564725",
-        "permalink": "https://www.instagram.com/reel/DZsa4_LkQ3u/",
-        "elapsedMs": 32479
-      },
-      "fb": {
-        "videoId": "1007948141981748",
-        "permalink": "https://www.facebook.com/reel/1007948141981748",
-        "elapsedMs": 9842
-      }
-    },
     {
       "fecha": "2026-06-18T16:42:49.203Z",
       "fechaPeru": "2026-06-18",
@@ -957,6 +936,24 @@
         "videoId": "2084301902172362",
         "permalink": "https://www.facebook.com/reel/2084301902172362",
         "elapsedMs": 7773
+      }
+    },
+    {
+      "fecha": "2026-08-08T13:49:09.132Z",
+      "fechaPeru": "2026-08-08",
+      "product": {
+        "id": "4f45299d-7db1-41d8-8d74-cb8bc4640787",
+        "nombre": "Café especial Villa Rica 500 g — Molido",
+        "ciudad": "Pasco",
+        "precio": 35
+      },
+      "ig": {
+        "error": "ig container status=ERROR status=\"ERROR\""
+      },
+      "fb": {
+        "videoId": "1024654883736617",
+        "permalink": "https://www.facebook.com/reel/1024654883736617",
+        "elapsedMs": 13089
       }
     }
   ]
