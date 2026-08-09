@@ -1,35 +1,8 @@
 {
-  "lastIndex": 0,
-  "lastPostedDate": "2026-08-08",
-  "totalPosts": 63,
+  "lastIndex": 1,
+  "lastPostedDate": "2026-08-09",
+  "totalPosts": 64,
   "history": [
-    {
-      "fecha": "2026-06-18T16:41:38.553Z",
-      "fechaPeru": "2026-06-18",
-      "variantIndex": 0,
-      "variantId": 1,
-      "enfoque": "Comparativa con números",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122117545083345830",
-      "fbPhotoId": "122117545059345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122117545083345830",
-      "image": {
-        "source": "unsplash",
-        "query": "paisaje peru",
-        "theme": "general",
-        "photo_id": "fvptwPZ2Fqo",
-        "photo_url": "https://images.unsplash.com/photo-1563818708336-3e3449ca7eb4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHw5fHxwYWlzYWplJTIwcGVydXxlbnwxfDB8fHwxNzgxODAwODc4fDA&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Amilcar Alvarez Garcia",
-        "photographer_url": "https://unsplash.com/@amil_style",
-        "alt": "mountain under blue sky"
-      },
-      "ig": {
-        "mediaId": "17869123713554662",
-        "containerId": "18126519763564725",
-        "permalink": "https://www.instagram.com/p/DZu_uaWExJ7/",
-        "elapsedMs": 12653
-      }
-    },
     {
       "fecha": "2026-06-19T16:07:49.629Z",
       "fechaPeru": "2026-06-19",
@@ -1334,6 +1307,33 @@
         "containerId": "18140222593564725",
         "permalink": "https://www.instagram.com/p/DbyAclRlstm/",
         "elapsedMs": 8193
+      }
+    },
+    {
+      "fecha": "2026-08-09T13:52:18.774Z",
+      "fechaPeru": "2026-08-09",
+      "variantIndex": 1,
+      "variantId": 2,
+      "enfoque": "Para la que recién empieza",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122136489237345830",
+      "fbPhotoId": "122136489213345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122136489237345830",
+      "image": {
+        "source": "unsplash",
+        "query": "paisaje peru",
+        "theme": "general",
+        "photo_id": "fqqGUuEodc8",
+        "photo_url": "https://images.unsplash.com/photo-1739210856310-b50baecfa9f1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxNnx8cGFpc2FqZSUyMHBlcnV8ZW58MXwwfHx8MTc4NjI4MzUyNHww&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Anyela Málaga Lazarte",
+        "photographer_url": "https://unsplash.com/@capturando_maravillas",
+        "alt": "A large body of water with a mountain in the background"
+      },
+      "ig": {
+        "mediaId": "18109639856077841",
+        "containerId": "18140446642564725",
+        "permalink": "https://www.instagram.com/p/Db0lsLNlj5a/",
+        "elapsedMs": 8335
       }
     }
   ]
