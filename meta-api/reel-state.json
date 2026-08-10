@@ -1,28 +1,7 @@
 {
-  "lastReelDate": "2026-08-09",
-  "totalReels": 58,
+  "lastReelDate": "2026-08-10",
+  "totalReels": 59,
   "history": [
-    {
-      "fecha": "2026-06-19T16:09:02.809Z",
-      "fechaPeru": "2026-06-19",
-      "product": {
-        "id": "a6a26730-79db-4615-b02f-9f22fb2cd6d9",
-        "nombre": "Polo de algodón pima peruano — Pack x3",
-        "ciudad": "Lima",
-        "precio": 65
-      },
-      "ig": {
-        "mediaId": "17887054155569838",
-        "containerId": "18126758404564725",
-        "permalink": "https://www.instagram.com/reel/DZxguyoHZe_/",
-        "elapsedMs": 33064
-      },
-      "fb": {
-        "videoId": "1392315189385834",
-        "permalink": "https://www.facebook.com/reel/1392315189385834",
-        "elapsedMs": 13249
-      }
-    },
     {
       "fecha": "2026-06-20T15:05:51.702Z",
       "fechaPeru": "2026-06-20",
@@ -951,6 +930,24 @@
         "videoId": "1567453804929020",
         "permalink": "https://www.facebook.com/reel/1567453804929020",
         "elapsedMs": 9402
+      }
+    },
+    {
+      "fecha": "2026-08-10T14:21:47.527Z",
+      "fechaPeru": "2026-08-10",
+      "product": {
+        "id": "1a3394c1-f45f-4312-8482-b79421abcaf2",
+        "nombre": "Cerámica Chulucanas — Jarrón decorativo grande",
+        "ciudad": "Piura",
+        "precio": 220
+      },
+      "ig": {
+        "error": "ig container status=ERROR status=\"ERROR\""
+      },
+      "fb": {
+        "videoId": "1070413022119644",
+        "permalink": "https://www.facebook.com/reel/1070413022119644",
+        "elapsedMs": 8860
       }
     }
   ]
