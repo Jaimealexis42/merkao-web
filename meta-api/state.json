@@ -1,35 +1,8 @@
 {
-  "lastIndex": 3,
-  "lastPostedDate": "2026-08-11",
-  "totalPosts": 66,
+  "lastIndex": 4,
+  "lastPostedDate": "2026-08-12",
+  "totalPosts": 67,
   "history": [
-    {
-      "fecha": "2026-06-21T15:12:47.347Z",
-      "fechaPeru": "2026-06-21",
-      "variantIndex": 3,
-      "variantId": 4,
-      "enfoque": "Pregunta abierta a la comunidad",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122119482675345830",
-      "fbPhotoId": "122119482591345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122119482675345830",
-      "image": {
-        "source": "unsplash",
-        "query": "paisaje peru",
-        "theme": "general",
-        "photo_id": "fvptwPZ2Fqo",
-        "photo_url": "https://images.unsplash.com/photo-1563818708336-3e3449ca7eb4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHw5fHxwYWlzYWplJTIwcGVydXxlbnwxfDB8fHwxNzgyMDU0NzUxfDA&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Amilcar Alvarez Garcia",
-        "photographer_url": "https://unsplash.com/@amil_style",
-        "alt": "mountain under blue sky"
-      },
-      "ig": {
-        "mediaId": "18006807788868324",
-        "containerId": "18127285894564725",
-        "permalink": "https://www.instagram.com/p/DZ2j8h2loHm/",
-        "elapsedMs": 9893
-      }
-    },
     {
       "fecha": "2026-06-22T17:41:45.211Z",
       "fechaPeru": "2026-06-22",
@@ -1334,6 +1307,33 @@
         "containerId": "18140879833564725",
         "permalink": "https://www.instagram.com/p/Db5yhn6IFaK/",
         "elapsedMs": 9271
+      }
+    },
+    {
+      "fecha": "2026-08-12T14:22:17.252Z",
+      "fechaPeru": "2026-08-12",
+      "variantIndex": 4,
+      "variantId": 5,
+      "enfoque": "Testimonio en primera persona",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122137071483345830",
+      "fbPhotoId": "122137071441345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122137071483345830",
+      "image": {
+        "source": "unsplash",
+        "query": "peruvian market fruits",
+        "theme": "alimentos",
+        "photo_id": "BWUvkv93HU4",
+        "photo_url": "https://images.unsplash.com/photo-1774082290292-eeef41f4d889?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwyfHxwZXJ1dmlhbiUyMG1hcmtldCUyMGZydWl0c3xlbnwxfDB8fHwxNzg2NTQ0NTIzfDA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Sheila C",
+        "photographer_url": "https://unsplash.com/@qld_traveller",
+        "alt": "Woman selling colorful textiles at a market stall."
+      },
+      "ig": {
+        "mediaId": "18481297576100410",
+        "containerId": "18141098407564725",
+        "permalink": "https://www.instagram.com/p/Db8XgRXlqjY/",
+        "elapsedMs": 8958
       }
     }
   ]

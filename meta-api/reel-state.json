@@ -1,28 +1,7 @@
 {
-  "lastReelDate": "2026-08-11",
-  "totalReels": 60,
+  "lastReelDate": "2026-08-12",
+  "totalReels": 61,
   "history": [
-    {
-      "fecha": "2026-06-21T15:14:02.920Z",
-      "fechaPeru": "2026-06-21",
-      "product": {
-        "id": "9d8833c9-e109-4dcf-95ac-0a650f34385c",
-        "nombre": "Vestido bordado ayacuchano multicolor",
-        "ciudad": "Ayacucho",
-        "precio": 120
-      },
-      "ig": {
-        "mediaId": "17946814908196040",
-        "containerId": "18127286044564725",
-        "permalink": "https://www.instagram.com/reel/DZ2kB-uD8fX/",
-        "elapsedMs": 33316
-      },
-      "fb": {
-        "videoId": "1041773165105383",
-        "permalink": "https://www.facebook.com/reel/1041773165105383",
-        "elapsedMs": 12243
-      }
-    },
     {
       "fecha": "2026-06-22T17:42:56.763Z",
       "fechaPeru": "2026-06-22",
@@ -945,6 +924,24 @@
         "videoId": "1585812069740917",
         "permalink": "https://www.facebook.com/reel/1585812069740917",
         "elapsedMs": 8806
+      }
+    },
+    {
+      "fecha": "2026-08-12T14:23:49.469Z",
+      "fechaPeru": "2026-08-12",
+      "product": {
+        "id": "48a73792-c9cc-4dc6-b48a-b8d67997b97e",
+        "nombre": "Cuadro shipibo-conibo original 40×60 cm",
+        "ciudad": "Ucayali",
+        "precio": 180
+      },
+      "ig": {
+        "error": "ig container status=ERROR status=\"ERROR\""
+      },
+      "fb": {
+        "videoId": "1292188102838796",
+        "permalink": "https://www.facebook.com/reel/1292188102838796",
+        "elapsedMs": 11137
       }
     }
   ]
