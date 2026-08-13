@@ -1,35 +1,8 @@
 {
-  "lastIndex": 4,
-  "lastPostedDate": "2026-08-12",
-  "totalPosts": 67,
+  "lastIndex": 5,
+  "lastPostedDate": "2026-08-13",
+  "totalPosts": 68,
   "history": [
-    {
-      "fecha": "2026-06-22T17:41:45.211Z",
-      "fechaPeru": "2026-06-22",
-      "variantIndex": 4,
-      "variantId": 5,
-      "enfoque": "Testimonio en primera persona",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122120517879345830",
-      "fbPhotoId": "122120517837345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122120517879345830",
-      "image": {
-        "source": "unsplash",
-        "query": "peruvian market fruits",
-        "theme": "alimentos",
-        "photo_id": "WSsEj4oqXWo",
-        "photo_url": "https://images.unsplash.com/photo-1760726361439-4afaa0d26808?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxfHxwZXJ1dmlhbiUyMG1hcmtldCUyMGZydWl0c3xlbnwxfDB8fHwxNzgyMTUwMDg5fDA&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Darya Luganskaya",
-        "photographer_url": "https://unsplash.com/@dlugansky",
-        "alt": "Street vendor with drinks and snacks for sale"
-      },
-      "ig": {
-        "mediaId": "18018301382893562",
-        "containerId": "18127627852564725",
-        "permalink": "https://www.instagram.com/p/DZ5Zyv7FH04/",
-        "elapsedMs": 7156
-      }
-    },
     {
       "fecha": "2026-06-23T15:51:27.635Z",
       "fechaPeru": "2026-06-23",
@@ -1334,6 +1307,33 @@
         "containerId": "18141098407564725",
         "permalink": "https://www.instagram.com/p/Db8XgRXlqjY/",
         "elapsedMs": 8958
+      }
+    },
+    {
+      "fecha": "2026-08-13T14:23:04.731Z",
+      "fechaPeru": "2026-08-13",
+      "variantIndex": 5,
+      "variantId": 6,
+      "enfoque": "Tip de venta + mención natural",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122137301223345830",
+      "fbPhotoId": "122137301199345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122137301223345830",
+      "image": {
+        "source": "unsplash",
+        "query": "cafe peru plantacion",
+        "theme": "cafe",
+        "photo_id": "P7HEx_gkGT4",
+        "photo_url": "https://images.unsplash.com/photo-1663125365404-e274869480f6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHw0fHxjYWZlJTIwcGVydSUyMHBsYW50YWNpb258ZW58MXwwfHx8MTc4NjYzMDk2Nnww&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Helena Coffee Vietnam",
+        "photographer_url": "https://unsplash.com/@helenacoffeevn",
+        "alt": "a close up of some berries"
+      },
+      "ig": {
+        "mediaId": "18054935117608873",
+        "containerId": "18141332452564725",
+        "permalink": "https://www.instagram.com/p/Db-8ZR4lM6L/",
+        "elapsedMs": 5768
       }
     }
   ]
