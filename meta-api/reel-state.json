@@ -1,28 +1,7 @@
 {
-  "lastReelDate": "2026-08-13",
-  "totalReels": 62,
+  "lastReelDate": "2026-08-15",
+  "totalReels": 63,
   "history": [
-    {
-      "fecha": "2026-06-23T15:52:42.539Z",
-      "fechaPeru": "2026-06-23",
-      "product": {
-        "id": "1a3394c1-f45f-4312-8482-b79421abcaf2",
-        "nombre": "Cerámica Chulucanas — Jarrón decorativo grande",
-        "ciudad": "Piura",
-        "precio": 220
-      },
-      "ig": {
-        "mediaId": "17907427095262041",
-        "containerId": "18127877008564725",
-        "permalink": "https://www.instagram.com/reel/DZ7yCnajxoU/",
-        "elapsedMs": 38096
-      },
-      "fb": {
-        "videoId": "1026349013279165",
-        "permalink": "https://www.facebook.com/reel/1026349013279165",
-        "elapsedMs": 9982
-      }
-    },
     {
       "fecha": "2026-06-24T15:35:25.585Z",
       "fechaPeru": "2026-06-24",
@@ -939,6 +918,24 @@
         "videoId": "1433257858650369",
         "permalink": "https://www.facebook.com/reel/1433257858650369",
         "elapsedMs": 7429
+      }
+    },
+    {
+      "fecha": "2026-08-15T13:32:28.892Z",
+      "fechaPeru": "2026-08-15",
+      "product": {
+        "id": "f6d3d48d-6fb5-4ac2-b2e9-da0b80040e79",
+        "nombre": "Quinua orgánica blanca Puno — 5 kg",
+        "ciudad": "Puno",
+        "precio": 45
+      },
+      "ig": {
+        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Saturday, 15-Aug-26 06:32:19 PDT."
+      },
+      "fb": {
+        "videoId": "1024007403793419",
+        "permalink": "https://www.facebook.com/reel/1024007403793419",
+        "elapsedMs": 9517
       }
     }
   ]

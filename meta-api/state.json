@@ -1,35 +1,8 @@
 {
-  "lastIndex": 5,
-  "lastPostedDate": "2026-08-13",
-  "totalPosts": 68,
+  "lastIndex": 6,
+  "lastPostedDate": "2026-08-15",
+  "totalPosts": 69,
   "history": [
-    {
-      "fecha": "2026-06-23T15:51:27.635Z",
-      "fechaPeru": "2026-06-23",
-      "variantIndex": 5,
-      "variantId": 6,
-      "enfoque": "Tip de venta + mención natural",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122121293469345830",
-      "fbPhotoId": "122121293445345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122121293469345830",
-      "image": {
-        "source": "unsplash",
-        "query": "cafe peru plantacion",
-        "theme": "cafe",
-        "photo_id": "b8xo59IcAUY",
-        "photo_url": "https://images.unsplash.com/photo-1629008642899-178df6fc5f2f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHw4fHxjYWZlJTIwcGVydSUyMHBsYW50YWNpb258ZW58MXwwfHx8MTc4MjIyOTg3MXww&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Nguyen Tong Hai Van",
-        "photographer_url": "https://unsplash.com/@ngtghaivan",
-        "alt": "red and brown round fruits in white plastic bucket"
-      },
-      "ig": {
-        "mediaId": "18057756989758297",
-        "containerId": "18127876897564725",
-        "permalink": "https://www.instagram.com/p/DZ7x9c-GszQ/",
-        "elapsedMs": 10954
-      }
-    },
     {
       "fecha": "2026-06-24T15:34:26.155Z",
       "fechaPeru": "2026-06-24",
@@ -1334,6 +1307,30 @@
         "containerId": "18141332452564725",
         "permalink": "https://www.instagram.com/p/Db-8ZR4lM6L/",
         "elapsedMs": 5768
+      }
+    },
+    {
+      "fecha": "2026-08-15T13:31:58.261Z",
+      "fechaPeru": "2026-08-15",
+      "variantIndex": 6,
+      "variantId": 7,
+      "enfoque": "Invitación corta y cálida",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122137672137345830",
+      "fbPhotoId": "122137672107345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122137672137345830",
+      "image": {
+        "source": "unsplash",
+        "query": "ropa colorida peru",
+        "theme": "moda",
+        "photo_id": "DxAFftFWkNY",
+        "photo_url": "https://images.unsplash.com/photo-1583202806174-ab03e16760d5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHw4fHxyb3BhJTIwY29sb3JpZGElMjBwZXJ1fGVufDF8MHx8fDE3ODY4MDA3MTJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Deb Dowd",
+        "photographer_url": "https://unsplash.com/@fin777",
+        "alt": "woman in orange and blue dress with brown and white long coated dog"
+      },
+      "ig": {
+        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Saturday, 15-Aug-26 06:31:58 PDT."
       }
     }
   ]
