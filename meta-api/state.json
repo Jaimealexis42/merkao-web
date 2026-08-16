@@ -1,35 +1,8 @@
 {
-  "lastIndex": 6,
-  "lastPostedDate": "2026-08-15",
-  "totalPosts": 69,
+  "lastIndex": 0,
+  "lastPostedDate": "2026-08-16",
+  "totalPosts": 70,
   "history": [
-    {
-      "fecha": "2026-06-24T15:34:26.155Z",
-      "fechaPeru": "2026-06-24",
-      "variantIndex": 6,
-      "variantId": 7,
-      "enfoque": "Invitación corta y cálida",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122121855963345830",
-      "fbPhotoId": "122121855939345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122121855963345830",
-      "image": {
-        "source": "unsplash",
-        "query": "ropa colorida peru",
-        "theme": "moda",
-        "photo_id": "3cax0qcYQ8s",
-        "photo_url": "https://images.unsplash.com/photo-1631554240706-ab68578bc6ac?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxMHx8cm9wYSUyMGNvbG9yaWRhJTIwcGVydXxlbnwxfDB8fHwxNzgyMzE1MjUwfDA&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Neto Torres",
-        "photographer_url": "https://unsplash.com/@torres82",
-        "alt": "a man riding a bike with a colorful blanket on the back of it"
-      },
-      "ig": {
-        "mediaId": "18431118916131712",
-        "containerId": "18128150347564725",
-        "permalink": "https://www.instagram.com/p/DZ-Uz0Blvqg/",
-        "elapsedMs": 8662
-      }
-    },
     {
       "fecha": "2026-06-25T15:41:53.801Z",
       "fechaPeru": "2026-06-25",
@@ -1331,6 +1304,30 @@
       },
       "ig": {
         "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Saturday, 15-Aug-26 06:31:58 PDT."
+      }
+    },
+    {
+      "fecha": "2026-08-16T13:33:45.120Z",
+      "fechaPeru": "2026-08-16",
+      "variantIndex": 0,
+      "variantId": 1,
+      "enfoque": "Comparativa con números",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122137886001345830",
+      "fbPhotoId": "122137885977345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122137886001345830",
+      "image": {
+        "source": "unsplash",
+        "query": "paisaje peru",
+        "theme": "general",
+        "photo_id": "1vw1jr897sI",
+        "photo_url": "https://images.unsplash.com/photo-1562807210-d5fad553e573?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxOHx8cGFpc2FqZSUyMHBlcnV8ZW58MXwwfHx8MTc4Njg4NzIxN3ww&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Amilcar Alvarez Garcia",
+        "photographer_url": "https://unsplash.com/@amil_style",
+        "alt": "green grass field"
+      },
+      "ig": {
+        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Sunday, 16-Aug-26 06:33:45 PDT."
       }
     }
   ]
