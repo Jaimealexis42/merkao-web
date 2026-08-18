@@ -1,28 +1,7 @@
 {
-  "lastReelDate": "2026-08-17",
-  "totalReels": 65,
+  "lastReelDate": "2026-08-18",
+  "totalReels": 66,
   "history": [
-    {
-      "fecha": "2026-06-26T15:26:40.805Z",
-      "fechaPeru": "2026-06-26",
-      "product": {
-        "id": "1a3394c1-f45f-4312-8482-b79421abcaf2",
-        "nombre": "Cerámica Chulucanas — Jarrón decorativo grande",
-        "ciudad": "Piura",
-        "precio": 220
-      },
-      "ig": {
-        "mediaId": "18104250137012337",
-        "containerId": "18128733655564725",
-        "permalink": "https://www.instagram.com/reel/DaDdc2Mlwiw/",
-        "elapsedMs": 33601
-      },
-      "fb": {
-        "videoId": "1050619210753379",
-        "permalink": "https://www.facebook.com/reel/1050619210753379",
-        "elapsedMs": 11894
-      }
-    },
     {
       "fecha": "2026-06-27T14:47:23.898Z",
       "fechaPeru": "2026-06-27",
@@ -930,6 +909,24 @@
         "videoId": "1379221523542518",
         "permalink": "https://www.facebook.com/reel/1379221523542518",
         "elapsedMs": 7702
+      }
+    },
+    {
+      "fecha": "2026-08-18T13:44:42.863Z",
+      "fechaPeru": "2026-08-18",
+      "product": {
+        "id": "0cf6af2c-0c1c-4b44-b070-478129251122",
+        "nombre": "Cacao puro en polvo Amazonas 1 kg — Orgánico",
+        "ciudad": "San Martín",
+        "precio": 28
+      },
+      "ig": {
+        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Tuesday, 18-Aug-26 06:44:32 PDT."
+      },
+      "fb": {
+        "videoId": "1276771591127031",
+        "permalink": "https://www.facebook.com/reel/1276771591127031",
+        "elapsedMs": 9848
       }
     }
   ]

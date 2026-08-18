@@ -1,35 +1,8 @@
 {
-  "lastIndex": 1,
-  "lastPostedDate": "2026-08-17",
-  "totalPosts": 71,
+  "lastIndex": 2,
+  "lastPostedDate": "2026-08-18",
+  "totalPosts": 72,
   "history": [
-    {
-      "fecha": "2026-06-26T15:25:27.031Z",
-      "fechaPeru": "2026-06-26",
-      "variantIndex": 1,
-      "variantId": 2,
-      "enfoque": "Para la que recién empieza",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122123361561345830",
-      "fbPhotoId": "122123361537345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122123361561345830",
-      "image": {
-        "source": "unsplash",
-        "query": "paisaje peru",
-        "theme": "general",
-        "photo_id": "G2zjqUDkYSQ",
-        "photo_url": "https://images.unsplash.com/photo-1590835192370-3941b97e93fd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxfHxwYWlzYWplJTIwcGVydXxlbnwxfDB8fHwxNzgyNDAyMDk4fDA&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Giorgia Doglioni",
-        "photographer_url": "https://unsplash.com/@gio_aroundtheworld",
-        "alt": "green grass field near mountain under blue sky during daytime"
-      },
-      "ig": {
-        "mediaId": "18121238749703724",
-        "containerId": "18128733559564725",
-        "permalink": "https://www.instagram.com/p/DaDdX5ZmsqM/",
-        "elapsedMs": 7919
-      }
-    },
     {
       "fecha": "2026-06-27T14:45:00.242Z",
       "fechaPeru": "2026-06-27",
@@ -1325,6 +1298,30 @@
       },
       "ig": {
         "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Monday, 17-Aug-26 06:41:23 PDT."
+      }
+    },
+    {
+      "fecha": "2026-08-18T13:44:05.174Z",
+      "fechaPeru": "2026-08-18",
+      "variantIndex": 2,
+      "variantId": 3,
+      "enfoque": "Artesana / productora regional",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122138324529345830",
+      "fbPhotoId": "122138324499345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122138324529345830",
+      "image": {
+        "source": "unsplash",
+        "query": "weaving peru",
+        "theme": "artesania",
+        "photo_id": "tZ6uJBMJuVE",
+        "photo_url": "https://images.unsplash.com/photo-1730432447904-d0d408ad15c1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxMHx8d2VhdmluZyUyMHBlcnV8ZW58MXwwfHx8MTc4NzA2MDYzNnww&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Naveen Raj Dhanapal",
+        "photographer_url": "https://unsplash.com/@naveen_rd",
+        "alt": "A woman in a colorful headdress holding a surfboard"
+      },
+      "ig": {
+        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Tuesday, 18-Aug-26 06:44:05 PDT."
       }
     }
   ]
