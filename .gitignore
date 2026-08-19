@@ -47,3 +47,21 @@ next-env.d.ts
 Backup-codes-merkao.org.txt
 
 .vercel
+
+# scripts de utilidad interna (pueden tener vars hardcodeadas para pruebas rápidas)
+seeds.js
+
+# env files en cualquier subcarpeta
+**/.env
+**/.env.*
+
+# archivos cuyo nombre contiene: secret, key o credential
+*secret*
+*Secret*
+*SECRET*
+*credential*
+*Credential*
+*CREDENTIAL*
+*key*
+*Key*
+*KEY*
