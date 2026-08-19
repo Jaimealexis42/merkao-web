@@ -1,337 +1,7 @@
 {
-  "lastReelDate": "2026-07-31",
-  "totalReels": 49,
+  "lastReelDate": "2026-08-18",
+  "totalReels": 66,
   "history": [
-    {
-      "fecha": "2026-06-14T17:13:17.318Z",
-      "fechaPeru": "2026-06-14",
-      "product": {
-        "id": "c9ff34e4-23c2-479d-8fe7-e93c669838bc",
-        "nombre": "Samsung Galaxy A54 5G 128GB — Negro",
-        "ciudad": "Lima",
-        "precio": 1199
-      },
-      "ig": {
-        "error": "ig container 400: The parameter video_url is required"
-      },
-      "fb": {
-        "videoId": "2467181697057454",
-        "permalink": "https://www.facebook.com/reel/2467181697057454",
-        "elapsedMs": 7831
-      }
-    },
-    {
-      "fecha": "2026-06-14T17:17:47.269Z",
-      "fechaPeru": "2026-06-14",
-      "product": {
-        "id": "faa152bc-5038-44fb-83ca-ca93a2cc95f9",
-        "nombre": "Sofá 2 cuerpos tela antimanchas gris Oxford",
-        "ciudad": "Lima",
-        "precio": 890
-      },
-      "ig": {
-        "error": "0x0.st 503: uploads disabled because it’s been almost nothing but AI botnet spam for the past few months. will be back with a few changes at some point. no ETA."
-      },
-      "fb": {
-        "videoId": "1034273592590427",
-        "permalink": "https://www.facebook.com/reel/1034273592590427",
-        "elapsedMs": 13678
-      }
-    },
-    {
-      "fecha": "2026-06-14T17:21:24.809Z",
-      "fechaPeru": "2026-06-14",
-      "product": {
-        "id": "a28de1f5-fe52-4382-b21a-e52e6cd036a9",
-        "nombre": "Retablo ayacuchano — Escena costumbrista",
-        "ciudad": "Ayacucho",
-        "precio": 150
-      },
-      "ig": {
-        "mediaId": "17894840436530744",
-        "containerId": "18125626576564725",
-        "permalink": "https://www.instagram.com/reel/DZkxCpujDeE/",
-        "elapsedMs": 71809
-      },
-      "fb": {
-        "videoId": "1560953108710024",
-        "permalink": "https://www.facebook.com/reel/1560953108710024",
-        "elapsedMs": 9255
-      }
-    },
-    {
-      "fecha": "2026-06-14T18:21:29.943Z",
-      "fechaPeru": "2026-06-14",
-      "product": {
-        "id": "a6a26730-79db-4615-b02f-9f22fb2cd6d9",
-        "nombre": "Polo de algodón pima peruano — Pack x3",
-        "ciudad": "Lima",
-        "precio": 65
-      },
-      "ig": {
-        "mediaId": "18408767017145635",
-        "containerId": "18125637391564725",
-        "permalink": "https://www.instagram.com/reel/DZk368TkrE_/",
-        "elapsedMs": 40673
-      },
-      "fb": {
-        "videoId": "1907019723325666",
-        "permalink": "https://www.facebook.com/reel/1907019723325666",
-        "elapsedMs": 10638
-      }
-    },
-    {
-      "fecha": "2026-06-15T17:59:57.652Z",
-      "fechaPeru": "2026-06-15",
-      "product": {
-        "id": "f6d3d48d-6fb5-4ac2-b2e9-da0b80040e79",
-        "nombre": "Quinua orgánica blanca Puno — 5 kg",
-        "ciudad": "Puno",
-        "precio": 45
-      },
-      "ig": {
-        "mediaId": "17875224465613437",
-        "containerId": "18125834386564725",
-        "permalink": "https://www.instagram.com/reel/DZnaPXUjgWQ/",
-        "elapsedMs": 37985
-      },
-      "fb": {
-        "videoId": "1630332329098646",
-        "permalink": "https://www.facebook.com/reel/1630332329098646",
-        "elapsedMs": 13777
-      }
-    },
-    {
-      "fecha": "2026-06-16T18:08:11.437Z",
-      "fechaPeru": "2026-06-16",
-      "product": {
-        "id": "a6a26730-79db-4615-b02f-9f22fb2cd6d9",
-        "nombre": "Polo de algodón pima peruano — Pack x3",
-        "ciudad": "Lima",
-        "precio": 65
-      },
-      "ig": {
-        "mediaId": "17974354733995291",
-        "containerId": "18126042844564725",
-        "permalink": "https://www.instagram.com/reel/DZp__I9Dh3O/",
-        "elapsedMs": 59794
-      },
-      "fb": {
-        "videoId": "1486118486078352",
-        "permalink": "https://www.facebook.com/reel/1486118486078352",
-        "elapsedMs": 11814
-      }
-    },
-    {
-      "fecha": "2026-06-17T16:41:44.746Z",
-      "fechaPeru": "2026-06-17",
-      "product": {
-        "id": "f6d3d48d-6fb5-4ac2-b2e9-da0b80040e79",
-        "nombre": "Quinua orgánica blanca Puno — 5 kg",
-        "ciudad": "Puno",
-        "precio": 45
-      },
-      "ig": {
-        "mediaId": "18070497119698148",
-        "containerId": "18126261907564725",
-        "permalink": "https://www.instagram.com/reel/DZsa4_LkQ3u/",
-        "elapsedMs": 32479
-      },
-      "fb": {
-        "videoId": "1007948141981748",
-        "permalink": "https://www.facebook.com/reel/1007948141981748",
-        "elapsedMs": 9842
-      }
-    },
-    {
-      "fecha": "2026-06-18T16:42:49.203Z",
-      "fechaPeru": "2026-06-18",
-      "product": {
-        "id": "4f45299d-7db1-41d8-8d74-cb8bc4640787",
-        "nombre": "Café especial Villa Rica 500 g — Molido",
-        "ciudad": "Pasco",
-        "precio": 35
-      },
-      "ig": {
-        "mediaId": "17974364637052934",
-        "containerId": "18126519952564725",
-        "permalink": "https://www.instagram.com/reel/DZu_yzGAV67/",
-        "elapsedMs": 35852
-      },
-      "fb": {
-        "videoId": "904479942688963",
-        "permalink": "https://www.facebook.com/reel/904479942688963",
-        "elapsedMs": 13808
-      }
-    },
-    {
-      "fecha": "2026-06-19T16:09:02.809Z",
-      "fechaPeru": "2026-06-19",
-      "product": {
-        "id": "a6a26730-79db-4615-b02f-9f22fb2cd6d9",
-        "nombre": "Polo de algodón pima peruano — Pack x3",
-        "ciudad": "Lima",
-        "precio": 65
-      },
-      "ig": {
-        "mediaId": "17887054155569838",
-        "containerId": "18126758404564725",
-        "permalink": "https://www.instagram.com/reel/DZxguyoHZe_/",
-        "elapsedMs": 33064
-      },
-      "fb": {
-        "videoId": "1392315189385834",
-        "permalink": "https://www.facebook.com/reel/1392315189385834",
-        "elapsedMs": 13249
-      }
-    },
-    {
-      "fecha": "2026-06-20T15:05:51.702Z",
-      "fechaPeru": "2026-06-20",
-      "product": {
-        "id": "f6d3d48d-6fb5-4ac2-b2e9-da0b80040e79",
-        "nombre": "Quinua orgánica blanca Puno — 5 kg",
-        "ciudad": "Puno",
-        "precio": 45
-      },
-      "ig": {
-        "mediaId": "18012657647715255",
-        "containerId": "18126999280564725",
-        "permalink": "https://www.instagram.com/reel/DZz-UHlFDTE/",
-        "elapsedMs": 27901
-      },
-      "fb": {
-        "videoId": "2010414969847183",
-        "permalink": "https://www.facebook.com/reel/2010414969847183",
-        "elapsedMs": 8385
-      }
-    },
-    {
-      "fecha": "2026-06-21T15:14:02.920Z",
-      "fechaPeru": "2026-06-21",
-      "product": {
-        "id": "9d8833c9-e109-4dcf-95ac-0a650f34385c",
-        "nombre": "Vestido bordado ayacuchano multicolor",
-        "ciudad": "Ayacucho",
-        "precio": 120
-      },
-      "ig": {
-        "mediaId": "17946814908196040",
-        "containerId": "18127286044564725",
-        "permalink": "https://www.instagram.com/reel/DZ2kB-uD8fX/",
-        "elapsedMs": 33316
-      },
-      "fb": {
-        "videoId": "1041773165105383",
-        "permalink": "https://www.facebook.com/reel/1041773165105383",
-        "elapsedMs": 12243
-      }
-    },
-    {
-      "fecha": "2026-06-22T17:42:56.763Z",
-      "fechaPeru": "2026-06-22",
-      "product": {
-        "id": "9d8833c9-e109-4dcf-95ac-0a650f34385c",
-        "nombre": "Vestido bordado ayacuchano multicolor",
-        "ciudad": "Ayacucho",
-        "precio": 120
-      },
-      "ig": {
-        "mediaId": "18096918542520576",
-        "containerId": "18127627903564725",
-        "permalink": "https://www.instagram.com/reel/DZ5Z3hbE3Cy/",
-        "elapsedMs": 32298
-      },
-      "fb": {
-        "videoId": "26924115730604630",
-        "permalink": "https://www.facebook.com/reel/26924115730604630",
-        "elapsedMs": 12120
-      }
-    },
-    {
-      "fecha": "2026-06-23T15:52:42.539Z",
-      "fechaPeru": "2026-06-23",
-      "product": {
-        "id": "1a3394c1-f45f-4312-8482-b79421abcaf2",
-        "nombre": "Cerámica Chulucanas — Jarrón decorativo grande",
-        "ciudad": "Piura",
-        "precio": 220
-      },
-      "ig": {
-        "mediaId": "17907427095262041",
-        "containerId": "18127877008564725",
-        "permalink": "https://www.instagram.com/reel/DZ7yCnajxoU/",
-        "elapsedMs": 38096
-      },
-      "fb": {
-        "videoId": "1026349013279165",
-        "permalink": "https://www.facebook.com/reel/1026349013279165",
-        "elapsedMs": 9982
-      }
-    },
-    {
-      "fecha": "2026-06-24T15:35:25.585Z",
-      "fechaPeru": "2026-06-24",
-      "product": {
-        "id": "a6a26730-79db-4615-b02f-9f22fb2cd6d9",
-        "nombre": "Polo de algodón pima peruano — Pack x3",
-        "ciudad": "Lima",
-        "precio": 65
-      },
-      "ig": {
-        "mediaId": "18127046458578190",
-        "containerId": "18128150677564725",
-        "permalink": "https://www.instagram.com/reel/DZ-U4YlGoDu/",
-        "elapsedMs": 24361
-      },
-      "fb": {
-        "videoId": "1655457812423085",
-        "permalink": "https://www.facebook.com/reel/1655457812423085",
-        "elapsedMs": 10366
-      }
-    },
-    {
-      "fecha": "2026-06-25T15:43:08.332Z",
-      "fechaPeru": "2026-06-25",
-      "product": {
-        "id": "79d0e769-b856-4de9-83ab-321266096a70",
-        "nombre": "Chompa de alpaca tejida a mano — Cusco",
-        "ciudad": "Cusco",
-        "precio": 85
-      },
-      "ig": {
-        "mediaId": "17870171538553997",
-        "containerId": "18128431324564725",
-        "permalink": "https://www.instagram.com/reel/DaA6ihfj7PZ/",
-        "elapsedMs": 39208
-      },
-      "fb": {
-        "videoId": "2223809095082814",
-        "permalink": "https://www.facebook.com/reel/2223809095082814",
-        "elapsedMs": 9739
-      }
-    },
-    {
-      "fecha": "2026-06-26T15:26:40.805Z",
-      "fechaPeru": "2026-06-26",
-      "product": {
-        "id": "1a3394c1-f45f-4312-8482-b79421abcaf2",
-        "nombre": "Cerámica Chulucanas — Jarrón decorativo grande",
-        "ciudad": "Piura",
-        "precio": 220
-      },
-      "ig": {
-        "mediaId": "18104250137012337",
-        "containerId": "18128733655564725",
-        "permalink": "https://www.instagram.com/reel/DaDdc2Mlwiw/",
-        "elapsedMs": 33601
-      },
-      "fb": {
-        "videoId": "1050619210753379",
-        "permalink": "https://www.facebook.com/reel/1050619210753379",
-        "elapsedMs": 11894
-      }
-    },
     {
       "fecha": "2026-06-27T14:47:23.898Z",
       "fechaPeru": "2026-06-27",
@@ -951,6 +621,312 @@
         "videoId": "1842892920007332",
         "permalink": "https://www.facebook.com/reel/1842892920007332",
         "elapsedMs": 7223
+      }
+    },
+    {
+      "fecha": "2026-08-01T14:29:07.640Z",
+      "fechaPeru": "2026-08-01",
+      "product": {
+        "id": "9d8833c9-e109-4dcf-95ac-0a650f34385c",
+        "nombre": "Vestido bordado ayacuchano multicolor",
+        "ciudad": "Ayacucho",
+        "precio": 120
+      },
+      "ig": {
+        "error": "ig container status=ERROR status=\"ERROR\""
+      },
+      "fb": {
+        "videoId": "1358644145703298",
+        "permalink": "https://www.facebook.com/reel/1358644145703298",
+        "elapsedMs": 8130
+      }
+    },
+    {
+      "fecha": "2026-08-02T14:39:13.770Z",
+      "fechaPeru": "2026-08-02",
+      "product": {
+        "id": "9d8833c9-e109-4dcf-95ac-0a650f34385c",
+        "nombre": "Vestido bordado ayacuchano multicolor",
+        "ciudad": "Ayacucho",
+        "precio": 120
+      },
+      "ig": {
+        "error": "ig container status=ERROR status=\"ERROR\""
+      },
+      "fb": {
+        "videoId": "1545400616425610",
+        "permalink": "https://www.facebook.com/reel/1545400616425610",
+        "elapsedMs": 18202
+      }
+    },
+    {
+      "fecha": "2026-08-03T15:46:25.184Z",
+      "fechaPeru": "2026-08-03",
+      "product": {
+        "id": "a6a26730-79db-4615-b02f-9f22fb2cd6d9",
+        "nombre": "Polo de algodón pima peruano — Pack x3",
+        "ciudad": "Lima",
+        "precio": 65
+      },
+      "ig": {
+        "error": "ig container status=ERROR status=\"ERROR\""
+      },
+      "fb": {
+        "videoId": "1034752966027610",
+        "permalink": "https://www.facebook.com/reel/1034752966027610",
+        "elapsedMs": 12036
+      }
+    },
+    {
+      "fecha": "2026-08-04T15:27:42.132Z",
+      "fechaPeru": "2026-08-04",
+      "product": {
+        "id": "1a3394c1-f45f-4312-8482-b79421abcaf2",
+        "nombre": "Cerámica Chulucanas — Jarrón decorativo grande",
+        "ciudad": "Piura",
+        "precio": 220
+      },
+      "ig": {
+        "error": "ig container status=ERROR status=\"ERROR\""
+      },
+      "fb": {
+        "videoId": "1056593106877533",
+        "permalink": "https://www.facebook.com/reel/1056593106877533",
+        "elapsedMs": 11505
+      }
+    },
+    {
+      "fecha": "2026-08-05T15:17:06.937Z",
+      "fechaPeru": "2026-08-05",
+      "product": {
+        "id": "0cf6af2c-0c1c-4b44-b070-478129251122",
+        "nombre": "Cacao puro en polvo Amazonas 1 kg — Orgánico",
+        "ciudad": "San Martín",
+        "precio": 28
+      },
+      "ig": {
+        "error": "ig container status=ERROR status=\"ERROR\""
+      },
+      "fb": {
+        "videoId": "1740317567306257",
+        "permalink": "https://www.facebook.com/reel/1740317567306257",
+        "elapsedMs": 7852
+      }
+    },
+    {
+      "fecha": "2026-08-06T15:22:08.829Z",
+      "fechaPeru": "2026-08-06",
+      "product": {
+        "id": "79d0e769-b856-4de9-83ab-321266096a70",
+        "nombre": "Chompa de alpaca tejida a mano — Cusco",
+        "ciudad": "Cusco",
+        "precio": 85
+      },
+      "ig": {
+        "error": "ig container status=ERROR status=\"ERROR\""
+      },
+      "fb": {
+        "videoId": "926245817164558",
+        "permalink": "https://www.facebook.com/reel/926245817164558",
+        "elapsedMs": 7940
+      }
+    },
+    {
+      "fecha": "2026-08-07T14:15:16.269Z",
+      "fechaPeru": "2026-08-07",
+      "product": {
+        "id": "1a3394c1-f45f-4312-8482-b79421abcaf2",
+        "nombre": "Cerámica Chulucanas — Jarrón decorativo grande",
+        "ciudad": "Piura",
+        "precio": 220
+      },
+      "ig": {
+        "error": "ig container status=ERROR status=\"ERROR\""
+      },
+      "fb": {
+        "videoId": "2084301902172362",
+        "permalink": "https://www.facebook.com/reel/2084301902172362",
+        "elapsedMs": 7773
+      }
+    },
+    {
+      "fecha": "2026-08-08T13:49:09.132Z",
+      "fechaPeru": "2026-08-08",
+      "product": {
+        "id": "4f45299d-7db1-41d8-8d74-cb8bc4640787",
+        "nombre": "Café especial Villa Rica 500 g — Molido",
+        "ciudad": "Pasco",
+        "precio": 35
+      },
+      "ig": {
+        "error": "ig container status=ERROR status=\"ERROR\""
+      },
+      "fb": {
+        "videoId": "1024654883736617",
+        "permalink": "https://www.facebook.com/reel/1024654883736617",
+        "elapsedMs": 13089
+      }
+    },
+    {
+      "fecha": "2026-08-09T13:53:59.094Z",
+      "fechaPeru": "2026-08-09",
+      "product": {
+        "id": "4f45299d-7db1-41d8-8d74-cb8bc4640787",
+        "nombre": "Café especial Villa Rica 500 g — Molido",
+        "ciudad": "Pasco",
+        "precio": 35
+      },
+      "ig": {
+        "error": "ig container status=ERROR status=\"ERROR\""
+      },
+      "fb": {
+        "videoId": "1567453804929020",
+        "permalink": "https://www.facebook.com/reel/1567453804929020",
+        "elapsedMs": 9402
+      }
+    },
+    {
+      "fecha": "2026-08-10T14:21:47.527Z",
+      "fechaPeru": "2026-08-10",
+      "product": {
+        "id": "1a3394c1-f45f-4312-8482-b79421abcaf2",
+        "nombre": "Cerámica Chulucanas — Jarrón decorativo grande",
+        "ciudad": "Piura",
+        "precio": 220
+      },
+      "ig": {
+        "error": "ig container status=ERROR status=\"ERROR\""
+      },
+      "fb": {
+        "videoId": "1070413022119644",
+        "permalink": "https://www.facebook.com/reel/1070413022119644",
+        "elapsedMs": 8860
+      }
+    },
+    {
+      "fecha": "2026-08-11T14:23:20.195Z",
+      "fechaPeru": "2026-08-11",
+      "product": {
+        "id": "4f45299d-7db1-41d8-8d74-cb8bc4640787",
+        "nombre": "Café especial Villa Rica 500 g — Molido",
+        "ciudad": "Pasco",
+        "precio": 35
+      },
+      "ig": {
+        "error": "ig container no llegó a FINISHED en 30 intentos"
+      },
+      "fb": {
+        "videoId": "1585812069740917",
+        "permalink": "https://www.facebook.com/reel/1585812069740917",
+        "elapsedMs": 8806
+      }
+    },
+    {
+      "fecha": "2026-08-12T14:23:49.469Z",
+      "fechaPeru": "2026-08-12",
+      "product": {
+        "id": "48a73792-c9cc-4dc6-b48a-b8d67997b97e",
+        "nombre": "Cuadro shipibo-conibo original 40×60 cm",
+        "ciudad": "Ucayali",
+        "precio": 180
+      },
+      "ig": {
+        "error": "ig container status=ERROR status=\"ERROR\""
+      },
+      "fb": {
+        "videoId": "1292188102838796",
+        "permalink": "https://www.facebook.com/reel/1292188102838796",
+        "elapsedMs": 11137
+      }
+    },
+    {
+      "fecha": "2026-08-13T14:24:09.213Z",
+      "fechaPeru": "2026-08-13",
+      "product": {
+        "id": "9d8833c9-e109-4dcf-95ac-0a650f34385c",
+        "nombre": "Vestido bordado ayacuchano multicolor",
+        "ciudad": "Ayacucho",
+        "precio": 120
+      },
+      "ig": {
+        "error": "ig container status=ERROR status=\"ERROR\""
+      },
+      "fb": {
+        "videoId": "1433257858650369",
+        "permalink": "https://www.facebook.com/reel/1433257858650369",
+        "elapsedMs": 7429
+      }
+    },
+    {
+      "fecha": "2026-08-15T13:32:28.892Z",
+      "fechaPeru": "2026-08-15",
+      "product": {
+        "id": "f6d3d48d-6fb5-4ac2-b2e9-da0b80040e79",
+        "nombre": "Quinua orgánica blanca Puno — 5 kg",
+        "ciudad": "Puno",
+        "precio": 45
+      },
+      "ig": {
+        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Saturday, 15-Aug-26 06:32:19 PDT."
+      },
+      "fb": {
+        "videoId": "1024007403793419",
+        "permalink": "https://www.facebook.com/reel/1024007403793419",
+        "elapsedMs": 9517
+      }
+    },
+    {
+      "fecha": "2026-08-16T13:34:18.624Z",
+      "fechaPeru": "2026-08-16",
+      "product": {
+        "id": "48a73792-c9cc-4dc6-b48a-b8d67997b97e",
+        "nombre": "Cuadro shipibo-conibo original 40×60 cm",
+        "ciudad": "Ucayali",
+        "precio": 180
+      },
+      "ig": {
+        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Sunday, 16-Aug-26 06:34:09 PDT."
+      },
+      "fb": {
+        "videoId": "4568857373393388",
+        "permalink": "https://www.facebook.com/reel/4568857373393388",
+        "elapsedMs": 8977
+      }
+    },
+    {
+      "fecha": "2026-08-17T13:41:59.156Z",
+      "fechaPeru": "2026-08-17",
+      "product": {
+        "id": "9d8833c9-e109-4dcf-95ac-0a650f34385c",
+        "nombre": "Vestido bordado ayacuchano multicolor",
+        "ciudad": "Ayacucho",
+        "precio": 120
+      },
+      "ig": {
+        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Monday, 17-Aug-26 06:41:51 PDT."
+      },
+      "fb": {
+        "videoId": "1379221523542518",
+        "permalink": "https://www.facebook.com/reel/1379221523542518",
+        "elapsedMs": 7702
+      }
+    },
+    {
+      "fecha": "2026-08-18T13:44:42.863Z",
+      "fechaPeru": "2026-08-18",
+      "product": {
+        "id": "0cf6af2c-0c1c-4b44-b070-478129251122",
+        "nombre": "Cacao puro en polvo Amazonas 1 kg — Orgánico",
+        "ciudad": "San Martín",
+        "precio": 28
+      },
+      "ig": {
+        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Tuesday, 18-Aug-26 06:44:32 PDT."
+      },
+      "fb": {
+        "videoId": "1276771591127031",
+        "permalink": "https://www.facebook.com/reel/1276771591127031",
+        "elapsedMs": 9848
       }
     }
   ]
