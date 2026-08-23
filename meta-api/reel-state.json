@@ -1,25 +1,7 @@
 {
-  "lastReelDate": "2026-08-22",
-  "totalReels": 70,
+  "lastReelDate": "2026-08-23",
+  "totalReels": 71,
   "history": [
-    {
-      "fecha": "2026-07-01T15:45:55.567Z",
-      "fechaPeru": "2026-07-01",
-      "product": {
-        "id": "9d8833c9-e109-4dcf-95ac-0a650f34385c",
-        "nombre": "Vestido bordado ayacuchano multicolor",
-        "ciudad": "Ayacucho",
-        "precio": 120
-      },
-      "ig": {
-        "error": "fetch failed"
-      },
-      "fb": {
-        "videoId": "939324555233923",
-        "permalink": "https://www.facebook.com/reel/939324555233923",
-        "elapsedMs": 14212
-      }
-    },
     {
       "fecha": "2026-07-02T15:19:55.707Z",
       "fechaPeru": "2026-07-02",
@@ -915,6 +897,24 @@
         "videoId": "2422375321584062",
         "permalink": "https://www.facebook.com/reel/2422375321584062",
         "elapsedMs": 11661
+      }
+    },
+    {
+      "fecha": "2026-08-23T13:34:20.287Z",
+      "fechaPeru": "2026-08-23",
+      "product": {
+        "id": "79d0e769-b856-4de9-83ab-321266096a70",
+        "nombre": "Chompa de alpaca tejida a mano — Cusco",
+        "ciudad": "Cusco",
+        "precio": 85
+      },
+      "ig": {
+        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Sunday, 23-Aug-26 06:34:11 PDT."
+      },
+      "fb": {
+        "videoId": "1679016419835262",
+        "permalink": "https://www.facebook.com/reel/1679016419835262",
+        "elapsedMs": 9227
       }
     }
   ]
