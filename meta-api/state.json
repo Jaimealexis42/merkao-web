@@ -1,35 +1,8 @@
 {
-  "lastIndex": 1,
-  "lastPostedDate": "2026-08-24",
-  "totalPosts": 78,
+  "lastIndex": 2,
+  "lastPostedDate": "2026-08-25",
+  "totalPosts": 79,
   "history": [
-    {
-      "fecha": "2026-07-03T15:13:46.175Z",
-      "fechaPeru": "2026-07-03",
-      "variantIndex": 1,
-      "variantId": 2,
-      "enfoque": "Para la que recién empieza",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122125828605345830",
-      "fbPhotoId": "122125828581345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122125828605345830",
-      "image": {
-        "source": "unsplash",
-        "query": "paisaje peru",
-        "theme": "general",
-        "photo_id": "7t1w9Sk056Q",
-        "photo_url": "https://images.unsplash.com/photo-1723432886289-b9f1f2cebe85?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwyMHx8cGFpc2FqZSUyMHBlcnV8ZW58MXwwfHx8MTc4MzA5MTU5N3ww&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Gabriel Istvan",
-        "photographer_url": "https://unsplash.com/@gabrielistvan_fotografia",
-        "alt": "A man standing on top of a mountain next to a river"
-      },
-      "ig": {
-        "mediaId": "18122050072701436",
-        "containerId": "18131024611564725",
-        "permalink": "https://www.instagram.com/p/DaVdmJeHFfN/",
-        "elapsedMs": 10262
-      }
-    },
     {
       "fecha": "2026-07-04T14:40:15.620Z",
       "fechaPeru": "2026-07-04",
@@ -1304,6 +1277,30 @@
       },
       "ig": {
         "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Monday, 24-Aug-26 06:53:46 PDT."
+      }
+    },
+    {
+      "fecha": "2026-08-25T13:52:29.789Z",
+      "fechaPeru": "2026-08-25",
+      "variantIndex": 2,
+      "variantId": 3,
+      "enfoque": "Artesana / productora regional",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122139858447345830",
+      "fbPhotoId": "122139858417345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122139858447345830",
+      "image": {
+        "source": "unsplash",
+        "query": "weaving peru",
+        "theme": "artesania",
+        "photo_id": "JU04xdXUTV4",
+        "photo_url": "https://images.unsplash.com/photo-1589682449071-d13c27d1c298?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwzfHx3ZWF2aW5nJTIwcGVydXxlbnwxfDB8fHwxNzg3NjY1OTQzfDA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Deb Dowd",
+        "photographer_url": "https://unsplash.com/@fin777",
+        "alt": "woman in blue and red dress wearing red and white hat"
+      },
+      "ig": {
+        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Tuesday, 25-Aug-26 06:52:29 PDT."
       }
     }
   ]
