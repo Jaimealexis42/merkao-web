@@ -1,25 +1,7 @@
 {
-  "lastReelDate": "2026-08-28",
-  "totalReels": 76,
+  "lastReelDate": "2026-08-29",
+  "totalReels": 77,
   "history": [
-    {
-      "fecha": "2026-07-07T15:45:50.284Z",
-      "fechaPeru": "2026-07-07",
-      "product": {
-        "id": "9d8833c9-e109-4dcf-95ac-0a650f34385c",
-        "nombre": "Vestido bordado ayacuchano multicolor",
-        "ciudad": "Ayacucho",
-        "precio": 120
-      },
-      "ig": {
-        "error": "ig container status=ERROR status=\"ERROR\""
-      },
-      "fb": {
-        "videoId": "1072503565103207",
-        "permalink": "https://www.facebook.com/reel/1072503565103207",
-        "elapsedMs": 12026
-      }
-    },
     {
       "fecha": "2026-07-09T15:59:32.934Z",
       "fechaPeru": "2026-07-09",
@@ -900,6 +882,24 @@
         "videoId": "1045047901671208",
         "permalink": "https://www.facebook.com/reel/1045047901671208",
         "elapsedMs": 7916
+      }
+    },
+    {
+      "fecha": "2026-08-29T17:01:58.951Z",
+      "fechaPeru": "2026-08-29",
+      "product": {
+        "id": "9d8833c9-e109-4dcf-95ac-0a650f34385c",
+        "nombre": "Vestido bordado ayacuchano multicolor",
+        "ciudad": "Ayacucho",
+        "precio": 120
+      },
+      "ig": {
+        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Saturday, 29-Aug-26 10:01:50 PDT."
+      },
+      "fb": {
+        "videoId": "3178266292563278",
+        "permalink": "https://www.facebook.com/reel/3178266292563278",
+        "elapsedMs": 8325
       }
     }
   ]

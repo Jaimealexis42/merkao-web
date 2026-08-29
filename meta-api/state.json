@@ -1,32 +1,8 @@
 {
-  "lastIndex": 5,
-  "lastPostedDate": "2026-08-28",
-  "totalPosts": 82,
+  "lastIndex": 6,
+  "lastPostedDate": "2026-08-29",
+  "totalPosts": 83,
   "history": [
-    {
-      "fecha": "2026-07-07T15:44:38.019Z",
-      "fechaPeru": "2026-07-07",
-      "variantIndex": 5,
-      "variantId": 6,
-      "enfoque": "Tip de venta + mención natural",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122126861865345830",
-      "fbPhotoId": "122126861841345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122126861865345830",
-      "image": {
-        "source": "unsplash",
-        "query": "coffee plantation peru",
-        "theme": "cafe",
-        "photo_id": "d4XGsVnkiXo",
-        "photo_url": "https://images.unsplash.com/photo-1749062149286-01111a8108f9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxOXx8Y29mZmVlJTIwcGxhbnRhdGlvbiUyMHBlcnV8ZW58MXwwfHx8MTc4MzQzOTA2MHww&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Sven Träger",
-        "photographer_url": "https://unsplash.com/@sven87",
-        "alt": "Green fields nestled in a valley under a cloudy sky."
-      },
-      "ig": {
-        "error": "container 400: The aspect ratio is not supported."
-      }
-    },
     {
       "fecha": "2026-07-09T15:58:39.052Z",
       "fechaPeru": "2026-07-09",
@@ -1292,6 +1268,30 @@
       },
       "ig": {
         "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Friday, 28-Aug-26 15:56:31 PDT."
+      }
+    },
+    {
+      "fecha": "2026-08-29T17:01:21.377Z",
+      "fechaPeru": "2026-08-29",
+      "variantIndex": 6,
+      "variantId": 7,
+      "enfoque": "Invitación corta y cálida",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122140693413345830",
+      "fbPhotoId": "122140693389345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122140693413345830",
+      "image": {
+        "source": "unsplash",
+        "query": "ropa colorida peru",
+        "theme": "moda",
+        "photo_id": "Nlf7-w03EVU",
+        "photo_url": "https://images.unsplash.com/photo-1589150186133-ceba5b253151?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxM3x8cm9wYSUyMGNvbG9yaWRhJTIwcGVydXxlbnwxfDB8fHwxNzg4MDIyODc1fDA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Miguel Angel Mamani M.",
+        "photographer_url": "https://unsplash.com/@miguelsouth",
+        "alt": "people in traditional dress walking on street during daytime"
+      },
+      "ig": {
+        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Saturday, 29-Aug-26 10:01:21 PDT."
       }
     }
   ]
