@@ -1,35 +1,8 @@
 {
-  "lastIndex": 6,
-  "lastPostedDate": "2026-08-29",
-  "totalPosts": 83,
+  "lastIndex": 0,
+  "lastPostedDate": "2026-08-30",
+  "totalPosts": 84,
   "history": [
-    {
-      "fecha": "2026-07-09T15:58:39.052Z",
-      "fechaPeru": "2026-07-09",
-      "variantIndex": 6,
-      "variantId": 7,
-      "enfoque": "Invitación corta y cálida",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122127658389345830",
-      "fbPhotoId": "122127658359345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122127658389345830",
-      "image": {
-        "source": "unsplash",
-        "query": "ropa colorida peru",
-        "theme": "moda",
-        "photo_id": "Sv_ZXYB6azs",
-        "photo_url": "https://images.unsplash.com/photo-1759354776662-16b2448225a7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHw5fHxyb3BhJTIwY29sb3JpZGElMjBwZXJ1fGVufDF8MHx8fDE3ODM2MTI2OTh8MA&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Gustavo Leighton",
-        "photographer_url": "https://unsplash.com/@g_leighton",
-        "alt": "Woman in traditional andean clothing under a blue sky."
-      },
-      "ig": {
-        "mediaId": "17918021184409564",
-        "containerId": "18133102681564725",
-        "permalink": "https://www.instagram.com/p/Dak_gANoBlM/",
-        "elapsedMs": 11399
-      }
-    },
     {
       "fecha": "2026-07-10T15:33:27.974Z",
       "fechaPeru": "2026-07-10",
@@ -1292,6 +1265,30 @@
       },
       "ig": {
         "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Saturday, 29-Aug-26 10:01:21 PDT."
+      }
+    },
+    {
+      "fecha": "2026-08-30T17:14:46.807Z",
+      "fechaPeru": "2026-08-30",
+      "variantIndex": 0,
+      "variantId": 1,
+      "enfoque": "Comparativa con números",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122140874589345830",
+      "fbPhotoId": "122140874541345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122140874589345830",
+      "image": {
+        "source": "unsplash",
+        "query": "paisaje peru",
+        "theme": "general",
+        "photo_id": "G9-g7Iy79Cs",
+        "photo_url": "https://images.unsplash.com/photo-1725413529942-dbfed487e580?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxOHx8cGFpc2FqZSUyMHBlcnV8ZW58MXwwfHx8MTc4ODExMDA4MHww&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Josep Garip",
+        "photographer_url": "https://unsplash.com/@josep_garip",
+        "alt": "A view of a roller coaster from the top of a hill"
+      },
+      "ig": {
+        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Sunday, 30-Aug-26 10:14:46 PDT."
       }
     }
   ]
