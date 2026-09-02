@@ -1,35 +1,8 @@
 {
-  "lastIndex": 2,
-  "lastPostedDate": "2026-09-01",
-  "totalPosts": 86,
+  "lastIndex": 3,
+  "lastPostedDate": "2026-09-02",
+  "totalPosts": 87,
   "history": [
-    {
-      "fecha": "2026-07-12T14:27:20.452Z",
-      "fechaPeru": "2026-07-12",
-      "variantIndex": 2,
-      "variantId": 3,
-      "enfoque": "Artesana / productora regional",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122129263749345830",
-      "fbPhotoId": "122129263701345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122129263749345830",
-      "image": {
-        "source": "unsplash",
-        "query": "weaving peru",
-        "theme": "artesania",
-        "photo_id": "3cax0qcYQ8s",
-        "photo_url": "https://images.unsplash.com/photo-1631554240706-ab68578bc6ac?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxMHx8d2VhdmluZyUyMHBlcnV8ZW58MXwwfHx8MTc4Mzg2NjQyM3ww&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Neto Torres",
-        "photographer_url": "https://unsplash.com/@torres82",
-        "alt": "a man riding a bike with a colorful blanket on the back of it"
-      },
-      "ig": {
-        "mediaId": "17947050195216054",
-        "containerId": "18133930390564725",
-        "permalink": "https://www.instagram.com/p/DasjcCGmmeN/",
-        "elapsedMs": 9948
-      }
-    },
     {
       "fecha": "2026-07-13T15:43:16.302Z",
       "fechaPeru": "2026-07-13",
@@ -1283,6 +1256,30 @@
       },
       "ig": {
         "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Tuesday, 01-Sep-26 10:14:04 PDT."
+      }
+    },
+    {
+      "fecha": "2026-09-02T17:04:35.351Z",
+      "fechaPeru": "2026-09-02",
+      "variantIndex": 3,
+      "variantId": 4,
+      "enfoque": "Pregunta abierta a la comunidad",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122141449743345830",
+      "fbPhotoId": "122141449713345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122141449743345830",
+      "image": {
+        "source": "unsplash",
+        "query": "paisaje peru",
+        "theme": "general",
+        "photo_id": "vZ9SVXGqhgg",
+        "photo_url": "https://images.unsplash.com/photo-1728572323998-a72cbf10c0ff?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxMnx8cGFpc2FqZSUyMHBlcnV8ZW58MXwwfHx8MTc4ODM2ODY2N3ww&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Jhon Aldo Nuñez H.",
+        "photographer_url": "https://unsplash.com/@jhonaldo23",
+        "alt": "A large circular structure in the middle of a field"
+      },
+      "ig": {
+        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Wednesday, 02-Sep-26 10:04:35 PDT."
       }
     }
   ]
