@@ -1,35 +1,8 @@
 {
-  "lastIndex": 3,
-  "lastPostedDate": "2026-09-02",
-  "totalPosts": 87,
+  "lastIndex": 4,
+  "lastPostedDate": "2026-09-03",
+  "totalPosts": 88,
   "history": [
-    {
-      "fecha": "2026-07-13T15:43:16.302Z",
-      "fechaPeru": "2026-07-13",
-      "variantIndex": 3,
-      "variantId": 4,
-      "enfoque": "Pregunta abierta a la comunidad",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122129689137345830",
-      "fbPhotoId": "122129689107345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122129689137345830",
-      "image": {
-        "source": "unsplash",
-        "query": "paisaje peru",
-        "theme": "general",
-        "photo_id": "sQHSqHC3yl8",
-        "photo_url": "https://images.unsplash.com/photo-1580530719779-9492fd167363?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHw2fHxwYWlzYWplJTIwcGVydXxlbnwxfDB8fHwxNzgzOTU3Mzc2fDA&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Eduardo Garcia",
-        "photographer_url": "https://unsplash.com/@eduardoxxvlll",
-        "alt": "silhouette of mountain under blue sky and white clouds during daytime"
-      },
-      "ig": {
-        "mediaId": "18605235700023429",
-        "containerId": "18134255653564725",
-        "permalink": "https://www.instagram.com/p/DavQ7HdINiK/",
-        "elapsedMs": 9196
-      }
-    },
     {
       "fecha": "2026-07-14T14:54:36.638Z",
       "fechaPeru": "2026-07-14",
@@ -1280,6 +1253,30 @@
       },
       "ig": {
         "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Wednesday, 02-Sep-26 10:04:35 PDT."
+      }
+    },
+    {
+      "fecha": "2026-09-03T16:58:08.796Z",
+      "fechaPeru": "2026-09-03",
+      "variantIndex": 4,
+      "variantId": 5,
+      "enfoque": "Testimonio en primera persona",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122141629557345830",
+      "fbPhotoId": "122141629533345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122141629557345830",
+      "image": {
+        "source": "unsplash",
+        "query": "peruvian market fruits",
+        "theme": "alimentos",
+        "photo_id": "WSsEj4oqXWo",
+        "photo_url": "https://images.unsplash.com/photo-1760726361439-4afaa0d26808?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxfHxwZXJ1dmlhbiUyMG1hcmtldCUyMGZydWl0c3xlbnwxfDB8fHwxNzg4NDU0NjgwfDA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Darya Luganskaya",
+        "photographer_url": "https://unsplash.com/@dlugansky",
+        "alt": "Street vendor with drinks and snacks for sale"
+      },
+      "ig": {
+        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Thursday, 03-Sep-26 09:58:08 PDT."
       }
     }
   ]
