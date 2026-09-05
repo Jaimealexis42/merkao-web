@@ -1,25 +1,7 @@
 {
-  "lastReelDate": "2026-09-04",
-  "totalReels": 83,
+  "lastReelDate": "2026-09-05",
+  "totalReels": 84,
   "history": [
-    {
-      "fecha": "2026-07-15T14:54:41.566Z",
-      "fechaPeru": "2026-07-15",
-      "product": {
-        "id": "a6a26730-79db-4615-b02f-9f22fb2cd6d9",
-        "nombre": "Polo de algodón pima peruano — Pack x3",
-        "ciudad": "Lima",
-        "precio": 65
-      },
-      "ig": {
-        "error": "ig container status=ERROR status=\"ERROR\""
-      },
-      "fb": {
-        "videoId": "1048459181194929",
-        "permalink": "https://www.facebook.com/reel/1048459181194929",
-        "elapsedMs": 16576
-      }
-    },
     {
       "fecha": "2026-07-16T15:05:41.089Z",
       "fechaPeru": "2026-07-16",
@@ -900,6 +882,24 @@
         "videoId": "1581227793502228",
         "permalink": "https://www.facebook.com/reel/1581227793502228",
         "elapsedMs": 12400
+      }
+    },
+    {
+      "fecha": "2026-09-05T15:51:28.667Z",
+      "fechaPeru": "2026-09-05",
+      "product": {
+        "id": "f6d3d48d-6fb5-4ac2-b2e9-da0b80040e79",
+        "nombre": "Quinua orgánica blanca Puno — 5 kg",
+        "ciudad": "Puno",
+        "precio": 45
+      },
+      "ig": {
+        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Saturday, 05-Sep-26 08:51:21 PDT."
+      },
+      "fb": {
+        "videoId": "1353096439914058",
+        "permalink": "https://www.facebook.com/reel/1353096439914058",
+        "elapsedMs": 7332
       }
     }
   ]

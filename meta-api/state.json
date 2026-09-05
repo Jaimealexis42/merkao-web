@@ -1,35 +1,8 @@
 {
-  "lastIndex": 5,
-  "lastPostedDate": "2026-09-04",
-  "totalPosts": 89,
+  "lastIndex": 6,
+  "lastPostedDate": "2026-09-05",
+  "totalPosts": 90,
   "history": [
-    {
-      "fecha": "2026-07-15T14:53:25.914Z",
-      "fechaPeru": "2026-07-15",
-      "variantIndex": 5,
-      "variantId": 6,
-      "enfoque": "Tip de venta + mención natural",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122130695469345830",
-      "fbPhotoId": "122130695427345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122130695469345830",
-      "image": {
-        "source": "unsplash",
-        "query": "coffee plantation peru",
-        "theme": "cafe",
-        "photo_id": "VSAM2gCbTDo",
-        "photo_url": "https://images.unsplash.com/photo-1587452034896-f728550a02b3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxN3x8Y29mZmVlJTIwcGxhbnRhdGlvbiUyMHBlcnV8ZW58MXwwfHx8MTc4NDEyNzE4OHww&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Zach Kirby",
-        "photographer_url": "https://unsplash.com/@kirbyzach93",
-        "alt": "green grass field under white clouds during daytime"
-      },
-      "ig": {
-        "mediaId": "18134463736597044",
-        "containerId": "18134718454564725",
-        "permalink": "https://www.instagram.com/p/Da0Uz5DlnMN/",
-        "elapsedMs": 8681
-      }
-    },
     {
       "fecha": "2026-07-16T15:04:35.988Z",
       "fechaPeru": "2026-07-16",
@@ -1274,6 +1247,30 @@
       },
       "ig": {
         "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Friday, 04-Sep-26 09:47:07 PDT."
+      }
+    },
+    {
+      "fecha": "2026-09-05T15:50:57.726Z",
+      "fechaPeru": "2026-09-05",
+      "variantIndex": 6,
+      "variantId": 7,
+      "enfoque": "Invitación corta y cálida",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122142072849345830",
+      "fbPhotoId": "122142072825345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122142072849345830",
+      "image": {
+        "source": "unsplash",
+        "query": "ropa colorida peru",
+        "theme": "moda",
+        "photo_id": "57g5bfFhhFM",
+        "photo_url": "https://images.unsplash.com/photo-1553550491-0895a24ffdac?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxM3x8cm9wYSUyMGNvbG9yaWRhJTIwcGVydXxlbnwxfDB8fHwxNzg4NjIzNDUxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Jeison Higuita",
+        "photographer_url": "https://unsplash.com/@jeison",
+        "alt": "women wearing white and yellow dress"
+      },
+      "ig": {
+        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Saturday, 05-Sep-26 08:50:57 PDT."
       }
     }
   ]
