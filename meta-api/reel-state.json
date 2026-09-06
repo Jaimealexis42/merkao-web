@@ -1,25 +1,7 @@
 {
-  "lastReelDate": "2026-09-05",
-  "totalReels": 84,
+  "lastReelDate": "2026-09-06",
+  "totalReels": 85,
   "history": [
-    {
-      "fecha": "2026-07-16T15:05:41.089Z",
-      "fechaPeru": "2026-07-16",
-      "product": {
-        "id": "a6a26730-79db-4615-b02f-9f22fb2cd6d9",
-        "nombre": "Polo de algodón pima peruano — Pack x3",
-        "ciudad": "Lima",
-        "precio": 65
-      },
-      "ig": {
-        "error": "ig container status=ERROR status=\"ERROR\""
-      },
-      "fb": {
-        "videoId": "27102642199417823",
-        "permalink": "https://www.facebook.com/reel/27102642199417823",
-        "elapsedMs": 7972
-      }
-    },
     {
       "fecha": "2026-07-17T14:46:17.671Z",
       "fechaPeru": "2026-07-17",
@@ -900,6 +882,24 @@
         "videoId": "1353096439914058",
         "permalink": "https://www.facebook.com/reel/1353096439914058",
         "elapsedMs": 7332
+      }
+    },
+    {
+      "fecha": "2026-09-06T16:02:00.707Z",
+      "fechaPeru": "2026-09-06",
+      "product": {
+        "id": "4f45299d-7db1-41d8-8d74-cb8bc4640787",
+        "nombre": "Café especial Villa Rica 500 g — Molido",
+        "ciudad": "Pasco",
+        "precio": 35
+      },
+      "ig": {
+        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Sunday, 06-Sep-26 09:01:53 PDT."
+      },
+      "fb": {
+        "videoId": "2200677110482629",
+        "permalink": "https://www.facebook.com/reel/2200677110482629",
+        "elapsedMs": 6740
       }
     }
   ]
