@@ -6,8 +6,10 @@
 
 const ADMIN_EMAIL_LIST = ['alexisaranap21@gmail.com'] as const
 
-/** Email al que se envían las notificaciones de soporte (primer admin del listado). */
-export const ADMIN_NOTIFY_EMAIL: string = ADMIN_EMAIL_LIST[0]
+// Correo de la marca. Separado del guard de acceso a propósito:
+//   - Los vendedores solo ven esta dirección, nunca el correo personal del admin.
+//   - Coincide con GMAIL_USER (remitente SMTP) para que reply-to sea consistente.
+export const ADMIN_NOTIFY_EMAIL = 'merkao.org@gmail.com'
 
 const ADMIN_EMAILS: ReadonlySet<string> = new Set(
   ADMIN_EMAIL_LIST.map((e) => e.toLowerCase()),
