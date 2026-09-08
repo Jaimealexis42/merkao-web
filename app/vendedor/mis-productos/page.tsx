@@ -1,10 +1,13 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/useAuth'
 import { getPct } from '@/lib/comisiones'
 import { fmt } from '@/lib/precios'
 import { Icon } from '@/lib/icons'
+
+const MAX_FOTOS = 4
+const MAX_MB    = 5
 
 type Producto = {
   id: string
@@ -41,6 +44,14 @@ export default function MisProductos() {
   const [busqueda, setBusqueda]     = useState('')
   const [eliminando, setEliminando] = useState<string | null>(null)
 
+  // Subida de fotos para productos existentes
+  const fotosFileRef                          = useRef<HTMLInputElement>(null)
+  const [fotosId, setFotosId]                 = useState<string | null>(null)
+  const [fotosFiles, setFotosFiles]           = useState<File[]>([])
+  const [fotosPreviews, setFotosPreviews]     = useState<string[]>([])
+  const [subiendo, setSubiendo]               = useState(false)
+  const [fotosError, setFotosError]           = useState('')
+
   const cargarProductos = async (vendedorId: string) => {
     setLoading(true)
     setError('')
@@ -74,6 +85,78 @@ export default function MisProductos() {
         prev.map((p) => (p.id === id ? { ...p, estado: nuevoEstado } : p))
       )
     }
+  }
+
+  const abrirFotos = (id: string) => {
+    fotosPreviews.forEach((u) => URL.revokeObjectURL(u))
+    setFotosId(id)
+    setFotosFiles([])
+    setFotosPreviews([])
+    setFotosError('')
+  }
+
+  const cerrarFotos = () => {
+    fotosPreviews.forEach((u) => URL.revokeObjectURL(u))
+    setFotosId(null)
+    setFotosFiles([])
+    setFotosPreviews([])
+    setFotosError('')
+  }
+
+  const handleFotosPick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const picked = Array.from(e.target.files ?? [])
+    if (!picked.length) return
+    const combined = [...fotosFiles, ...picked].slice(0, MAX_FOTOS)
+    const valid = combined.filter((f) => f.size <= MAX_MB * 1024 * 1024)
+    setFotosError(valid.length < combined.length ? `Algunas fotos superan ${MAX_MB} MB y se ignoraron.` : '')
+    const previews = valid.map((f) => URL.createObjectURL(f))
+    setFotosFiles(valid)
+    setFotosPreviews(previews)
+    if (fotosFileRef.current) fotosFileRef.current.value = ''
+  }
+
+  const removeFoto = (idx: number) => {
+    URL.revokeObjectURL(fotosPreviews[idx])
+    setFotosFiles((prev) => prev.filter((_, i) => i !== idx))
+    setFotosPreviews((prev) => prev.filter((_, i) => i !== idx))
+  }
+
+  const subirFotos = async () => {
+    if (!user || !fotosId || fotosFiles.length === 0) return
+    setSubiendo(true)
+    setFotosError('')
+    const urls: string[] = []
+    for (const file of fotosFiles) {
+      const ext  = file.name.split('.').pop()?.toLowerCase() ?? 'jpg'
+      const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+      const { error: upErr } = await supabase.storage
+        .from('productos')
+        .upload(path, file, { contentType: file.type })
+      if (upErr) { console.error('[mis-productos] upload:', upErr); continue }
+      const { data } = supabase.storage.from('productos').getPublicUrl(path)
+      urls.push(data.publicUrl)
+    }
+    if (urls.length === 0) {
+      setFotosError('No se pudo subir ninguna foto. Verifica que el bucket "productos" exista en Supabase Storage.')
+      setSubiendo(false)
+      return
+    }
+    const productoActual = productos.find((p) => p.id === fotosId)
+    const actuales = productoActual?.imagenes ?? []
+    const nuevas   = [...actuales, ...urls].slice(0, MAX_FOTOS)
+    const { error: updErr } = await supabase
+      .from('productos')
+      .update({ imagenes: nuevas })
+      .eq('id', fotosId)
+    if (updErr) {
+      setFotosError(`Error al guardar: ${updErr.message}`)
+    } else {
+      setProductos((prev) =>
+        prev.map((p) => p.id === fotosId ? { ...p, imagenes: nuevas } : p)
+      )
+      cerrarFotos()
+    }
+    setSubiendo(false)
   }
 
   const eliminarProducto = async (id: string) => {
@@ -163,6 +246,90 @@ export default function MisProductos() {
         </div>
       )}
 
+      {/* Input oculto para fotos */}
+      <input
+        ref={fotosFileRef}
+        type="file"
+        accept="image/jpeg,image/jpg,image/png,image/webp"
+        multiple
+        onChange={handleFotosPick}
+        style={{ display: 'none' }}
+      />
+
+      {/* Panel de subida de fotos */}
+      {fotosId && (
+        <div className="mk-vpanel" style={{ borderColor: 'var(--brand)', background: 'var(--brand-tint, #F0F4FF)' }}>
+          <div className="mk-vpanel-head">
+            <div>
+              <h3>Fotos del producto</h3>
+              <span className="mk-vpanel-sub">
+                {productos.find((p) => p.id === fotosId)?.nombre} · hasta {MAX_FOTOS} fotos · máx. {MAX_MB} MB c/u
+              </span>
+            </div>
+            <button onClick={cerrarFotos} className="mk-btn mk-btn-ghost" style={{ fontSize: 13 }}>
+              Cancelar
+            </button>
+          </div>
+
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-start', marginBottom: 14 }}>
+            {fotosPreviews.map((src, i) => (
+              <div
+                key={i}
+                style={{ position: 'relative', width: 90, height: 90, borderRadius: 10, overflow: 'hidden', border: '2px solid var(--line)', flexShrink: 0 }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <button
+                  type="button"
+                  onClick={() => removeFoto(i)}
+                  style={{
+                    position: 'absolute', top: 3, right: 3,
+                    background: 'rgba(0,0,0,.55)', border: 'none', borderRadius: '50%',
+                    width: 20, height: 20, cursor: 'pointer', display: 'grid', placeItems: 'center',
+                    color: '#fff', fontSize: 13, lineHeight: 1,
+                  }}
+                  aria-label="Quitar"
+                >×</button>
+                {i === 0 && (
+                  <span style={{ position: 'absolute', bottom: 3, left: 3, background: 'rgba(0,0,0,.55)', color: '#fff', fontSize: 9, fontWeight: 800, padding: '2px 4px', borderRadius: 3 }}>
+                    PRINCIPAL
+                  </span>
+                )}
+              </div>
+            ))}
+            {fotosPreviews.length < MAX_FOTOS && (
+              <button
+                type="button"
+                onClick={() => fotosFileRef.current?.click()}
+                style={{
+                  width: 90, height: 90, borderRadius: 10,
+                  border: '2px dashed var(--line-2)', background: 'var(--bg)',
+                  cursor: 'pointer', display: 'flex', flexDirection: 'column',
+                  alignItems: 'center', justifyContent: 'center', gap: 4,
+                  color: 'var(--muted-2)', flexShrink: 0,
+                }}
+              >
+                <Icon name="plus" size={20} stroke={1.7} />
+                <span style={{ fontSize: 10 }}>Agregar</span>
+              </button>
+            )}
+          </div>
+
+          {fotosError && (
+            <p style={{ fontSize: 13, color: '#B91C1C', marginBottom: 10 }}>{fotosError}</p>
+          )}
+
+          <button
+            onClick={subirFotos}
+            disabled={subiendo || fotosFiles.length === 0}
+            className="mk-btn mk-btn-primary"
+            style={{ fontSize: 13 }}
+          >
+            {subiendo ? 'Subiendo…' : <><Icon name="check" size={15} /> Guardar fotos</>}
+          </button>
+        </div>
+      )}
+
       {/* Tabla */}
       {!loading && !error && productosFiltrados.length > 0 && (
         <div className="mk-vpanel" style={{ padding: 0 }}>
@@ -235,6 +402,14 @@ export default function MisProductos() {
                           >
                             <Icon name={p.estado === 'activo' ? 'pause' : 'play'} size={16} stroke={1.9} />
                           </button>
+                          <button
+                            onClick={() => abrirFotos(p.id)}
+                            className="mk-vorder-more"
+                            title="Subir fotos"
+                            style={!p.imagenes?.length ? { color: 'var(--brand)', fontWeight: 700 } : undefined}
+                          >
+                            <Icon name="eye" size={16} stroke={1.9} />
+                          </button>
                           <a
                             href={`/productos/${p.id}`}
                             target="_blank"
@@ -242,7 +417,7 @@ export default function MisProductos() {
                             className="mk-vorder-more"
                             title="Ver en marketplace"
                           >
-                            <Icon name="eye" size={16} stroke={1.9} />
+                            <Icon name="arrowRight" size={16} stroke={1.9} />
                           </a>
                           <button
                             onClick={() => eliminarProducto(p.id)}

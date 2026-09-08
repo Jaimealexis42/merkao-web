@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/useAuth'
 import { getPct } from '@/lib/comisiones'
@@ -27,9 +27,12 @@ const CIUDADES_PERU = [
 ]
 
 const IGV = 0.18
+const MAX_FOTOS = 4
+const MAX_MB = 5
 
 export default function PublicarProducto() {
   const { user } = useAuth()
+  const fileRef = useRef<HTMLInputElement>(null)
 
   const [form, setForm] = useState({
     nombre: '',
@@ -42,13 +45,56 @@ export default function PublicarProducto() {
     categoria_id: '',
     stock: '1',
   })
-  const [loading, setLoading]   = useState(false)
-  const [exito, setExito]       = useState(false)
-  const [error, setError]       = useState('')
-  const [sinTienda, setSinTienda] = useState(false)
+  const [imageFiles, setImageFiles]       = useState<File[]>([])
+  const [imagePreviews, setImagePreviews] = useState<string[]>([])
+  const [loading, setLoading]             = useState(false)
+  const [exito, setExito]                 = useState(false)
+  const [error, setError]                 = useState('')
+  const [sinTienda, setSinTienda]         = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value })
+  }
+
+  const handleImagePick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const picked = Array.from(e.target.files ?? [])
+    if (!picked.length) return
+    const combined = [...imageFiles, ...picked].slice(0, MAX_FOTOS)
+    const valid = combined.filter((f) => f.size <= MAX_MB * 1024 * 1024)
+    if (valid.length < combined.length) {
+      setError(`Algunas fotos superan ${MAX_MB} MB y se ignoraron.`)
+    } else {
+      setError('')
+    }
+    const previews = valid.map((f) => URL.createObjectURL(f))
+    setImageFiles(valid)
+    setImagePreviews(previews)
+    if (fileRef.current) fileRef.current.value = ''
+  }
+
+  const removeImage = (idx: number) => {
+    URL.revokeObjectURL(imagePreviews[idx])
+    setImageFiles((prev) => prev.filter((_, i) => i !== idx))
+    setImagePreviews((prev) => prev.filter((_, i) => i !== idx))
+  }
+
+  const uploadImages = async (): Promise<string[]> => {
+    if (!user || imageFiles.length === 0) return []
+    const urls: string[] = []
+    for (const file of imageFiles) {
+      const ext  = file.name.split('.').pop()?.toLowerCase() ?? 'jpg'
+      const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+      const { error: upErr } = await supabase.storage
+        .from('productos')
+        .upload(path, file, { contentType: file.type })
+      if (upErr) {
+        console.error('[publicar] upload error:', upErr)
+        continue
+      }
+      const { data } = supabase.storage.from('productos').getPublicUrl(path)
+      urls.push(data.publicUrl)
+    }
+    return urls
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -58,8 +104,6 @@ export default function PublicarProducto() {
     setSinTienda(false)
     setExito(false)
 
-    // Verificar que el vendedor tenga tienda antes de publicar.
-    // Esto no afecta productos ya publicados — solo bloquea publicaciones nuevas.
     const { data: tienda } = await supabase
       .from('tiendas')
       .select('id')
@@ -72,7 +116,8 @@ export default function PublicarProducto() {
       return
     }
 
-    const catId = form.categoria_id ? parseInt(form.categoria_id, 10) : null
+    const imagenes = await uploadImages()
+    const catId    = form.categoria_id ? parseInt(form.categoria_id, 10) : null
 
     const { error: sbError } = await supabase.from('productos').insert([{
       nombre:                    form.nombre,
@@ -86,6 +131,7 @@ export default function PublicarProducto() {
       stock:                     parseInt(form.stock),
       estado:                    'activo',
       vendedor_id:               user?.id ?? null,
+      imagenes,
     }])
 
     setLoading(false)
@@ -95,6 +141,9 @@ export default function PublicarProducto() {
       setError(`No se pudo publicar: [${sbError.code ?? '?'}] ${sbError.message}`)
     } else {
       setExito(true)
+      imagePreviews.forEach((u) => URL.revokeObjectURL(u))
+      setImageFiles([])
+      setImagePreviews([])
       setForm({
         nombre: '', descripcion: '', precio: '',
         precio_mayoreo: '', cantidad_minima_mayoreo: '', costo_envio: '0',
@@ -314,19 +363,89 @@ export default function PublicarProducto() {
           </div>
         </div>
 
-        {/* Fotos placeholder */}
+        {/* Fotos */}
         <div className="mk-vpanel">
-          <div className="mk-vpanel-head"><div><h3>Fotos del producto</h3></div></div>
-          <div className="mk-vempty">
-            <Icon name="eye" size={28} stroke={1.5} />
-            <p>Carga de fotos próximamente. Por ahora se mostrará un ícono según la categoría.</p>
+          <div className="mk-vpanel-head">
+            <div>
+              <h3>Fotos del producto</h3>
+              <span className="mk-vpanel-sub">Hasta {MAX_FOTOS} fotos · JPG, PNG o WEBP · máx. {MAX_MB} MB c/u</span>
+            </div>
           </div>
+
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+            {imagePreviews.map((src, i) => (
+              <div
+                key={i}
+                style={{ position: 'relative', width: 100, height: 100, borderRadius: 10, overflow: 'hidden', border: '2px solid var(--line)', flexShrink: 0 }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <button
+                  type="button"
+                  onClick={() => removeImage(i)}
+                  style={{
+                    position: 'absolute', top: 4, right: 4,
+                    background: 'rgba(0,0,0,.55)', border: 'none', borderRadius: '50%',
+                    width: 22, height: 22, cursor: 'pointer', display: 'grid', placeItems: 'center',
+                    color: '#fff', fontSize: 13, lineHeight: 1,
+                  }}
+                  aria-label="Quitar foto"
+                >
+                  ×
+                </button>
+                {i === 0 && (
+                  <span style={{
+                    position: 'absolute', bottom: 4, left: 4,
+                    background: 'rgba(0,0,0,.55)', color: '#fff',
+                    fontSize: 9, fontWeight: 800, padding: '2px 5px', borderRadius: 4,
+                  }}>
+                    PRINCIPAL
+                  </span>
+                )}
+              </div>
+            ))}
+
+            {imagePreviews.length < MAX_FOTOS && (
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                style={{
+                  width: 100, height: 100, borderRadius: 10,
+                  border: '2px dashed var(--line-2)', background: 'var(--bg)',
+                  cursor: 'pointer', display: 'flex', flexDirection: 'column',
+                  alignItems: 'center', justifyContent: 'center', gap: 4,
+                  color: 'var(--muted-2)', flexShrink: 0,
+                }}
+              >
+                <Icon name="plus" size={22} stroke={1.7} />
+                <span style={{ fontSize: 11 }}>Agregar foto</span>
+              </button>
+            )}
+          </div>
+
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/jpeg,image/jpg,image/png,image/webp"
+            multiple
+            onChange={handleImagePick}
+            style={{ display: 'none' }}
+          />
+
+          {imagePreviews.length === 0 && (
+            <p style={{ fontSize: 12, color: 'var(--muted-2)', marginTop: 10 }}>
+              La primera foto será la imagen principal del producto. Los compradores ven hasta 4 fotos.
+            </p>
+          )}
         </div>
 
         {/* Submit */}
         <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
           <button type="submit" disabled={loading} className="mk-btn mk-btn-primary" style={{ padding: '13px 22px', fontSize: 15 }}>
-            {loading ? 'Publicando…' : <><Icon name="check" size={17} /> Publicar producto</>}
+            {loading
+              ? (imageFiles.length > 0 ? 'Subiendo fotos…' : 'Publicando…')
+              : <><Icon name="check" size={17} /> Publicar producto</>
+            }
           </button>
           <a href="/vendedor" className="mk-btn mk-btn-ghost">Cancelar</a>
         </div>
