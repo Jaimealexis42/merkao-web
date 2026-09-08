@@ -15,12 +15,14 @@ const NAV: NavItem[] = [
   { href: '/vendedor/pedidos',       label: 'Pedidos',           icon: 'truck' },
   { href: '/vendedor/mi-tienda',     label: 'Mi tienda',         icon: 'store' },
   { href: '/vendedor/datos-pago',    label: 'Datos de pago',     icon: 'wallet' },
+  { href: '/vendedor/soporte',       label: 'Soporte',           icon: 'message' },
 ]
 
 export default function VendedorLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router   = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [unreadSoporte, setUnreadSoporte] = useState(0)
   const { user, loading } = useAuth()
 
   useEffect(() => {
@@ -30,6 +32,20 @@ export default function VendedorLayout({ children }: { children: React.ReactNode
     const isAdmin = isAdminEmail(user.email)
     if (!isAdmin && tipo === 'comprador') router.push('/')
   }, [user, loading, router])
+
+  // Poll unread admin replies; clears when vendor visits /vendedor/soporte
+  useEffect(() => {
+    if (!user) return
+    const check = async () => {
+      const { count } = await supabase
+        .from('mensajes_soporte')
+        .select('id', { count: 'exact', head: true })
+        .eq('autor', 'admin')
+        .eq('leido', false)
+      setUnreadSoporte(count ?? 0)
+    }
+    check()
+  }, [user, pathname])
 
   useEffect(() => {
     if (!user || user.user_metadata?.tipo) return
@@ -102,6 +118,7 @@ export default function VendedorLayout({ children }: { children: React.ReactNode
           <nav className="mk-vnav">
             {NAV.map((item) => {
               const isActive = pathname === item.href
+              const badge = item.href === '/vendedor/soporte' && unreadSoporte > 0 ? unreadSoporte : 0
               return (
                 <a
                   key={item.href}
@@ -109,7 +126,12 @@ export default function VendedorLayout({ children }: { children: React.ReactNode
                   className={'mk-vnav-item' + (isActive ? ' on' : '')}
                 >
                   <Icon name={item.icon} size={19} stroke={1.8} />
-                  <span className="mk-vnav-label">{item.label}</span>
+                  <span className="mk-vnav-label" style={{ flex: 1 }}>{item.label}</span>
+                  {badge > 0 && (
+                    <span style={{ background: '#ef4444', color: '#fff', borderRadius: 20, fontSize: 11, fontWeight: 700, padding: '1px 7px', minWidth: 20, textAlign: 'center' }}>
+                      {badge}
+                    </span>
+                  )}
                 </a>
               )
             })}
