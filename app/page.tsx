@@ -795,7 +795,7 @@ const SLIDE_SANA: Slide = {
   region: 'Lima, Perú',
   title:  { es: ['SANA PRODUCTS', 'suplementos', 'naturales'], en: ['SANA PRODUCTS', 'natural', 'supplements'], pt: ['SANA PRODUCTS', 'suplementos', 'naturais'] },
   sub:    { es: 'Vitafer-L · Colágeno Renova Plus · Uro Probiotic', en: 'Vitafer-L · Renova Plus Collagen · Uro Probiotic', pt: 'Vitafer-L · Colágeno Renova Plus · Uro Probiotic' },
-  body:   { es: 'Primera tienda verificada de Merkao. Andrea Herbozo trae suplementos naturales de calidad para tu bienestar — podés comprar ahora mismo.', en: "Merkao's first verified store. Quality natural supplements for your wellbeing — shop now.", pt: 'Primeira loja verificada do Merkao. Suplementos naturais de qualidade para o seu bem-estar — compre agora.' },
+  body:   { es: 'Primera tienda verificada de Merkao. Suplementos naturales de calidad para tu bienestar. Puedes comprar ahora mismo.', en: "Merkao's first verified store. Quality natural supplements for your wellbeing — shop now.", pt: 'Primeira loja verificada do Merkao. Suplementos naturais de qualidade para o seu bem-estar — compre agora.' },
   cta:    { es: 'Ver productos', en: 'See products', pt: 'Ver produtos' },
   img:    'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=1600&q=80&auto=format&fit=crop',
   categoriaId: 0,
