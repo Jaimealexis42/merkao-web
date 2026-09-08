@@ -846,6 +846,14 @@ function esMuestra(prod: Producto): boolean {
   return !prod.vendedor_id || prod.vendedor_id === DEMO_VENDOR_ID
 }
 
+// Vendedor real si tiene tienda registrada O si su vendedor_id es distinto del demo.
+// Cualquiera de las dos condiciones es suficiente.
+function esVendedorReal(vendedorId: string | number | null | undefined, tMap: Map<string, string>): boolean {
+  if (!vendedorId) return false
+  const sid = String(vendedorId)
+  return tMap.has(sid) || sid !== DEMO_VENDOR_ID
+}
+
 /* ─────────────────────────── HELPERS ─────────────────────────── */
 
 function ratingFromId(id: string) {
@@ -991,11 +999,11 @@ export default function Home() {
       if (e) {
         setError(lang === 'en' ? 'Could not load products.' : lang === 'pt' ? 'Não foi possível carregar os produtos.' : 'No se pudieron cargar los productos.')
       } else {
-        // Vendedor real = tiene una tienda registrada en la tabla tiendas.
-        // Funciona con cualquier formato de vendedor_id (UUID, número, texto).
+        // Vendedor real = tiene tienda registrada, O su vendedor_id es distinto del demo.
+        // Ambas condiciones son suficientes (OR), no se requieren las dos.
         const sorted = (data || []).slice().sort((a, b) => {
-          const aReal = !!a.vendedor_id && tMap.has(String(a.vendedor_id))
-          const bReal = !!b.vendedor_id && tMap.has(String(b.vendedor_id))
+          const aReal = esVendedorReal(a.vendedor_id, tMap)
+          const bReal = esVendedorReal(b.vendedor_id, tMap)
           if (aReal && !bReal) return -1
           if (!aReal && bReal) return 1
           return (b.vistas ?? 0) - (a.vistas ?? 0)
@@ -1401,9 +1409,11 @@ export default function Home() {
                 const p = calcularPrecios(prod.precio, pais)
                 const tieneMayoreo = prod.precio_mayoreo && prod.cantidad_minima_mayoreo
                 const fav = favoritos.has(prod.id)
-                const esReal = !!prod.vendedor_id && tiendasMap.has(String(prod.vendedor_id))
+                const esReal = esVendedorReal(prod.vendedor_id, tiendasMap)
                 const esDemo = !esReal
-                const nombreTienda = esReal ? (tiendasMap.get(String(prod.vendedor_id)) || null) : null
+                const nombreTienda = esReal && prod.vendedor_id
+                  ? (tiendasMap.get(String(prod.vendedor_id)) || null)
+                  : null
 
                 return (
                   <article key={prod.id} className="mk-card">
@@ -1414,7 +1424,7 @@ export default function Home() {
                         ? <span className="mk-card-muestra">MUESTRA</span>
                         : nombreTienda
                           ? <span className="mk-card-tienda">🏪 {nombreTienda}</span>
-                          : <span className="mk-card-tienda">✔ Vendedor real</span>
+                          : <span className="mk-card-tienda">✔ Vendedor verificado</span>
                       }
                       {prod.stock > 0 && prod.stock <= 5 && (
                         <span className="mk-card-stock">

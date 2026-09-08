@@ -34,13 +34,15 @@ export default function VendedorDashboard() {
   const [stats, setStats]         = useState<Stat[]>([])
   const [pedidosRec, setPedidos]  = useState<PedidoMini[]>([])
   const [loading, setLoading]     = useState(true)
+  const [tieneTienda, setTieneTienda]     = useState(true)  // optimista — oculta el aviso hasta confirmar
+  const [nombreTienda, setNombreTienda]   = useState<string | null>(null)
 
   useEffect(() => {
     if (!user) return
     let cancel = false
 
     const cargar = async () => {
-      const [productosRes, pedidosRes] = await Promise.all([
+      const [productosRes, pedidosRes, tiendaRes] = await Promise.all([
         supabase
           .from('productos')
           .select('id, stock, estado')
@@ -50,9 +52,17 @@ export default function VendedorDashboard() {
           .select('id, nombre_comprador, total, estado, created_at')
           .eq('vendedor_id', user.id)
           .order('created_at', { ascending: false }),
+        supabase
+          .from('tiendas')
+          .select('id, nombre')
+          .eq('id', user.id)
+          .maybeSingle(),
       ])
 
       if (cancel) return
+
+      setTieneTienda(!!tiendaRes.data)
+      setNombreTienda(tiendaRes.data?.nombre ?? null)
 
       const productos = productosRes.data ?? []
       const pedidos   = pedidosRes.data ?? []
@@ -118,6 +128,46 @@ export default function VendedorDashboard() {
           <Icon name="plus" size={17} /> Publicar producto
         </a>
       </div>
+
+      {/* Aviso: sin tienda registrada (vendedores legacy o edge cases) */}
+      {!loading && !tieneTienda && (
+        <div className="mk-vpanel" style={{ background: '#FEF9EC', borderColor: '#F59E0B' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+            <Icon name="store" size={22} stroke={1.8} style={{ color: '#B45309', flexShrink: 0, marginTop: 2 }} />
+            <div style={{ flex: 1 }}>
+              <p style={{ fontWeight: 800, fontSize: 14, color: '#92400E', margin: '0 0 4px' }}>
+                Todavía no tienes un perfil de tienda
+              </p>
+              <p style={{ fontSize: 13, color: '#92400E', margin: '0 0 10px' }}>
+                Los compradores no pueden ver quién eres. Crea tu tienda para que tu nombre aparezca en tus productos y generes más confianza.
+              </p>
+              <a href="/vendedor/mi-tienda" className="mk-btn mk-btn-primary" style={{ fontSize: 13 }}>
+                Crear mi tienda →
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Aviso: tienda con nombre por defecto — invitar a personalizar */}
+      {!loading && tieneTienda && nombreTienda?.startsWith('Tienda de ') && (
+        <div className="mk-vpanel" style={{ background: '#EFF6FF', borderColor: '#93C5FD' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+            <Icon name="store" size={22} stroke={1.8} style={{ color: '#1D4ED8', flexShrink: 0, marginTop: 2 }} />
+            <div style={{ flex: 1 }}>
+              <p style={{ fontWeight: 800, fontSize: 14, color: '#1E3A8A', margin: '0 0 4px' }}>
+                Personaliza el nombre de tu tienda
+              </p>
+              <p style={{ fontSize: 13, color: '#1E40AF', margin: '0 0 10px' }}>
+                Tu tienda se creó con el nombre <strong>{nombreTienda}</strong>. Ponle un nombre propio para que los compradores te recuerden.
+              </p>
+              <a href="/vendedor/mi-tienda" className="mk-btn mk-btn-ghost" style={{ fontSize: 13 }}>
+                Personalizar mi tienda →
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Stats cards */}
       <div className="mk-vstats">

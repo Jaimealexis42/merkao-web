@@ -42,9 +42,10 @@ export default function PublicarProducto() {
     categoria_id: '',
     stock: '1',
   })
-  const [loading, setLoading] = useState(false)
-  const [exito, setExito]     = useState(false)
-  const [error, setError]     = useState('')
+  const [loading, setLoading]   = useState(false)
+  const [exito, setExito]       = useState(false)
+  const [error, setError]       = useState('')
+  const [sinTienda, setSinTienda] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -54,7 +55,22 @@ export default function PublicarProducto() {
     e.preventDefault()
     setLoading(true)
     setError('')
+    setSinTienda(false)
     setExito(false)
+
+    // Verificar que el vendedor tenga tienda antes de publicar.
+    // Esto no afecta productos ya publicados — solo bloquea publicaciones nuevas.
+    const { data: tienda } = await supabase
+      .from('tiendas')
+      .select('id')
+      .eq('id', user?.id ?? '')
+      .maybeSingle()
+
+    if (!tienda) {
+      setSinTienda(true)
+      setLoading(false)
+      return
+    }
 
     const catId = form.categoria_id ? parseInt(form.categoria_id, 10) : null
 
@@ -112,6 +128,23 @@ export default function PublicarProducto() {
               <p style={{ fontSize: 12, color: 'var(--muted)' }}>Ya está visible en el marketplace.</p>
             </div>
             <a href="/vendedor/mis-productos" className="mk-btn mk-btn-ghost">Ver mis productos</a>
+          </div>
+        </div>
+      )}
+
+      {sinTienda && (
+        <div className="mk-vpanel" style={{ background: '#FEF9EC', borderColor: '#F59E0B', color: '#92400E' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+            <Icon name="store" size={20} stroke={1.8} style={{ flexShrink: 0, marginTop: 2 }} />
+            <div>
+              <p style={{ fontWeight: 800, fontSize: 14, margin: '0 0 4px' }}>Primero crea tu perfil de tienda</p>
+              <p style={{ fontSize: 13, margin: '0 0 10px' }}>
+                Para que los compradores sepan a quién le están comprando, necesitas tener un perfil de tienda activo antes de publicar productos.
+              </p>
+              <a href="/vendedor/mi-tienda" className="mk-btn mk-btn-primary" style={{ fontSize: 13 }}>
+                Crear mi tienda ahora →
+              </a>
+            </div>
           </div>
         </div>
       )}
