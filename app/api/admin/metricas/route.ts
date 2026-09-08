@@ -51,31 +51,54 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'No autorizado.' }, { status: 403 })
   }
 
-  // `count: 'exact'` + `head: true` devuelve el count sin transferir filas.
-  // `auth.users` no está expuesto vía PostgREST → va por RPC al wrapper
-  // `count_auth_users()` (SECURITY DEFINER, EXECUTE solo para service_role).
-  const [usuariosRes, vendedoresRes, visitasRes] = await Promise.all([
+  // Round 1: queries independientes en paralelo.
+  // auth.users no está en PostgREST → RPC count_auth_users (SECURITY DEFINER).
+  // tiendas se trae con IDs para filtrar productos en round 2.
+  const [usuariosRes, visitasRes, tiendaIdsRes, pedidosTotRes, pedidosCompRes] = await Promise.all([
     admin.rpc('count_auth_users'),
-    admin.from('tiendas').select('*', { count: 'exact', head: true }),
     admin.from('page_views').select('*', { count: 'exact', head: true }),
+    admin.from('tiendas').select('id'),
+    admin.from('pedidos').select('*', { count: 'exact', head: true }),
+    admin.from('pedidos').select('total').in('estado', ['entregado', 'liberado']),
   ])
 
   if (usuariosRes.error) {
-    console.error('[admin/metricas] count_auth_users falló:', usuariosRes.error.message)
+    console.error('[admin/metricas] count_auth_users:', usuariosRes.error.message)
     return NextResponse.json({ error: 'Error contando usuarios.' }, { status: 500 })
   }
-  if (vendedoresRes.error) {
-    console.error('[admin/metricas] count(tiendas) falló:', vendedoresRes.error.message)
-    return NextResponse.json({ error: 'Error contando vendedores.' }, { status: 500 })
-  }
   if (visitasRes.error) {
-    console.error('[admin/metricas] count(page_views) falló:', visitasRes.error.message)
+    console.error('[admin/metricas] count(page_views):', visitasRes.error.message)
     return NextResponse.json({ error: 'Error contando visitas.' }, { status: 500 })
   }
+  if (tiendaIdsRes.error) {
+    console.error('[admin/metricas] tiendas ids:', tiendaIdsRes.error.message)
+    return NextResponse.json({ error: 'Error cargando vendedores.' }, { status: 500 })
+  }
+
+  const tiendaIds = (tiendaIdsRes.data ?? []).map((t: { id: string }) => t.id)
+
+  // Round 2: productos de vendedores reales (requiere tiendaIds del round 1).
+  const productosRes = tiendaIds.length > 0
+    ? await admin.from('productos').select('id, imagenes').in('vendedor_id', tiendaIds)
+    : { data: [], error: null }
+
+  if (productosRes.error) {
+    console.error('[admin/metricas] productos:', productosRes.error.message)
+    return NextResponse.json({ error: 'Error contando productos.' }, { status: 500 })
+  }
+
+  const productos       = productosRes.data ?? []
+  const productosCon    = productos.filter((p: { imagenes: string[] | null }) => p.imagenes && p.imagenes.length > 0).length
+  const ventasTotales   = (pedidosCompRes.data ?? []).reduce((s: number, p: { total: unknown }) => s + (Number(p.total) || 0), 0)
 
   return NextResponse.json({
-    usuarios: Number(usuariosRes.data ?? 0),
-    vendedores: vendedoresRes.count ?? 0,
-    visitas: visitasRes.count ?? 0,
+    usuarios:          Number(usuariosRes.data ?? 0),
+    vendedores:        tiendaIds.length,
+    visitas:           visitasRes.count ?? 0,
+    productos_total:   productos.length,
+    productos_con:     productosCon,
+    productos_sin:     productos.length - productosCon,
+    pedidos_total:     pedidosTotRes.count ?? 0,
+    ventas_totales:    ventasTotales,
   })
 }
