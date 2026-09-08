@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { isAdminEmail } from '@/lib/admin'
-import { sendEmail } from '@/lib/email'
 
 let _admin: SupabaseClient | null = null
 function getAdminClient(): SupabaseClient | null {
@@ -25,8 +24,8 @@ function buildAuthedClient(token: string): SupabaseClient | null {
   })
 }
 
-// POST /api/soporte/reply — admin replies to a vendor thread
-export async function POST(req: NextRequest) {
+// GET /api/soporte/vendedores — admin: list of all vendors with a tienda
+export async function GET(req: NextRequest) {
   const admin = getAdminClient()
   if (!admin) return NextResponse.json({ error: 'Servicio no disponible.' }, { status: 500 })
 
@@ -42,38 +41,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'No autorizado.' }, { status: 403 })
   }
 
-  const body = (await req.json().catch(() => ({}))) as { vendedor_id?: string; texto?: string }
-  const vendedorId = (body.vendedor_id ?? '').trim()
-  const texto = (body.texto ?? '').trim()
-  if (!vendedorId || !texto || texto.length > 2000) {
-    return NextResponse.json({ error: 'Datos inválidos.' }, { status: 400 })
+  const { data: tiendas, error: eTiendas } = await admin
+    .from('tiendas')
+    .select('id, nombre')
+    .order('nombre', { ascending: true })
+
+  if (eTiendas) {
+    console.error('[soporte/vendedores] fetch:', eTiendas.message)
+    return NextResponse.json({ error: 'Error cargando vendedores.' }, { status: 500 })
   }
 
-  // service_role bypasses RLS — admin can insert with autor='admin'
-  const { data: msg, error: eInsert } = await admin
-    .from('mensajes_soporte')
-    .insert({ vendedor_id: vendedorId, autor: 'admin', texto, leido: false })
-    .select('id, autor, texto, leido, created_at')
-    .single()
-
-  if (eInsert) {
-    console.error('[soporte/reply] insert:', eInsert.message)
-    return NextResponse.json({ error: 'Error enviando respuesta.' }, { status: 500 })
-  }
-
-  // Notify vendor by email (non-blocking)
-  try {
-    const { data: vendorData } = await admin.auth.admin.getUserById(vendedorId)
-    const vendorEmail = vendorData?.user?.email
-    if (vendorEmail) {
-      sendEmail({
-        to: vendorEmail,
-        subject: 'Tienes un mensaje del equipo Merkao',
-        text: `El equipo de Merkao te escribió:\n\n${texto}\n\nVer en: https://merkao.pe/vendedor/soporte`,
-        html: `<p>El equipo de <strong>Merkao</strong> te envió un mensaje:</p><blockquote style="border-left:3px solid #2563eb;margin:0;padding:0 12px;color:#374151">${texto}</blockquote><p><a href="https://merkao.pe/vendedor/soporte">Ver mensaje en tu panel →</a></p>`,
-      }).catch(() => {})
-    }
-  } catch {}
-
-  return NextResponse.json({ mensaje: msg })
+  return NextResponse.json({ vendedores: tiendas ?? [] })
 }
