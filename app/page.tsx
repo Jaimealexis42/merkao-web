@@ -964,14 +964,9 @@ export default function Home() {
     return () => { cancel = true }
   }, [])
 
-  // ── Cargar tiendas (una sola vez) ──
-  useEffect(() => {
-    supabase.from('tiendas').select('id, nombre').then(({ data }) => {
-      if (data) setTiendasMap(new Map(data.map((t) => [t.id, t.nombre ?? ''])))
-    })
-  }, [])
-
-  // ── Cargar productos ──
+  // ── Cargar productos + tiendas en paralelo ──
+  // Las tiendas se cargan junto con los productos para que el sort use
+  // la fuente de verdad real (membresía en tiendas) sin race condition.
   useEffect(() => {
     async function cargar() {
       setLoading(true)
@@ -983,13 +978,24 @@ export default function Home() {
         .order('vistas', { ascending: false })
       if (categoriaFiltro !== 0) q = q.eq('categoria_id', categoriaFiltro)
       if (ciudadFiltro)          q = q.eq('ciudad', ciudadFiltro)
-      const { data, error: e } = await q
-      if (e) setError(lang === 'en' ? 'Could not load products.' : lang === 'pt' ? 'Não foi possível carregar os produtos.' : 'No se pudieron cargar los productos.')
-      else {
-        // Productos reales primero, luego los de muestra (orden por vistas dentro de cada grupo)
+
+      const [{ data, error: e }, { data: tiendasData }] = await Promise.all([
+        q,
+        supabase.from('tiendas').select('id, nombre'),
+      ])
+
+      const tMap = new Map<string, string>()
+      for (const t of tiendasData ?? []) tMap.set(String(t.id), t.nombre ?? '')
+      setTiendasMap(tMap)
+
+      if (e) {
+        setError(lang === 'en' ? 'Could not load products.' : lang === 'pt' ? 'Não foi possível carregar os produtos.' : 'No se pudieron cargar los productos.')
+      } else {
+        // Vendedor real = tiene una tienda registrada en la tabla tiendas.
+        // Funciona con cualquier formato de vendedor_id (UUID, número, texto).
         const sorted = (data || []).slice().sort((a, b) => {
-          const aReal = !esMuestra(a as Producto)
-          const bReal = !esMuestra(b as Producto)
+          const aReal = !!a.vendedor_id && tMap.has(String(a.vendedor_id))
+          const bReal = !!b.vendedor_id && tMap.has(String(b.vendedor_id))
           if (aReal && !bReal) return -1
           if (!aReal && bReal) return 1
           return (b.vistas ?? 0) - (a.vistas ?? 0)
@@ -1395,8 +1401,9 @@ export default function Home() {
                 const p = calcularPrecios(prod.precio, pais)
                 const tieneMayoreo = prod.precio_mayoreo && prod.cantidad_minima_mayoreo
                 const fav = favoritos.has(prod.id)
-                const esDemo = esMuestra(prod)
-                const nombreTienda = !esDemo && prod.vendedor_id ? tiendasMap.get(prod.vendedor_id) : null
+                const esReal = !!prod.vendedor_id && tiendasMap.has(String(prod.vendedor_id))
+                const esDemo = !esReal
+                const nombreTienda = esReal ? (tiendasMap.get(String(prod.vendedor_id)) || null) : null
 
                 return (
                   <article key={prod.id} className="mk-card">
