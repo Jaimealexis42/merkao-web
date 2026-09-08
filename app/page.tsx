@@ -64,15 +64,18 @@ const FECHA_BASE   = new Date('2026-06-24T00:00:00Z')
 const DIAS_POR_SET = 1
 const MS_POR_DIA   = 1000 * 60 * 60 * 24
 
-type Fase = 'feriado6ago' | 'rosa' | 'default'
+type Fase = 'feriado6ago' | 'rosa' | 'primavera' | 'default'
 function getFase(): Fase {
   const mes = new Date().getUTCMonth() + 1  // 1-12
   const dia = new Date().getUTCDate()
   if (mes < 8 || (mes === 8 && dia <= 6)) return 'feriado6ago'
   if (mes === 8) return 'rosa'
+  if (mes === 9) return 'primavera'
   return 'default'
 }
 const FASE = getFase()
+const MODO_APERTURA = true // plataforma en apertura — quitar cuando haya vendedores reales
+const DEMO_VENDOR_ID = '00000000-0000-0000-0000-000000000001' // vendedor_id de productos de muestra
 
 // ══════════════════════════════════════════════════════════════════════
 // SLIDES COMPARTIDOS — sin referencia a fecha, reutilizados en todas las fases
@@ -280,6 +283,30 @@ const S7_PROV: Slide = {
   cta:    { es: 'Quiero vender', en: 'I want to sell', pt: 'Quero vender' },
   ctaHref: '/register?role=vendedor',
   img:    'https://images.unsplash.com/photo-1560472355-536de3962603?w=1600&q=80&auto=format&fit=crop',
+  categoriaId: 0,
+}
+
+// ── SLIDES COMPARTIDOS — SEPTIEMBRE / PRIMAVERA ───────────────────────
+const SP_23SEP: Slide = {
+  id: 'sp-23sep', theme: 'gold',
+  tag:    { es: '23 DE SEPTIEMBRE · PRIMAVERA Y JUVENTUD', en: 'SEPTEMBER 23 · SPRING & YOUTH DAY', pt: '23 DE SETEMBRO · PRIMAVERA E JUVENTUDE' },
+  region: 'Todo el Perú',
+  title:  { es: ['Día de la', 'Primavera', 'y la Juventud'], en: ['Spring', 'and Youth', 'Day'], pt: ['Dia da', 'Primavera', 'e Juventude'] },
+  sub:    { es: 'El regalo perfecto para el 23 de septiembre', en: 'The perfect gift for September 23rd', pt: 'O presente perfeito para 23 de setembro' },
+  body:   { es: 'Celebrá la primavera con algo especial. Artesanías, moda y más de vendedores peruanos en Merkao.', en: 'Celebrate spring with something special. Crafts, fashion and more from Peruvian sellers on Merkao.', pt: 'Comemore a primavera com algo especial. Artesanato, moda e mais de vendedores peruanos no Merkao.' },
+  cta:    { es: 'Ver regalos', en: 'See gifts', pt: 'Ver presentes' },
+  img:    'https://images.unsplash.com/photo-1490750967868-88df5691cc2b?w=1600&q=80&auto=format&fit=crop',
+  categoriaId: 4,
+}
+const SP_BIENVENIDA: Slide = {
+  id: 'sp-bienvenida', theme: 'terra',
+  tag:    { es: 'SEPTIEMBRE EN MERKAO', en: 'SEPTEMBER ON MERKAO', pt: 'SETEMBRO NO MERKAO' },
+  region: 'Todo el Perú',
+  title:  { es: ['Bienvenido', 'a septiembre', 'en Merkao'], en: ['Welcome to', 'September', 'on Merkao'], pt: ['Bem-vindo', 'a setembro', 'no Merkao'] },
+  sub:    { es: 'Los mejores productos peruanos, todo el mes', en: 'The best Peruvian products, all month long', pt: 'Os melhores produtos peruanos, o mês todo' },
+  body:   { es: 'Septiembre llegó con todo. Explorá Merkao y encontrá lo que buscás de vendedores peruanos.', en: 'September is here. Explore Merkao and find what you\'re looking for from Peruvian sellers.', pt: 'Setembro chegou. Explore o Merkao e encontre o que procura de vendedores peruanos.' },
+  cta:    { es: 'Explorar Merkao', en: 'Explore Merkao', pt: 'Explorar Merkao' },
+  img:    'https://images.unsplash.com/photo-1526392060635-9d6019884377?w=1600&q=80&auto=format&fit=crop',
   categoriaId: 0,
 }
 
@@ -713,12 +740,76 @@ const SETS_F2: Slide[][] = [
   ],
 ]
 
+// ══════════════════════════════════════════════════════════════════════
+// FASE PRIMAVERA — Septiembre (1–30)
+// Sep 23 = indiceSet 0 → SET 1 es el banner principal del Día de la Primavera
+// ══════════════════════════════════════════════════════════════════════
+const SETS_PRIMAVERA: Slide[][] = [
+  // ─ SET 1 ─ 23 de septiembre · Día de la Primavera y la Juventud ──────
+  // (Índice 0 — corresponde al 23 de septiembre 2026 por la rotación base)
+  [
+    SP_23SEP,
+    {
+      id: 's1p-regalos', theme: 'terra',
+      tag:    { es: 'REGALOS DE PRIMAVERA', en: 'SPRING GIFTS', pt: 'PRESENTES DE PRIMAVERA' },
+      region: 'Artesanía y moda peruana',
+      title:  { es: ['El regalo', 'perfecto ya', 'está en Merkao'], en: ['The perfect', 'spring gift', 'is on Merkao'], pt: ['O presente', 'perfeito está', 'no Merkao'] },
+      sub:    { es: 'Artesanías únicas y moda peruana para regalar', en: 'Unique crafts and Peruvian fashion to gift', pt: 'Artesanato único e moda peruana para presentear' },
+      body:   { es: 'Para el 23 de septiembre, elegí algo que sorprenda — hecho con manos peruanas, irrepetible.', en: 'For September 23rd, choose something that surprises — made with Peruvian hands, one of a kind.', pt: 'Para 23 de setembro, escolha algo que surpreenda — feito com mãos peruanas, único.' },
+      cta:    { es: 'Ver artesanías', en: 'See crafts', pt: 'Ver artesanato' },
+      img:    'https://images.unsplash.com/photo-1582582494705-f8ce0b0c24f0?w=1600&q=80&auto=format&fit=crop',
+      categoriaId: 4,
+    },
+    SP_BIENVENIDA,
+    {
+      id: 's1p-prov', theme: 'gold',
+      tag:    { es: 'VENDÉ EN PRIMAVERA', en: 'SELL THIS SPRING', pt: 'VENDA NESTA PRIMAVERA' },
+      region: 'Gratis por 1 año',
+      title:  { es: ['Esta primavera,', 'vendé en', 'Merkao'], en: ['This spring,', 'sell on', 'Merkao'], pt: ['Esta primavera,', 'venda no', 'Merkao'] },
+      sub:    { es: '0% comisión · Sin mensualidad · Sin contrato', en: '0% commission · No monthly fee · No contract', pt: '0% comissão · Sem mensalidade · Sem contrato' },
+      body:   { es: 'Publicá tus productos de temporada y llegá a compradores de todo el Perú.', en: 'List your seasonal products and reach buyers all over Peru.', pt: 'Publique seus produtos sazonais e alcance compradores em todo o Peru.' },
+      cta:    { es: 'Registrarme', en: 'Sign me up', pt: 'Cadastrar-me' },
+      ctaHref: '/register',
+      img:    'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1600&q=80&auto=format&fit=crop',
+      categoriaId: 0,
+    },
+  ],
+  // ─ SET 2 ─ Bienvenida + alimentos ────────────────────────────────────
+  [SP_BIENVENIDA, S2_CAFE, S2_QUINUA, S2_REGISTRO],
+  // ─ SET 3 ─ Primavera + artesanía ─────────────────────────────────────
+  [SP_23SEP, S3_TEXTILES, S3_DECO, S3_PROV],
+  // ─ SET 4 ─ Bienvenida + hogar ────────────────────────────────────────
+  [SP_BIENVENIDA, S4_MUEBLES, S4_CASA, S4_REGISTRO],
+  // ─ SET 5 ─ Primavera + agrícola ──────────────────────────────────────
+  [SP_23SEP, S5_PRODUCTOR, S5_CAMPO, S5_PROV],
+  // ─ SET 6 ─ Bienvenida + tecnología ───────────────────────────────────
+  [SP_BIENVENIDA, S6_CELULARES, S6_TECH, S6_REGISTRO],
+  // ─ SET 7 ─ Primavera + motor y moda ──────────────────────────────────
+  [SP_23SEP, S7_VEHICULO, S7_MODA, S7_PROV],
+]
+
+// Slide dedicado a SANA PRODUCTS — tienda verificada real
+const SLIDE_SANA: Slide = {
+  id: 'sana-products', theme: 'gold',
+  tag:    { es: '⭐ TIENDA VERIFICADA', en: '⭐ VERIFIED STORE', pt: '⭐ LOJA VERIFICADA' },
+  region: 'Lima, Perú',
+  title:  { es: ['SANA PRODUCTS', 'suplementos', 'naturales'], en: ['SANA PRODUCTS', 'natural', 'supplements'], pt: ['SANA PRODUCTS', 'suplementos', 'naturais'] },
+  sub:    { es: 'Vitafer-L · Colágeno Renova Plus · Uro Probiotic', en: 'Vitafer-L · Renova Plus Collagen · Uro Probiotic', pt: 'Vitafer-L · Colágeno Renova Plus · Uro Probiotic' },
+  body:   { es: 'Primera tienda verificada de Merkao. Andrea Herbozo trae suplementos naturales de calidad para tu bienestar — podés comprar ahora mismo.', en: "Merkao's first verified store. Quality natural supplements for your wellbeing — shop now.", pt: 'Primeira loja verificada do Merkao. Suplementos naturais de qualidade para o seu bem-estar — compre agora.' },
+  cta:    { es: 'Ver productos', en: 'See products', pt: 'Ver produtos' },
+  img:    'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=1600&q=80&auto=format&fit=crop',
+  categoriaId: 0,
+}
+
 function getSetActivo(): Slide[] {
-  const sets = FASE === 'feriado6ago' ? SETS_F1 : FASE === 'rosa' ? SETS_F2 : SETS_DEFAULT
+  const sets = FASE === 'feriado6ago' ? SETS_F1
+             : FASE === 'rosa'        ? SETS_F2
+             : FASE === 'primavera'   ? SETS_PRIMAVERA
+             : SETS_DEFAULT
   const diasTranscurridos = Math.floor((Date.now() - FECHA_BASE.getTime()) / MS_POR_DIA)
   const crudo = Math.floor(diasTranscurridos / DIAS_POR_SET)
   const indiceSet = ((crudo % sets.length) + sets.length) % sets.length
-  return sets[indiceSet]
+  return [SLIDE_SANA, ...sets[indiceSet]]
 }
 
 const SLIDES: Slide[] = getSetActivo()
@@ -748,6 +839,11 @@ type Producto = {
   estado: string
   ciudad: string
   vistas: number
+  vendedor_id: string | null
+}
+
+function esMuestra(prod: Producto): boolean {
+  return !prod.vendedor_id || prod.vendedor_id === DEMO_VENDOR_ID
 }
 
 /* ─────────────────────────── HELPERS ─────────────────────────── */
@@ -809,6 +905,8 @@ export default function Home() {
   const toastRef       = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [accountMenuOpen, setAccountMenuOpen] = useState(false)
   const accountMenuRef = useRef<HTMLDivElement>(null)
+  const [muestraModal, setMuestraModal]       = useState(false)
+  const [tiendasMap, setTiendasMap]           = useState<Map<string, string>>(new Map())
 
   const { user }  = useAuth()
   const tr        = T[lang]
@@ -866,6 +964,13 @@ export default function Home() {
     return () => { cancel = true }
   }, [])
 
+  // ── Cargar tiendas (una sola vez) ──
+  useEffect(() => {
+    supabase.from('tiendas').select('id, nombre').then(({ data }) => {
+      if (data) setTiendasMap(new Map(data.map((t) => [t.id, t.nombre ?? ''])))
+    })
+  }, [])
+
   // ── Cargar productos ──
   useEffect(() => {
     async function cargar() {
@@ -873,14 +978,24 @@ export default function Home() {
       setError('')
       let q = supabase
         .from('productos')
-        .select('id, nombre, descripcion, precio, precio_mayoreo, cantidad_minima_mayoreo, costo_envio, stock, categoria_id, imagenes, estado, ciudad, vistas')
+        .select('id, nombre, descripcion, precio, precio_mayoreo, cantidad_minima_mayoreo, costo_envio, stock, categoria_id, imagenes, estado, ciudad, vistas, vendedor_id')
         .eq('estado', 'activo')
         .order('vistas', { ascending: false })
       if (categoriaFiltro !== 0) q = q.eq('categoria_id', categoriaFiltro)
       if (ciudadFiltro)          q = q.eq('ciudad', ciudadFiltro)
       const { data, error: e } = await q
       if (e) setError(lang === 'en' ? 'Could not load products.' : lang === 'pt' ? 'Não foi possível carregar os produtos.' : 'No se pudieron cargar los productos.')
-      else setProductos(data || [])
+      else {
+        // Productos reales primero, luego los de muestra (orden por vistas dentro de cada grupo)
+        const sorted = (data || []).slice().sort((a, b) => {
+          const aReal = !esMuestra(a as Producto)
+          const bReal = !esMuestra(b as Producto)
+          if (aReal && !bReal) return -1
+          if (!aReal && bReal) return 1
+          return (b.vistas ?? 0) - (a.vistas ?? 0)
+        })
+        setProductos(sorted)
+      }
       setLoading(false)
     }
     cargar()
@@ -897,6 +1012,8 @@ export default function Home() {
     setTimeout(() => setAgregarAnim(null), 700)
     showToast(lang === 'en' ? 'Added to cart' : lang === 'pt' ? 'Adicionado ao carrinho' : 'Producto agregado al carrito')
   }
+
+  const abrirMuestra = () => setMuestraModal(true)
 
   const toggleFav = (id: string) => {
     setFavoritos((prev) => {
@@ -1180,6 +1297,20 @@ export default function Home() {
           </div>
         </a>
 
+        {/* CONVOCATORIA DE VENDEDORES */}
+        <div className="mk-vendor-strip">
+          <div className="mk-vendor-strip-copy">
+            <span className="mk-vendor-strip-ico"><Icon name="store" size={22} stroke={1.8} /></span>
+            <div>
+              <strong>Estamos sumando vendedores</strong>
+              <span>Si tienes un negocio y quieres vender en Merkao, regístrate — sin comisión los primeros meses.</span>
+            </div>
+          </div>
+          <a href="/register?role=vendedor" className="mk-vendor-strip-cta">
+            Registrarme como vendedor <Icon name="arrowRight" size={16} />
+          </a>
+        </div>
+
         {/* CATEGORÍAS */}
         <section className="mk-block">
           <div className="mk-block-head">
@@ -1264,12 +1395,20 @@ export default function Home() {
                 const p = calcularPrecios(prod.precio, pais)
                 const tieneMayoreo = prod.precio_mayoreo && prod.cantidad_minima_mayoreo
                 const fav = favoritos.has(prod.id)
+                const esDemo = esMuestra(prod)
+                const nombreTienda = !esDemo && prod.vendedor_id ? tiendasMap.get(prod.vendedor_id) : null
 
                 return (
                   <article key={prod.id} className="mk-card">
                     <a href={`/productos/${prod.id}`} className="mk-card-media">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={imagen} alt={prod.nombre} loading="lazy" />
+                      {esDemo
+                        ? <span className="mk-card-muestra">MUESTRA</span>
+                        : nombreTienda
+                          ? <span className="mk-card-tienda">🏪 {nombreTienda}</span>
+                          : <span className="mk-card-tienda">✔ Vendedor real</span>
+                      }
                       {prod.stock > 0 && prod.stock <= 5 && (
                         <span className="mk-card-stock">
                           {lang === 'en' ? `Only ${prod.stock} left` : lang === 'pt' ? `Restam ${prod.stock}` : `¡Últimas ${prod.stock}!`}
@@ -1323,11 +1462,14 @@ export default function Home() {
                         </div>
                       )}
                       <div className="mk-card-actions">
-                        <a href={`/checkout?id=${prod.id}`} className="mk-btn mk-btn-primary">
-                          {tr.buy_now}
-                        </a>
                         <button
-                          onClick={() => agregarAlCarrito(prod.id)}
+                          onClick={MODO_APERTURA && esDemo ? abrirMuestra : () => { window.location.href = `/checkout?id=${prod.id}` }}
+                          className="mk-btn mk-btn-primary"
+                        >
+                          {tr.buy_now}
+                        </button>
+                        <button
+                          onClick={MODO_APERTURA && esDemo ? abrirMuestra : () => agregarAlCarrito(prod.id)}
                           className="mk-btn mk-btn-ghost"
                           style={enCarrito ? { background: 'var(--green-tint)', borderColor: 'var(--green)', color: 'var(--green)' } : undefined}
                         >
@@ -1485,6 +1627,26 @@ export default function Home() {
 
       {/* signOut helper invisible para no romper hooks anteriores */}
       <button onClick={handleSignOut} style={{ display: 'none' }} aria-hidden tabIndex={-1} />
+
+      {/* MODAL APERTURA */}
+      {muestraModal && (
+        <div className="mk-muestra-overlay" onClick={() => setMuestraModal(false)}>
+          <div className="mk-muestra-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="mk-muestra-close" onClick={() => setMuestraModal(false)} aria-label="Cerrar">×</button>
+            <div className="mk-muestra-emoji">🚀</div>
+            <h2 className="mk-muestra-title">Merkao está en apertura</h2>
+            <p className="mk-muestra-body">
+              Los productos que ves son de muestra. Estamos sumando vendedores para que muy pronto puedas comprar productos reales.
+            </p>
+            <a href="/register?role=vendedor" className="mk-btn mk-btn-primary mk-muestra-cta">
+              ¿Tenés un negocio? Registrate como vendedor →
+            </a>
+            <button className="mk-muestra-dismiss" onClick={() => setMuestraModal(false)}>
+              Volver al catálogo
+            </button>
+          </div>
+        </div>
+      )}
     </>
   )
 }

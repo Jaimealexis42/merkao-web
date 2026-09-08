@@ -1944,3 +1944,100 @@ img { display: block; max-width: 100%; }
   .mk-cc-inner { flex-direction: column; align-items: stretch; padding: 14px; }
   .mk-cc-actions { justify-content: flex-end; }
 }
+
+/* ══════════════════════════════════════════════════════════
+   APERTURA — Franja vendedores + badge muestra + modal
+   ══════════════════════════════════════════════════════════ */
+
+/* Franja fija de convocatoria de vendedores */
+.mk-vendor-strip {
+  display: flex; align-items: center; justify-content: space-between; gap: 20px;
+  background: var(--ink-2); color: #fff;
+  padding: 18px var(--pad); max-width: 100%;
+}
+.mk-vendor-strip-copy {
+  display: flex; align-items: center; gap: 14px;
+  min-width: 0;
+}
+.mk-vendor-strip-ico { flex-shrink: 0; opacity: .85; }
+.mk-vendor-strip-copy div { display: flex; flex-direction: column; gap: 3px; }
+.mk-vendor-strip-copy strong {
+  font-size: 15px; font-weight: 800; letter-spacing: -.01em; color: #fff;
+}
+.mk-vendor-strip-copy span {
+  font-size: 13.5px; color: rgba(255,255,255,.7); line-height: 1.4;
+}
+.mk-vendor-strip-cta {
+  flex-shrink: 0;
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--brand); color: #fff;
+  padding: 10px 20px; border-radius: 10px;
+  font-size: 14px; font-weight: 700; white-space: nowrap;
+  transition: background .15s;
+}
+.mk-vendor-strip-cta:hover { background: var(--brand-600); }
+@media (max-width: 680px) {
+  .mk-vendor-strip { flex-direction: column; align-items: flex-start; padding: 16px; }
+  .mk-vendor-strip-cta { width: 100%; justify-content: center; }
+}
+
+/* Badge MUESTRA en tarjeta de producto */
+.mk-card-muestra {
+  position: absolute; top: 10px; left: 10px; z-index: 3;
+  background: rgba(22,32,43,.75); backdrop-filter: blur(4px);
+  color: #fff; font-size: 10px; font-weight: 800; letter-spacing: .08em;
+  padding: 3px 8px; border-radius: 6px;
+  pointer-events: none;
+}
+
+/* Badge de tienda real verificada */
+.mk-card-tienda {
+  position: absolute; top: 10px; left: 10px; z-index: 3;
+  background: rgba(21,128,61,.88); backdrop-filter: blur(4px);
+  color: #fff; font-size: 10px; font-weight: 800; letter-spacing: .04em;
+  padding: 3px 8px; border-radius: 6px;
+  pointer-events: none;
+  max-width: 160px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* Modal de apertura */
+.mk-muestra-overlay {
+  position: fixed; inset: 0; z-index: 9000;
+  background: rgba(16,24,33,.55); backdrop-filter: blur(3px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.mk-muestra-modal {
+  position: relative;
+  background: var(--surface); border-radius: 20px;
+  box-shadow: 0 24px 64px rgba(0,0,0,.22);
+  width: 100%; max-width: 440px;
+  padding: 40px 36px 32px;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  text-align: center;
+}
+.mk-muestra-close {
+  position: absolute; top: 16px; right: 16px;
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--line-2); color: var(--muted);
+  font-size: 20px; line-height: 1; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: background .15s;
+}
+.mk-muestra-close:hover { background: var(--line); }
+.mk-muestra-emoji { font-size: 44px; line-height: 1; }
+.mk-muestra-title {
+  font-size: 22px; font-weight: 800; color: var(--ink); letter-spacing: -.02em;
+}
+.mk-muestra-body {
+  font-size: 15px; color: var(--muted); line-height: 1.55; margin: 0;
+}
+.mk-muestra-cta {
+  display: flex !important; align-items: center; justify-content: center;
+  width: 100%; padding: 13px 20px !important; font-size: 15px !important;
+  margin-top: 4px; border-radius: 12px !important;
+}
+.mk-muestra-dismiss {
+  font-size: 13.5px; color: var(--muted-2); text-decoration: underline;
+  cursor: pointer; background: none; border: none; padding: 4px 0;
+}
+.mk-muestra-dismiss:hover { color: var(--muted); }

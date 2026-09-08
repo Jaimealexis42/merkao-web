@@ -170,6 +170,12 @@ export default function LibroReclamacionesPage() {
       <SiteTopnav />
       <main className="mk-libro">
         <div className="mk-libro-wrap">
+          <div className="mk-libro-aviso-proveedor" role="note">
+            <strong>Este formulario corresponde exclusivamente a:</strong>
+            <span>{PROVEEDOR.nombreComercial} — RUC {PROVEEDOR.ruc} — {PROVEEDOR.domicilio}</span>
+            <span>Si tu reclamo es con otra empresa, verificá el RUC en tu boleta o comprobante antes de continuar.</span>
+          </div>
+
           <header className="mk-libro-head">
             <h1>Libro de Reclamaciones</h1>
             <p>
