@@ -1,35 +1,8 @@
 {
-  "lastIndex": 1,
-  "lastPostedDate": "2026-09-07",
-  "totalPosts": 92,
+  "lastIndex": 2,
+  "lastPostedDate": "2026-09-09",
+  "totalPosts": 93,
   "history": [
-    {
-      "fecha": "2026-07-18T14:21:02.748Z",
-      "fechaPeru": "2026-07-18",
-      "variantIndex": 1,
-      "variantId": 2,
-      "enfoque": "Para la que recién empieza",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122131824423345830",
-      "fbPhotoId": "122131824399345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122131824423345830",
-      "image": {
-        "source": "unsplash",
-        "query": "paisaje peru",
-        "theme": "general",
-        "photo_id": "fvptwPZ2Fqo",
-        "photo_url": "https://images.unsplash.com/photo-1563818708336-3e3449ca7eb4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHw5fHxwYWlzYWplJTIwcGVydXxlbnwxfDB8fHwxNzg0Mzg0NDQ4fDA&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Amilcar Alvarez Garcia",
-        "photographer_url": "https://unsplash.com/@amil_style",
-        "alt": "mountain under blue sky"
-      },
-      "ig": {
-        "mediaId": "18088885940431590",
-        "containerId": "18135425977564725",
-        "permalink": "https://www.instagram.com/p/Da7_fR0IKN_/",
-        "elapsedMs": 8889
-      }
-    },
     {
       "fecha": "2026-07-19T14:25:05.654Z",
       "fechaPeru": "2026-07-19",
@@ -1265,6 +1238,30 @@
       },
       "ig": {
         "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Monday, 07-Sep-26 11:09:21 PDT."
+      }
+    },
+    {
+      "fecha": "2026-09-09T17:04:14.647Z",
+      "fechaPeru": "2026-09-09",
+      "variantIndex": 2,
+      "variantId": 3,
+      "enfoque": "Artesana / productora regional",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122142955629345830",
+      "fbPhotoId": "122142955605345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122142955629345830",
+      "image": {
+        "source": "unsplash",
+        "query": "weaving peru",
+        "theme": "artesania",
+        "photo_id": "pwuThKpUHUM",
+        "photo_url": "https://images.unsplash.com/photo-1743913223211-6e58704cefe0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxMXx8d2VhdmluZyUyMHBlcnV8ZW58MXwwfHx8MTc4ODk3MzQ1MHww&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Anyela Málaga Lazarte",
+        "photographer_url": "https://unsplash.com/@capturando_maravillas",
+        "alt": "A person weaves on a traditional loom"
+      },
+      "ig": {
+        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Wednesday, 09-Sep-26 10:04:14 PDT."
       }
     }
   ]
