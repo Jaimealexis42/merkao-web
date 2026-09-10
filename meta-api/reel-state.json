@@ -1,25 +1,7 @@
 {
-  "lastReelDate": "2026-09-09",
-  "totalReels": 87,
+  "lastReelDate": "2026-09-10",
+  "totalReels": 88,
   "history": [
-    {
-      "fecha": "2026-07-19T14:27:50.901Z",
-      "fechaPeru": "2026-07-19",
-      "product": {
-        "id": "48a73792-c9cc-4dc6-b48a-b8d67997b97e",
-        "nombre": "Cuadro shipibo-conibo original 40×60 cm",
-        "ciudad": "Ucayali",
-        "precio": 180
-      },
-      "ig": {
-        "error": "ig container no llegó a FINISHED en 30 intentos"
-      },
-      "fb": {
-        "videoId": "4267370576908506",
-        "permalink": "https://www.facebook.com/reel/4267370576908506",
-        "elapsedMs": 8393
-      }
-    },
     {
       "fecha": "2026-07-20T15:14:35.950Z",
       "fechaPeru": "2026-07-20",
@@ -900,6 +882,24 @@
         "videoId": "1735873311036145",
         "permalink": "https://www.facebook.com/reel/1735873311036145",
         "elapsedMs": 8240
+      }
+    },
+    {
+      "fecha": "2026-09-10T16:56:01.277Z",
+      "fechaPeru": "2026-09-10",
+      "product": {
+        "id": "a6a26730-79db-4615-b02f-9f22fb2cd6d9",
+        "nombre": "Polo de algodón pima peruano — Pack x3",
+        "ciudad": "Lima",
+        "precio": 65
+      },
+      "ig": {
+        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Thursday, 10-Sep-26 09:55:54 PDT."
+      },
+      "fb": {
+        "videoId": "1814892663036318",
+        "permalink": "https://www.facebook.com/reel/1814892663036318",
+        "elapsedMs": 6518
       }
     }
   ]
