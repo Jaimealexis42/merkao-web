@@ -1,35 +1,8 @@
 {
-  "lastIndex": 1,
-  "lastPostedDate": "2026-09-15",
-  "totalPosts": 99,
+  "lastIndex": 2,
+  "lastPostedDate": "2026-09-16",
+  "totalPosts": 100,
   "history": [
-    {
-      "fecha": "2026-07-25T14:38:43.214Z",
-      "fechaPeru": "2026-07-25",
-      "variantIndex": 1,
-      "variantId": 2,
-      "enfoque": "Para la que recién empieza",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122133349641345830",
-      "fbPhotoId": "122133349611345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122133349641345830",
-      "image": {
-        "source": "unsplash",
-        "query": "paisaje peru",
-        "theme": "general",
-        "photo_id": "vZ9SVXGqhgg",
-        "photo_url": "https://images.unsplash.com/photo-1728572323998-a72cbf10c0ff?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxMnx8cGFpc2FqZSUyMHBlcnV8ZW58MXwwfHx8MTc4NDk5MDMwNHww&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Jhon Aldo Nuñez H.",
-        "photographer_url": "https://unsplash.com/@jhonaldo23",
-        "alt": "A large circular structure in the middle of a field"
-      },
-      "ig": {
-        "mediaId": "17892706644581511",
-        "containerId": "18137040991564725",
-        "permalink": "https://www.instagram.com/p/DbODEyfGskU/",
-        "elapsedMs": 10173
-      }
-    },
     {
       "fecha": "2026-07-27T15:50:38.687Z",
       "fechaPeru": "2026-07-27",
@@ -1244,6 +1217,30 @@
       },
       "ig": {
         "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Tuesday, 15-Sep-26 10:32:11 PDT."
+      }
+    },
+    {
+      "fecha": "2026-09-16T17:32:33.507Z",
+      "fechaPeru": "2026-09-16",
+      "variantIndex": 2,
+      "variantId": 3,
+      "enfoque": "Artesana / productora regional",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122144649651345830",
+      "fbPhotoId": "122144649627345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122144649651345830",
+      "image": {
+        "source": "unsplash",
+        "query": "weaving peru",
+        "theme": "artesania",
+        "photo_id": "wdvpxIKah4I",
+        "photo_url": "https://images.unsplash.com/photo-1769358720638-932b3dd8101a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHw3fHx3ZWF2aW5nJTIwcGVydXxlbnwxfDB8fHwxNzg5NTc5OTQ2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Sophia Simoes",
+        "photographer_url": "https://unsplash.com/@sophiasimoes",
+        "alt": "Woman weaving colorful fabric on a loom"
+      },
+      "ig": {
+        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Wednesday, 16-Sep-26 10:32:33 PDT."
       }
     }
   ]
