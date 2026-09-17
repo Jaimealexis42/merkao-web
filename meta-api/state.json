@@ -1,35 +1,8 @@
 {
-  "lastIndex": 2,
-  "lastPostedDate": "2026-09-16",
-  "totalPosts": 100,
+  "lastIndex": 3,
+  "lastPostedDate": "2026-09-17",
+  "totalPosts": 101,
   "history": [
-    {
-      "fecha": "2026-07-27T15:50:38.687Z",
-      "fechaPeru": "2026-07-27",
-      "variantIndex": 2,
-      "variantId": 3,
-      "enfoque": "Artesana / productora regional",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122133720297345830",
-      "fbPhotoId": "122133720273345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122133720297345830",
-      "image": {
-        "source": "unsplash",
-        "query": "weaving peru",
-        "theme": "artesania",
-        "photo_id": "fqur_YKkxI4",
-        "photo_url": "https://images.unsplash.com/photo-1524876564579-55d0eeeb00f3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxM3x8d2VhdmluZyUyMHBlcnV8ZW58MXwwfHx8MTc4NTA3NjcxNHww&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Willian Justen de Vasconcellos",
-        "photographer_url": "https://unsplash.com/@willianjusten",
-        "alt": "woman sitting on chair"
-      },
-      "ig": {
-        "mediaId": "18437101090125480",
-        "containerId": "18137547694564725",
-        "permalink": "https://www.instagram.com/p/DbTU5cTGi0a/",
-        "elapsedMs": 8614
-      }
-    },
     {
       "fecha": "2026-07-28T15:23:29.831Z",
       "fechaPeru": "2026-07-28",
@@ -1241,6 +1214,30 @@
       },
       "ig": {
         "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Wednesday, 16-Sep-26 10:32:33 PDT."
+      }
+    },
+    {
+      "fecha": "2026-09-17T17:31:49.513Z",
+      "fechaPeru": "2026-09-17",
+      "variantIndex": 3,
+      "variantId": 4,
+      "enfoque": "Pregunta abierta a la comunidad",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122144910237345830",
+      "fbPhotoId": "122144910213345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122144910237345830",
+      "image": {
+        "source": "unsplash",
+        "query": "paisaje peru",
+        "theme": "general",
+        "photo_id": "73-k4qTeUBU",
+        "photo_url": "https://images.unsplash.com/photo-1642646484551-49b75b549bd7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxMnx8cGFpc2FqZSUyMHBlcnV8ZW58MXwwfHx8MTc4OTY2NjMwM3ww&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Giuliana Catachura",
+        "photographer_url": "https://unsplash.com/@giulianacat",
+        "alt": "a close up of a thatched roof with a blue sky in the background"
+      },
+      "ig": {
+        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Thursday, 17-Sep-26 10:31:49 PDT."
       }
     }
   ]
