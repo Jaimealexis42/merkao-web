@@ -1,21 +1,8 @@
 {
-  "lastIndex": 3,
-  "lastPostedDate": "2026-09-17",
-  "totalPosts": 101,
+  "lastIndex": 4,
+  "lastPostedDate": "2026-09-18",
+  "totalPosts": 102,
   "history": [
-    {
-      "fecha": "2026-07-28T15:23:29.831Z",
-      "fechaPeru": "2026-07-28",
-      "variantIndex": 3,
-      "variantId": 4,
-      "enfoque": "Pregunta abierta a la comunidad",
-      "endpoint": "feed",
-      "fbPostId": "1177766395421729_122133896043345830",
-      "fbPhotoId": null,
-      "url": "https://www.facebook.com/1177766395421729/posts/122133896043345830",
-      "image": null,
-      "ig": null
-    },
     {
       "fecha": "2026-07-29T15:32:22.643Z",
       "fechaPeru": "2026-07-29",
@@ -1238,6 +1225,30 @@
       },
       "ig": {
         "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Thursday, 17-Sep-26 10:31:49 PDT."
+      }
+    },
+    {
+      "fecha": "2026-09-18T16:58:46.115Z",
+      "fechaPeru": "2026-09-18",
+      "variantIndex": 4,
+      "variantId": 5,
+      "enfoque": "Testimonio en primera persona",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122145134751345830",
+      "fbPhotoId": "122145134727345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122145134751345830",
+      "image": {
+        "source": "unsplash",
+        "query": "peruvian market fruits",
+        "theme": "alimentos",
+        "photo_id": "WSsEj4oqXWo",
+        "photo_url": "https://images.unsplash.com/photo-1760726361439-4afaa0d26808?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxfHxwZXJ1dmlhbiUyMG1hcmtldCUyMGZydWl0c3xlbnwxfDB8fHwxNzg5NzUwNzIwfDA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Darya Luganskaya",
+        "photographer_url": "https://unsplash.com/@dlugansky",
+        "alt": "Street vendor with drinks and snacks for sale"
+      },
+      "ig": {
+        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Friday, 18-Sep-26 09:58:46 PDT."
       }
     }
   ]
