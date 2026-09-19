@@ -1,35 +1,8 @@
 {
-  "lastIndex": 4,
-  "lastPostedDate": "2026-09-18",
-  "totalPosts": 102,
+  "lastIndex": 5,
+  "lastPostedDate": "2026-09-19",
+  "totalPosts": 103,
   "history": [
-    {
-      "fecha": "2026-07-29T15:32:22.643Z",
-      "fechaPeru": "2026-07-29",
-      "variantIndex": 4,
-      "variantId": 5,
-      "enfoque": "Testimonio en primera persona",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122134382637345830",
-      "fbPhotoId": "122134382613345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122134382637345830",
-      "image": {
-        "source": "unsplash",
-        "query": "peruvian market fruits",
-        "theme": "alimentos",
-        "photo_id": "WSsEj4oqXWo",
-        "photo_url": "https://images.unsplash.com/photo-1760726361439-4afaa0d26808?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxfHxwZXJ1dmlhbiUyMG1hcmtldCUyMGZydWl0c3xlbnwxfDB8fHwxNzg1MzM5MTI5fDA&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Darya Luganskaya",
-        "photographer_url": "https://unsplash.com/@dlugansky",
-        "alt": "Street vendor with drinks and snacks for sale"
-      },
-      "ig": {
-        "mediaId": "18129459718729167",
-        "containerId": "18138012274564725",
-        "permalink": "https://www.instagram.com/p/DbYcZo9lIlL/",
-        "elapsedMs": 6365
-      }
-    },
     {
       "fecha": "2026-07-30T15:12:12.229Z",
       "fechaPeru": "2026-07-30",
@@ -1249,6 +1222,30 @@
       },
       "ig": {
         "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Friday, 18-Sep-26 09:58:46 PDT."
+      }
+    },
+    {
+      "fecha": "2026-09-19T16:18:26.343Z",
+      "fechaPeru": "2026-09-19",
+      "variantIndex": 5,
+      "variantId": 6,
+      "enfoque": "Tip de venta + mención natural",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122145402387345830",
+      "fbPhotoId": "122145402363345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122145402387345830",
+      "image": {
+        "source": "unsplash",
+        "query": "cafe peru plantacion",
+        "theme": "cafe",
+        "photo_id": "h28p96ICizo",
+        "photo_url": "https://images.unsplash.com/photo-1515694590185-73647ba02c10?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxfHxjYWZlJTIwcGVydSUyMHBsYW50YWNpb258ZW58MXwwfHx8MTc4OTgzNDY5N3ww&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Clint McKoy",
+        "photographer_url": "https://unsplash.com/@clintmckoy",
+        "alt": "round green and red berries"
+      },
+      "ig": {
+        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Saturday, 19-Sep-26 09:18:26 PDT."
       }
     }
   ]
