@@ -1,35 +1,8 @@
 {
-  "lastIndex": 6,
-  "lastPostedDate": "2026-09-20",
-  "totalPosts": 104,
+  "lastIndex": 0,
+  "lastPostedDate": "2026-09-21",
+  "totalPosts": 105,
   "history": [
-    {
-      "fecha": "2026-07-31T15:21:21.889Z",
-      "fechaPeru": "2026-07-31",
-      "variantIndex": 6,
-      "variantId": 7,
-      "enfoque": "Invitación corta y cálida",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122134759251345830",
-      "fbPhotoId": "122134759227345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122134759251345830",
-      "image": {
-        "source": "unsplash",
-        "query": "ropa colorida peru",
-        "theme": "moda",
-        "photo_id": "WEME5LOrLpE",
-        "photo_url": "https://images.unsplash.com/photo-1545206085-d0e519bdcecd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxfHxyb3BhJTIwY29sb3JpZGElMjBwZXJ1fGVufDF8MHx8fDE3ODU1MTEyNjl8MA&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Peter Livesey",
-        "photographer_url": "https://unsplash.com/@plivesey",
-        "alt": "woman in store with display of assorted shirts and textiles"
-      },
-      "ig": {
-        "mediaId": "18122212489808458",
-        "containerId": "18138462538564725",
-        "permalink": "https://www.instagram.com/p/DbdkuizoM3h/",
-        "elapsedMs": 8313
-      }
-    },
     {
       "fecha": "2026-08-01T14:28:08.341Z",
       "fechaPeru": "2026-08-01",
@@ -1243,6 +1216,30 @@
       },
       "ig": {
         "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Sunday, 20-Sep-26 09:42:55 PDT."
+      }
+    },
+    {
+      "fecha": "2026-09-21T18:33:14.583Z",
+      "fechaPeru": "2026-09-21",
+      "variantIndex": 0,
+      "variantId": 1,
+      "enfoque": "Comparativa con números",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122145994677345830",
+      "fbPhotoId": "122145994653345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122145994677345830",
+      "image": {
+        "source": "unsplash",
+        "query": "paisaje peru",
+        "theme": "general",
+        "photo_id": "fqqGUuEodc8",
+        "photo_url": "https://images.unsplash.com/photo-1739210856310-b50baecfa9f1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxNXx8cGFpc2FqZSUyMHBlcnV8ZW58MXwwfHx8MTc5MDAxNTU4N3ww&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Anyela Málaga Lazarte",
+        "photographer_url": "https://unsplash.com/@capturando_maravillas",
+        "alt": "A large body of water with a mountain in the background"
+      },
+      "ig": {
+        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Monday, 21-Sep-26 11:33:14 PDT."
       }
     }
   ]
