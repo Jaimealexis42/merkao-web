@@ -1,35 +1,8 @@
 {
-  "lastIndex": 1,
-  "lastPostedDate": "2026-09-22",
-  "totalPosts": 106,
+  "lastIndex": 2,
+  "lastPostedDate": "2026-09-23",
+  "totalPosts": 107,
   "history": [
-    {
-      "fecha": "2026-08-02T14:38:07.068Z",
-      "fechaPeru": "2026-08-02",
-      "variantIndex": 1,
-      "variantId": 2,
-      "enfoque": "Para la que recién empieza",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122135142393345830",
-      "fbPhotoId": "122135142369345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122135142393345830",
-      "image": {
-        "source": "unsplash",
-        "query": "paisaje peru",
-        "theme": "general",
-        "photo_id": "LDQl11-GNU8",
-        "photo_url": "https://images.unsplash.com/photo-1725413531426-0d41136f5eb5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHw1fHxwYWlzYWplJTIwcGVydXxlbnwxfDB8fHwxNzg1NjgxNDY5fDA&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Josep Garip",
-        "photographer_url": "https://unsplash.com/@josep_garip",
-        "alt": "A scenic view of a valley and mountains"
-      },
-      "ig": {
-        "mediaId": "18087502943163597",
-        "containerId": "18138918382564725",
-        "permalink": "https://www.instagram.com/p/DbipXjFmpoD/",
-        "elapsedMs": 8149
-      }
-    },
     {
       "fecha": "2026-08-03T15:44:56.029Z",
       "fechaPeru": "2026-08-03",
@@ -1237,6 +1210,30 @@
       },
       "ig": {
         "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Tuesday, 22-Sep-26 10:33:32 PDT."
+      }
+    },
+    {
+      "fecha": "2026-09-23T17:45:46.200Z",
+      "fechaPeru": "2026-09-23",
+      "variantIndex": 2,
+      "variantId": 3,
+      "enfoque": "Artesana / productora regional",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122146698507345830",
+      "fbPhotoId": "122146698483345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122146698507345830",
+      "image": {
+        "source": "unsplash",
+        "query": "weaving peru",
+        "theme": "artesania",
+        "photo_id": "wdvpxIKah4I",
+        "photo_url": "https://images.unsplash.com/photo-1769358720638-932b3dd8101a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHw3fHx3ZWF2aW5nJTIwcGVydXxlbnwxfDB8fHwxNzkwMTg1NTQwfDA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Sophia Simoes",
+        "photographer_url": "https://unsplash.com/@sophiasimoes",
+        "alt": "Woman weaving colorful fabric on a loom"
+      },
+      "ig": {
+        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Wednesday, 23-Sep-26 10:45:46 PDT."
       }
     }
   ]
