@@ -1,25 +1,7 @@
 {
-  "lastReelDate": "2026-09-23",
-  "totalReels": 101,
+  "lastReelDate": "2026-09-24",
+  "totalReels": 102,
   "history": [
-    {
-      "fecha": "2026-08-03T15:46:25.184Z",
-      "fechaPeru": "2026-08-03",
-      "product": {
-        "id": "a6a26730-79db-4615-b02f-9f22fb2cd6d9",
-        "nombre": "Polo de algodón pima peruano — Pack x3",
-        "ciudad": "Lima",
-        "precio": 65
-      },
-      "ig": {
-        "error": "ig container status=ERROR status=\"ERROR\""
-      },
-      "fb": {
-        "videoId": "1034752966027610",
-        "permalink": "https://www.facebook.com/reel/1034752966027610",
-        "elapsedMs": 12036
-      }
-    },
     {
       "fecha": "2026-08-04T15:27:42.132Z",
       "fechaPeru": "2026-08-04",
@@ -900,6 +882,24 @@
         "videoId": "1816249903031600",
         "permalink": "https://www.facebook.com/reel/1816249903031600",
         "elapsedMs": 13235
+      }
+    },
+    {
+      "fecha": "2026-09-24T17:47:46.416Z",
+      "fechaPeru": "2026-09-24",
+      "product": {
+        "id": "79d0e769-b856-4de9-83ab-321266096a70",
+        "nombre": "Chompa de alpaca tejida a mano — Cusco",
+        "ciudad": "Cusco",
+        "precio": 85
+      },
+      "ig": {
+        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Thursday, 24-Sep-26 10:47:38 PDT."
+      },
+      "fb": {
+        "videoId": "2274264480091429",
+        "permalink": "https://www.facebook.com/reel/2274264480091429",
+        "elapsedMs": 7468
       }
     }
   ]
