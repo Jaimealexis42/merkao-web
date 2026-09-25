@@ -1,25 +1,7 @@
 {
-  "lastReelDate": "2026-09-24",
-  "totalReels": 102,
+  "lastReelDate": "2026-09-25",
+  "totalReels": 103,
   "history": [
-    {
-      "fecha": "2026-08-04T15:27:42.132Z",
-      "fechaPeru": "2026-08-04",
-      "product": {
-        "id": "1a3394c1-f45f-4312-8482-b79421abcaf2",
-        "nombre": "Cerámica Chulucanas — Jarrón decorativo grande",
-        "ciudad": "Piura",
-        "precio": 220
-      },
-      "ig": {
-        "error": "ig container status=ERROR status=\"ERROR\""
-      },
-      "fb": {
-        "videoId": "1056593106877533",
-        "permalink": "https://www.facebook.com/reel/1056593106877533",
-        "elapsedMs": 11505
-      }
-    },
     {
       "fecha": "2026-08-05T15:17:06.937Z",
       "fechaPeru": "2026-08-05",
@@ -900,6 +882,24 @@
         "videoId": "2274264480091429",
         "permalink": "https://www.facebook.com/reel/2274264480091429",
         "elapsedMs": 7468
+      }
+    },
+    {
+      "fecha": "2026-09-25T17:49:45.130Z",
+      "fechaPeru": "2026-09-25",
+      "product": {
+        "id": "48a73792-c9cc-4dc6-b48a-b8d67997b97e",
+        "nombre": "Cuadro shipibo-conibo original 40×60 cm",
+        "ciudad": "Ucayali",
+        "precio": 180
+      },
+      "ig": {
+        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Friday, 25-Sep-26 10:49:37 PDT."
+      },
+      "fb": {
+        "videoId": "1297322155747035",
+        "permalink": "https://www.facebook.com/reel/1297322155747035",
+        "elapsedMs": 7719
       }
     }
   ]
