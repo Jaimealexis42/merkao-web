@@ -1,25 +1,7 @@
 {
-  "lastReelDate": "2026-09-27",
-  "totalReels": 105,
+  "lastReelDate": "2026-09-28",
+  "totalReels": 106,
   "history": [
-    {
-      "fecha": "2026-08-07T14:15:16.269Z",
-      "fechaPeru": "2026-08-07",
-      "product": {
-        "id": "1a3394c1-f45f-4312-8482-b79421abcaf2",
-        "nombre": "Cerámica Chulucanas — Jarrón decorativo grande",
-        "ciudad": "Piura",
-        "precio": 220
-      },
-      "ig": {
-        "error": "ig container status=ERROR status=\"ERROR\""
-      },
-      "fb": {
-        "videoId": "2084301902172362",
-        "permalink": "https://www.facebook.com/reel/2084301902172362",
-        "elapsedMs": 7773
-      }
-    },
     {
       "fecha": "2026-08-08T13:49:09.132Z",
       "fechaPeru": "2026-08-08",
@@ -900,6 +882,24 @@
         "videoId": "1514472490504907",
         "permalink": "https://www.facebook.com/reel/1514472490504907",
         "elapsedMs": 8122
+      }
+    },
+    {
+      "fecha": "2026-09-28T20:02:53.981Z",
+      "fechaPeru": "2026-09-28",
+      "product": {
+        "id": "79d0e769-b856-4de9-83ab-321266096a70",
+        "nombre": "Chompa de alpaca tejida a mano — Cusco",
+        "ciudad": "Cusco",
+        "precio": 85
+      },
+      "ig": {
+        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Monday, 28-Sep-26 13:02:44 PDT."
+      },
+      "fb": {
+        "videoId": "1660582405680072",
+        "permalink": "https://www.facebook.com/reel/1660582405680072",
+        "elapsedMs": 9392
       }
     }
   ]
