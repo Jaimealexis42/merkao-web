@@ -1,25 +1,7 @@
 {
-  "lastReelDate": "2026-09-28",
-  "totalReels": 106,
+  "lastReelDate": "2026-09-29",
+  "totalReels": 107,
   "history": [
-    {
-      "fecha": "2026-08-08T13:49:09.132Z",
-      "fechaPeru": "2026-08-08",
-      "product": {
-        "id": "4f45299d-7db1-41d8-8d74-cb8bc4640787",
-        "nombre": "Café especial Villa Rica 500 g — Molido",
-        "ciudad": "Pasco",
-        "precio": 35
-      },
-      "ig": {
-        "error": "ig container status=ERROR status=\"ERROR\""
-      },
-      "fb": {
-        "videoId": "1024654883736617",
-        "permalink": "https://www.facebook.com/reel/1024654883736617",
-        "elapsedMs": 13089
-      }
-    },
     {
       "fecha": "2026-08-09T13:53:59.094Z",
       "fechaPeru": "2026-08-09",
@@ -900,6 +882,24 @@
         "videoId": "1660582405680072",
         "permalink": "https://www.facebook.com/reel/1660582405680072",
         "elapsedMs": 9392
+      }
+    },
+    {
+      "fecha": "2026-09-29T18:30:37.178Z",
+      "fechaPeru": "2026-09-29",
+      "product": {
+        "id": "1a3394c1-f45f-4312-8482-b79421abcaf2",
+        "nombre": "Cerámica Chulucanas — Jarrón decorativo grande",
+        "ciudad": "Piura",
+        "precio": 220
+      },
+      "ig": {
+        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Tuesday, 29-Sep-26 11:30:23 PDT."
+      },
+      "fb": {
+        "videoId": "2009437646278015",
+        "permalink": "https://www.facebook.com/reel/2009437646278015",
+        "elapsedMs": 13318
       }
     }
   ]
