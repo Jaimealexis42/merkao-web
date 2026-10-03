@@ -1,25 +1,7 @@
 {
-  "lastReelDate": "2026-10-02",
-  "totalReels": 110,
+  "lastReelDate": "2026-10-03",
+  "totalReels": 111,
   "history": [
-    {
-      "fecha": "2026-08-12T14:23:49.469Z",
-      "fechaPeru": "2026-08-12",
-      "product": {
-        "id": "48a73792-c9cc-4dc6-b48a-b8d67997b97e",
-        "nombre": "Cuadro shipibo-conibo original 40×60 cm",
-        "ciudad": "Ucayali",
-        "precio": 180
-      },
-      "ig": {
-        "error": "ig container status=ERROR status=\"ERROR\""
-      },
-      "fb": {
-        "videoId": "1292188102838796",
-        "permalink": "https://www.facebook.com/reel/1292188102838796",
-        "elapsedMs": 11137
-      }
-    },
     {
       "fecha": "2026-08-13T14:24:09.213Z",
       "fechaPeru": "2026-08-13",
@@ -900,6 +882,24 @@
         "videoId": "1655391366231955",
         "permalink": "https://www.facebook.com/reel/1655391366231955",
         "elapsedMs": 11203
+      }
+    },
+    {
+      "fecha": "2026-10-03T17:03:31.157Z",
+      "fechaPeru": "2026-10-03",
+      "product": {
+        "id": "0cf6af2c-0c1c-4b44-b070-478129251122",
+        "nombre": "Cacao puro en polvo Amazonas 1 kg — Orgánico",
+        "ciudad": "San Martín",
+        "precio": 28
+      },
+      "ig": {
+        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Saturday, 03-Oct-26 10:03:24 PDT."
+      },
+      "fb": {
+        "videoId": "1783058192785849",
+        "permalink": "https://www.facebook.com/reel/1783058192785849",
+        "elapsedMs": 6374
       }
     }
   ]

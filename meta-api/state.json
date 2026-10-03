@@ -1,35 +1,8 @@
 {
-  "lastIndex": 4,
-  "lastPostedDate": "2026-10-02",
-  "totalPosts": 116,
+  "lastIndex": 5,
+  "lastPostedDate": "2026-10-03",
+  "totalPosts": 117,
   "history": [
-    {
-      "fecha": "2026-08-12T14:22:17.252Z",
-      "fechaPeru": "2026-08-12",
-      "variantIndex": 4,
-      "variantId": 5,
-      "enfoque": "Testimonio en primera persona",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122137071483345830",
-      "fbPhotoId": "122137071441345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122137071483345830",
-      "image": {
-        "source": "unsplash",
-        "query": "peruvian market fruits",
-        "theme": "alimentos",
-        "photo_id": "BWUvkv93HU4",
-        "photo_url": "https://images.unsplash.com/photo-1774082290292-eeef41f4d889?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwyfHxwZXJ1dmlhbiUyMG1hcmtldCUyMGZydWl0c3xlbnwxfDB8fHwxNzg2NTQ0NTIzfDA&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Sheila C",
-        "photographer_url": "https://unsplash.com/@qld_traveller",
-        "alt": "Woman selling colorful textiles at a market stall."
-      },
-      "ig": {
-        "mediaId": "18481297576100410",
-        "containerId": "18141098407564725",
-        "permalink": "https://www.instagram.com/p/Db8XgRXlqjY/",
-        "elapsedMs": 8958
-      }
-    },
     {
       "fecha": "2026-08-13T14:23:04.731Z",
       "fechaPeru": "2026-08-13",
@@ -1207,6 +1180,30 @@
       },
       "ig": {
         "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Friday, 02-Oct-26 11:15:26 PDT."
+      }
+    },
+    {
+      "fecha": "2026-10-03T17:03:02.168Z",
+      "fechaPeru": "2026-10-03",
+      "variantIndex": 5,
+      "variantId": 6,
+      "enfoque": "Tip de venta + mención natural",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122149586985345830",
+      "fbPhotoId": "122149586955345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122149586985345830",
+      "image": {
+        "source": "unsplash",
+        "query": "cafe peru plantacion",
+        "theme": "cafe",
+        "photo_id": "ouob6k2zsLw",
+        "photo_url": "https://images.unsplash.com/photo-1652015496419-58606c1b5d1c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxMXx8Y2FmZSUyMHBlcnUlMjBwbGFudGFjaW9ufGVufDF8MHx8fDE3OTEwNDY5Nzh8MA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "PROJETO CAFÉ GATO-MOURISCO",
+        "photographer_url": "https://unsplash.com/@projetocafegatomourisco",
+        "alt": "a green hillside with trees"
+      },
+      "ig": {
+        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Saturday, 03-Oct-26 10:03:02 PDT."
       }
     }
   ]
