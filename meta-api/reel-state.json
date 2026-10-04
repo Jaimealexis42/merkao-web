@@ -1,25 +1,7 @@
 {
-  "lastReelDate": "2026-10-03",
-  "totalReels": 111,
+  "lastReelDate": "2026-10-04",
+  "totalReels": 112,
   "history": [
-    {
-      "fecha": "2026-08-13T14:24:09.213Z",
-      "fechaPeru": "2026-08-13",
-      "product": {
-        "id": "9d8833c9-e109-4dcf-95ac-0a650f34385c",
-        "nombre": "Vestido bordado ayacuchano multicolor",
-        "ciudad": "Ayacucho",
-        "precio": 120
-      },
-      "ig": {
-        "error": "ig container status=ERROR status=\"ERROR\""
-      },
-      "fb": {
-        "videoId": "1433257858650369",
-        "permalink": "https://www.facebook.com/reel/1433257858650369",
-        "elapsedMs": 7429
-      }
-    },
     {
       "fecha": "2026-08-15T13:32:28.892Z",
       "fechaPeru": "2026-08-15",
@@ -900,6 +882,24 @@
         "videoId": "1783058192785849",
         "permalink": "https://www.facebook.com/reel/1783058192785849",
         "elapsedMs": 6374
+      }
+    },
+    {
+      "fecha": "2026-10-04T17:21:28.608Z",
+      "fechaPeru": "2026-10-04",
+      "product": {
+        "id": "48a73792-c9cc-4dc6-b48a-b8d67997b97e",
+        "nombre": "Cuadro shipibo-conibo original 40×60 cm",
+        "ciudad": "Ucayali",
+        "precio": 180
+      },
+      "ig": {
+        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Sunday, 04-Oct-26 10:21:20 PDT."
+      },
+      "fb": {
+        "videoId": "1165726649142141",
+        "permalink": "https://www.facebook.com/reel/1165726649142141",
+        "elapsedMs": 8351
       }
     }
   ]

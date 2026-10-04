@@ -1,35 +1,8 @@
 {
-  "lastIndex": 5,
-  "lastPostedDate": "2026-10-03",
-  "totalPosts": 117,
+  "lastIndex": 6,
+  "lastPostedDate": "2026-10-04",
+  "totalPosts": 118,
   "history": [
-    {
-      "fecha": "2026-08-13T14:23:04.731Z",
-      "fechaPeru": "2026-08-13",
-      "variantIndex": 5,
-      "variantId": 6,
-      "enfoque": "Tip de venta + mención natural",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122137301223345830",
-      "fbPhotoId": "122137301199345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122137301223345830",
-      "image": {
-        "source": "unsplash",
-        "query": "cafe peru plantacion",
-        "theme": "cafe",
-        "photo_id": "P7HEx_gkGT4",
-        "photo_url": "https://images.unsplash.com/photo-1663125365404-e274869480f6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHw0fHxjYWZlJTIwcGVydSUyMHBsYW50YWNpb258ZW58MXwwfHx8MTc4NjYzMDk2Nnww&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Helena Coffee Vietnam",
-        "photographer_url": "https://unsplash.com/@helenacoffeevn",
-        "alt": "a close up of some berries"
-      },
-      "ig": {
-        "mediaId": "18054935117608873",
-        "containerId": "18141332452564725",
-        "permalink": "https://www.instagram.com/p/Db-8ZR4lM6L/",
-        "elapsedMs": 5768
-      }
-    },
     {
       "fecha": "2026-08-15T13:31:58.261Z",
       "fechaPeru": "2026-08-15",
@@ -1204,6 +1177,30 @@
       },
       "ig": {
         "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Saturday, 03-Oct-26 10:03:02 PDT."
+      }
+    },
+    {
+      "fecha": "2026-10-04T17:20:50.334Z",
+      "fechaPeru": "2026-10-04",
+      "variantIndex": 6,
+      "variantId": 7,
+      "enfoque": "Invitación corta y cálida",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122149830351345830",
+      "fbPhotoId": "122149830327345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122149830351345830",
+      "image": {
+        "source": "unsplash",
+        "query": "ropa colorida peru",
+        "theme": "moda",
+        "photo_id": "DxAFftFWkNY",
+        "photo_url": "https://images.unsplash.com/photo-1583202806174-ab03e16760d5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHw2fHxyb3BhJTIwY29sb3JpZGElMjBwZXJ1fGVufDF8MHx8fDE3OTExMzQ0NDR8MA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Deb Dowd",
+        "photographer_url": "https://unsplash.com/@fin777",
+        "alt": "woman in orange and blue dress with brown and white long coated dog"
+      },
+      "ig": {
+        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Sunday, 04-Oct-26 10:20:50 PDT."
       }
     }
   ]
