@@ -1,25 +1,7 @@
 {
-  "lastReelDate": "2026-10-04",
-  "totalReels": 112,
+  "lastReelDate": "2026-10-06",
+  "totalReels": 113,
   "history": [
-    {
-      "fecha": "2026-08-15T13:32:28.892Z",
-      "fechaPeru": "2026-08-15",
-      "product": {
-        "id": "f6d3d48d-6fb5-4ac2-b2e9-da0b80040e79",
-        "nombre": "Quinua orgánica blanca Puno — 5 kg",
-        "ciudad": "Puno",
-        "precio": 45
-      },
-      "ig": {
-        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Saturday, 15-Aug-26 06:32:19 PDT."
-      },
-      "fb": {
-        "videoId": "1024007403793419",
-        "permalink": "https://www.facebook.com/reel/1024007403793419",
-        "elapsedMs": 9517
-      }
-    },
     {
       "fecha": "2026-08-16T13:34:18.624Z",
       "fechaPeru": "2026-08-16",
@@ -900,6 +882,24 @@
         "videoId": "1165726649142141",
         "permalink": "https://www.facebook.com/reel/1165726649142141",
         "elapsedMs": 8351
+      }
+    },
+    {
+      "fecha": "2026-10-06T18:50:35.692Z",
+      "fechaPeru": "2026-10-06",
+      "product": {
+        "id": "f6d3d48d-6fb5-4ac2-b2e9-da0b80040e79",
+        "nombre": "Quinua orgánica blanca Puno — 5 kg",
+        "ciudad": "Puno",
+        "precio": 45
+      },
+      "ig": {
+        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Tuesday, 06-Oct-26 11:50:28 PDT."
+      },
+      "fb": {
+        "videoId": "1669077837975356",
+        "permalink": "https://www.facebook.com/reel/1669077837975356",
+        "elapsedMs": 6895
       }
     }
   ]
