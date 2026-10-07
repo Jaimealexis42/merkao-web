@@ -1,32 +1,8 @@
 {
-  "lastIndex": 0,
-  "lastPostedDate": "2026-10-06",
-  "totalPosts": 119,
+  "lastIndex": 1,
+  "lastPostedDate": "2026-10-07",
+  "totalPosts": 120,
   "history": [
-    {
-      "fecha": "2026-08-16T13:33:45.120Z",
-      "fechaPeru": "2026-08-16",
-      "variantIndex": 0,
-      "variantId": 1,
-      "enfoque": "Comparativa con números",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122137886001345830",
-      "fbPhotoId": "122137885977345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122137886001345830",
-      "image": {
-        "source": "unsplash",
-        "query": "paisaje peru",
-        "theme": "general",
-        "photo_id": "1vw1jr897sI",
-        "photo_url": "https://images.unsplash.com/photo-1562807210-d5fad553e573?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxOHx8cGFpc2FqZSUyMHBlcnV8ZW58MXwwfHx8MTc4Njg4NzIxN3ww&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Amilcar Alvarez Garcia",
-        "photographer_url": "https://unsplash.com/@amil_style",
-        "alt": "green grass field"
-      },
-      "ig": {
-        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Sunday, 16-Aug-26 06:33:45 PDT."
-      }
-    },
     {
       "fecha": "2026-08-17T13:41:23.702Z",
       "fechaPeru": "2026-08-17",
@@ -1201,6 +1177,30 @@
       },
       "ig": {
         "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Tuesday, 06-Oct-26 11:50:05 PDT."
+      }
+    },
+    {
+      "fecha": "2026-10-07T19:15:17.647Z",
+      "fechaPeru": "2026-10-07",
+      "variantIndex": 1,
+      "variantId": 2,
+      "enfoque": "Para la que recién empieza",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122150676573345830",
+      "fbPhotoId": "122150676549345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122150676573345830",
+      "image": {
+        "source": "unsplash",
+        "query": "paisaje peru",
+        "theme": "general",
+        "photo_id": "89BsOGHEwNs",
+        "photo_url": "https://images.unsplash.com/photo-1563318960-a1cba4a345a9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxNnx8cGFpc2FqZSUyMHBlcnV8ZW58MXwwfHx8MTc5MTQwMDUxM3ww&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Amilcar Alvarez Garcia",
+        "photographer_url": "https://unsplash.com/@amil_style",
+        "alt": "aerial photography of buildings"
+      },
+      "ig": {
+        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Wednesday, 07-Oct-26 12:15:17 PDT."
       }
     }
   ]
