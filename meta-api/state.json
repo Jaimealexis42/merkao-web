@@ -1,32 +1,8 @@
 {
-  "lastIndex": 2,
-  "lastPostedDate": "2026-10-08",
-  "totalPosts": 121,
+  "lastIndex": 3,
+  "lastPostedDate": "2026-10-09",
+  "totalPosts": 122,
   "history": [
-    {
-      "fecha": "2026-08-18T13:44:05.174Z",
-      "fechaPeru": "2026-08-18",
-      "variantIndex": 2,
-      "variantId": 3,
-      "enfoque": "Artesana / productora regional",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122138324529345830",
-      "fbPhotoId": "122138324499345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122138324529345830",
-      "image": {
-        "source": "unsplash",
-        "query": "weaving peru",
-        "theme": "artesania",
-        "photo_id": "tZ6uJBMJuVE",
-        "photo_url": "https://images.unsplash.com/photo-1730432447904-d0d408ad15c1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxMHx8d2VhdmluZyUyMHBlcnV8ZW58MXwwfHx8MTc4NzA2MDYzNnww&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Naveen Raj Dhanapal",
-        "photographer_url": "https://unsplash.com/@naveen_rd",
-        "alt": "A woman in a colorful headdress holding a surfboard"
-      },
-      "ig": {
-        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Tuesday, 18-Aug-26 06:44:05 PDT."
-      }
-    },
     {
       "fecha": "2026-08-19T13:52:10.020Z",
       "fechaPeru": "2026-08-19",
@@ -1201,6 +1177,30 @@
       },
       "ig": {
         "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Thursday, 08-Oct-26 12:11:03 PDT."
+      }
+    },
+    {
+      "fecha": "2026-10-09T18:41:47.837Z",
+      "fechaPeru": "2026-10-09",
+      "variantIndex": 3,
+      "variantId": 4,
+      "enfoque": "Pregunta abierta a la comunidad",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122151261231345830",
+      "fbPhotoId": "122151261207345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122151261231345830",
+      "image": {
+        "source": "unsplash",
+        "query": "paisaje peru",
+        "theme": "general",
+        "photo_id": "mDW5BZ9DrA4",
+        "photo_url": "https://images.unsplash.com/photo-1723432887869-4dfbd5221343?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwyMHx8cGFpc2FqZSUyMHBlcnV8ZW58MXwwfHx8MTc5MTU3MTMwMnww&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Gabriel Istvan",
+        "photographer_url": "https://unsplash.com/@gabrielistvan_fotografia",
+        "alt": "An aerial view of a large brick building"
+      },
+      "ig": {
+        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Friday, 09-Oct-26 11:41:47 PDT."
       }
     }
   ]

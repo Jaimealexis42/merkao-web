@@ -1,25 +1,7 @@
 {
-  "lastReelDate": "2026-10-08",
-  "totalReels": 115,
+  "lastReelDate": "2026-10-09",
+  "totalReels": 116,
   "history": [
-    {
-      "fecha": "2026-08-18T13:44:42.863Z",
-      "fechaPeru": "2026-08-18",
-      "product": {
-        "id": "0cf6af2c-0c1c-4b44-b070-478129251122",
-        "nombre": "Cacao puro en polvo Amazonas 1 kg — Orgánico",
-        "ciudad": "San Martín",
-        "precio": 28
-      },
-      "ig": {
-        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Tuesday, 18-Aug-26 06:44:32 PDT."
-      },
-      "fb": {
-        "videoId": "1276771591127031",
-        "permalink": "https://www.facebook.com/reel/1276771591127031",
-        "elapsedMs": 9848
-      }
-    },
     {
       "fecha": "2026-08-19T13:52:46.272Z",
       "fechaPeru": "2026-08-19",
@@ -900,6 +882,24 @@
         "videoId": "1589144116280085",
         "permalink": "https://www.facebook.com/reel/1589144116280085",
         "elapsedMs": 6273
+      }
+    },
+    {
+      "fecha": "2026-10-09T18:42:18.386Z",
+      "fechaPeru": "2026-10-09",
+      "product": {
+        "id": "4f45299d-7db1-41d8-8d74-cb8bc4640787",
+        "nombre": "Café especial Villa Rica 500 g — Molido",
+        "ciudad": "Pasco",
+        "precio": 35
+      },
+      "ig": {
+        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Friday, 09-Oct-26 11:42:10 PDT."
+      },
+      "fb": {
+        "videoId": "1117089084171322",
+        "permalink": "https://www.facebook.com/reel/1117089084171322",
+        "elapsedMs": 8118
       }
     }
   ]
