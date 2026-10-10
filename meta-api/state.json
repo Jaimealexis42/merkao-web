@@ -1,32 +1,8 @@
 {
-  "lastIndex": 3,
-  "lastPostedDate": "2026-10-09",
-  "totalPosts": 122,
+  "lastIndex": 4,
+  "lastPostedDate": "2026-10-10",
+  "totalPosts": 123,
   "history": [
-    {
-      "fecha": "2026-08-19T13:52:10.020Z",
-      "fechaPeru": "2026-08-19",
-      "variantIndex": 3,
-      "variantId": 4,
-      "enfoque": "Pregunta abierta a la comunidad",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122138567031345830",
-      "fbPhotoId": "122138567007345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122138567031345830",
-      "image": {
-        "source": "unsplash",
-        "query": "paisaje peru",
-        "theme": "general",
-        "photo_id": "vZ9SVXGqhgg",
-        "photo_url": "https://images.unsplash.com/photo-1728572323998-a72cbf10c0ff?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxMnx8cGFpc2FqZSUyMHBlcnV8ZW58MXwwfHx8MTc4NzE0NzUyNXww&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Jhon Aldo Nuñez H.",
-        "photographer_url": "https://unsplash.com/@jhonaldo23",
-        "alt": "A large circular structure in the middle of a field"
-      },
-      "ig": {
-        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Wednesday, 19-Aug-26 06:52:09 PDT."
-      }
-    },
     {
       "fecha": "2026-08-20T13:49:16.872Z",
       "fechaPeru": "2026-08-20",
@@ -1201,6 +1177,30 @@
       },
       "ig": {
         "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Friday, 09-Oct-26 11:41:47 PDT."
+      }
+    },
+    {
+      "fecha": "2026-10-10T17:41:02.048Z",
+      "fechaPeru": "2026-10-10",
+      "variantIndex": 4,
+      "variantId": 5,
+      "enfoque": "Testimonio en primera persona",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122151516987345830",
+      "fbPhotoId": "122151516963345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122151516987345830",
+      "image": {
+        "source": "unsplash",
+        "query": "peruvian market fruits",
+        "theme": "alimentos",
+        "photo_id": "WSsEj4oqXWo",
+        "photo_url": "https://images.unsplash.com/photo-1760726361439-4afaa0d26808?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxfHxwZXJ1dmlhbiUyMG1hcmtldCUyMGZydWl0c3xlbnwxfDB8fHwxNzkxNjU0MDU4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Darya Luganskaya",
+        "photographer_url": "https://unsplash.com/@dlugansky",
+        "alt": "Street vendor with drinks and snacks for sale"
+      },
+      "ig": {
+        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Saturday, 10-Oct-26 10:41:02 PDT."
       }
     }
   ]
