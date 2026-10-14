@@ -1,32 +1,8 @@
 {
-  "lastIndex": 0,
-  "lastPostedDate": "2026-10-13",
-  "totalPosts": 126,
+  "lastIndex": 1,
+  "lastPostedDate": "2026-10-14",
+  "totalPosts": 127,
   "history": [
-    {
-      "fecha": "2026-08-23T13:33:42.806Z",
-      "fechaPeru": "2026-08-23",
-      "variantIndex": 0,
-      "variantId": 1,
-      "enfoque": "Comparativa con números",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122139431265345830",
-      "fbPhotoId": "122139431241345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122139431265345830",
-      "image": {
-        "source": "unsplash",
-        "query": "paisaje peru",
-        "theme": "general",
-        "photo_id": "2J-taAKXQLQ",
-        "photo_url": "https://images.unsplash.com/photo-1648959855771-5b604a638bcd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHw0fHxwYWlzYWplJTIwcGVydXxlbnwxfDB8fHwxNzg3NDkyMDE2fDA&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Katelyn Warner",
-        "photographer_url": "https://unsplash.com/@katewarner",
-        "alt": "a village on a hill with a sky background"
-      },
-      "ig": {
-        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Sunday, 23-Aug-26 06:33:42 PDT."
-      }
-    },
     {
       "fecha": "2026-08-24T13:53:46.758Z",
       "fechaPeru": "2026-08-24",
@@ -1201,6 +1177,30 @@
       },
       "ig": {
         "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Tuesday, 13-Oct-26 12:46:51 PDT."
+      }
+    },
+    {
+      "fecha": "2026-10-14T17:50:15.934Z",
+      "fechaPeru": "2026-10-14",
+      "variantIndex": 1,
+      "variantId": 2,
+      "enfoque": "Para la que recién empieza",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122152397025345830",
+      "fbPhotoId": "122152397001345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122152397025345830",
+      "image": {
+        "source": "unsplash",
+        "query": "paisaje peru",
+        "theme": "general",
+        "photo_id": "7t1w9Sk056Q",
+        "photo_url": "https://images.unsplash.com/photo-1723432886289-b9f1f2cebe85?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwyMHx8cGFpc2FqZSUyMHBlcnV8ZW58MXwwfHx8MTc5MjAwMDIwOXww&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Gabriel Istvan",
+        "photographer_url": "https://unsplash.com/@gabrielistvan_fotografia",
+        "alt": "A man standing on top of a mountain next to a river"
+      },
+      "ig": {
+        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Wednesday, 14-Oct-26 10:50:15 PDT."
       }
     }
   ]
