@@ -1,32 +1,8 @@
 {
-  "lastIndex": 1,
-  "lastPostedDate": "2026-10-14",
-  "totalPosts": 127,
+  "lastIndex": 2,
+  "lastPostedDate": "2026-10-15",
+  "totalPosts": 128,
   "history": [
-    {
-      "fecha": "2026-08-24T13:53:46.758Z",
-      "fechaPeru": "2026-08-24",
-      "variantIndex": 1,
-      "variantId": 2,
-      "enfoque": "Para la que recién empieza",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122139638775345830",
-      "fbPhotoId": "122139638751345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122139638775345830",
-      "image": {
-        "source": "unsplash",
-        "query": "paisaje peru",
-        "theme": "general",
-        "photo_id": "9dmycbFE7mQ",
-        "photo_url": "https://images.unsplash.com/photo-1497106636505-e4fd6e16d74c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwyfHxwYWlzYWplJTIwcGVydXxlbnwxfDB8fHwxNzg3NTc5NjE5fDA&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Jeremiah Berman",
-        "photographer_url": "https://unsplash.com/@calibre9001",
-        "alt": "Machu Picchu"
-      },
-      "ig": {
-        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Monday, 24-Aug-26 06:53:46 PDT."
-      }
-    },
     {
       "fecha": "2026-08-25T13:52:29.789Z",
       "fechaPeru": "2026-08-25",
@@ -1201,6 +1177,30 @@
       },
       "ig": {
         "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Wednesday, 14-Oct-26 10:50:15 PDT."
+      }
+    },
+    {
+      "fecha": "2026-10-15T17:39:36.655Z",
+      "fechaPeru": "2026-10-15",
+      "variantIndex": 2,
+      "variantId": 3,
+      "enfoque": "Artesana / productora regional",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122152592817345830",
+      "fbPhotoId": "122152592787345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122152592817345830",
+      "image": {
+        "source": "unsplash",
+        "query": "weaving peru",
+        "theme": "artesania",
+        "photo_id": "tZ6uJBMJuVE",
+        "photo_url": "https://images.unsplash.com/photo-1730432447904-d0d408ad15c1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxMHx8d2VhdmluZyUyMHBlcnV8ZW58MXwwfHx8MTc5MjA4NTk3Mnww&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Naveen Raj Dhanapal",
+        "photographer_url": "https://unsplash.com/@naveen_rd",
+        "alt": "A woman in a colorful headdress holding a surfboard"
+      },
+      "ig": {
+        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Thursday, 15-Oct-26 10:39:36 PDT."
       }
     }
   ]
