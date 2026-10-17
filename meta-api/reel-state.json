@@ -1,25 +1,7 @@
 {
-  "lastReelDate": "2026-10-16",
-  "totalReels": 123,
+  "lastReelDate": "2026-10-17",
+  "totalReels": 124,
   "history": [
-    {
-      "fecha": "2026-08-26T13:57:40.026Z",
-      "fechaPeru": "2026-08-26",
-      "product": {
-        "id": "0cf6af2c-0c1c-4b44-b070-478129251122",
-        "nombre": "Cacao puro en polvo Amazonas 1 kg — Orgánico",
-        "ciudad": "San Martín",
-        "precio": 28
-      },
-      "ig": {
-        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Wednesday, 26-Aug-26 06:57:23 PDT."
-      },
-      "fb": {
-        "videoId": "1025614830472993",
-        "permalink": "https://www.facebook.com/reel/1025614830472993",
-        "elapsedMs": 16005
-      }
-    },
     {
       "fecha": "2026-08-27T22:52:45.043Z",
       "fechaPeru": "2026-08-27",
@@ -900,6 +882,24 @@
         "videoId": "985753727903421",
         "permalink": "https://www.facebook.com/reel/985753727903421",
         "elapsedMs": 13385
+      }
+    },
+    {
+      "fecha": "2026-10-17T16:10:50.245Z",
+      "fechaPeru": "2026-10-17",
+      "product": {
+        "id": "a6a26730-79db-4615-b02f-9f22fb2cd6d9",
+        "nombre": "Polo de algodón pima peruano — Pack x3",
+        "ciudad": "Lima",
+        "precio": 65
+      },
+      "ig": {
+        "error": "todos los hosts fallaron: uploadTmpfiles: HTTP 520: <!DOCTYPE html>\n<!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 7]>    <html class=\"no-js ie7 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 8]>    <html class=\"no- | uploadFileio: Unexpected token '<', \"<html>\n<he\"... is not valid JSON | upload0x0: HTTP 503: uploads disabled because it’s been almost nothing but AI botnet spam for the past few months. will be back with a few changes at some point. no ETA."
+      },
+      "fb": {
+        "videoId": "1818545409164955",
+        "permalink": "https://www.facebook.com/reel/1818545409164955",
+        "elapsedMs": 6069
       }
     }
   ]
