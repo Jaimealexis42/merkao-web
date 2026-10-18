@@ -1,25 +1,7 @@
 {
-  "lastReelDate": "2026-10-17",
-  "totalReels": 124,
+  "lastReelDate": "2026-10-18",
+  "totalReels": 125,
   "history": [
-    {
-      "fecha": "2026-08-27T22:52:45.043Z",
-      "fechaPeru": "2026-08-27",
-      "product": {
-        "id": "1a3394c1-f45f-4312-8482-b79421abcaf2",
-        "nombre": "Cerámica Chulucanas — Jarrón decorativo grande",
-        "ciudad": "Piura",
-        "precio": 220
-      },
-      "ig": {
-        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Thursday, 27-Aug-26 15:52:36 PDT."
-      },
-      "fb": {
-        "videoId": "1457415592915210",
-        "permalink": "https://www.facebook.com/reel/1457415592915210",
-        "elapsedMs": 8073
-      }
-    },
     {
       "fecha": "2026-08-28T22:57:04.299Z",
       "fechaPeru": "2026-08-28",
@@ -900,6 +882,24 @@
         "videoId": "1818545409164955",
         "permalink": "https://www.facebook.com/reel/1818545409164955",
         "elapsedMs": 6069
+      }
+    },
+    {
+      "fecha": "2026-10-18T16:25:09.116Z",
+      "fechaPeru": "2026-10-18",
+      "product": {
+        "id": "a6a26730-79db-4615-b02f-9f22fb2cd6d9",
+        "nombre": "Polo de algodón pima peruano — Pack x3",
+        "ciudad": "Lima",
+        "precio": 65
+      },
+      "ig": {
+        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Sunday, 18-Oct-26 09:25:03 PDT."
+      },
+      "fb": {
+        "videoId": "1741583276926812",
+        "permalink": "https://www.facebook.com/reel/1741583276926812",
+        "elapsedMs": 5791
       }
     }
   ]
