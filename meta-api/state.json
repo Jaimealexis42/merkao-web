@@ -1,32 +1,8 @@
 {
-  "lastIndex": 5,
-  "lastPostedDate": "2026-10-18",
-  "totalPosts": 131,
+  "lastIndex": 6,
+  "lastPostedDate": "2026-10-19",
+  "totalPosts": 132,
   "history": [
-    {
-      "fecha": "2026-08-28T22:56:31.230Z",
-      "fechaPeru": "2026-08-28",
-      "variantIndex": 5,
-      "variantId": 6,
-      "enfoque": "Tip de venta + mención natural",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122140563147345830",
-      "fbPhotoId": "122140563123345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122140563147345830",
-      "image": {
-        "source": "unsplash",
-        "query": "cafe peru plantacion",
-        "theme": "cafe",
-        "photo_id": "p7xchIkJrJA",
-        "photo_url": "https://images.unsplash.com/photo-1672851612794-6687bf0bf1a3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHw0fHxjYWZlJTIwcGVydSUyMHBsYW50YWNpb258ZW58MXwwfHx8MTc4Nzk1Nzc4NHww&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "David Restrepo",
-        "photographer_url": "https://unsplash.com/@davidremu_",
-        "alt": "a bunch of coffee beans hanging from a tree"
-      },
-      "ig": {
-        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Friday, 28-Aug-26 15:56:31 PDT."
-      }
-    },
     {
       "fecha": "2026-08-29T17:01:21.377Z",
       "fechaPeru": "2026-08-29",
@@ -1201,6 +1177,30 @@
       },
       "ig": {
         "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Sunday, 18-Oct-26 09:24:38 PDT."
+      }
+    },
+    {
+      "fecha": "2026-10-19T19:07:27.406Z",
+      "fechaPeru": "2026-10-19",
+      "variantIndex": 6,
+      "variantId": 7,
+      "enfoque": "Invitación corta y cálida",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122153405547345830",
+      "fbPhotoId": "122153405523345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122153405547345830",
+      "image": {
+        "source": "unsplash",
+        "query": "peruvian textiles",
+        "theme": "moda",
+        "photo_id": "pLgm1WQttps",
+        "photo_url": "https://images.unsplash.com/photo-1783660107893-aa8554a9bc39?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHw5fHxwZXJ1dmlhbiUyMHRleHRpbGVzfGVufDF8MHx8fDE3OTI0MzY4NDJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Timothy Cohen",
+        "photographer_url": "https://unsplash.com/@timdavhen",
+        "alt": "Two women in traditional hats sit overlooking a mountain city"
+      },
+      "ig": {
+        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Monday, 19-Oct-26 12:07:27 PDT."
       }
     }
   ]
