@@ -35,7 +35,7 @@ const CAT_SLUG: Record<number, string> = {
   8: 'otros',
 }
 
-type HeroTheme = 'terra' | 'stone' | 'jungle' | 'gold' | 'desert' | 'peru'
+type HeroTheme = 'terra' | 'stone' | 'jungle' | 'gold' | 'desert' | 'peru' | 'morado'
 type Slide = {
   id: string
   theme: HeroTheme
@@ -47,6 +47,7 @@ type Slide = {
   cta: Record<Lang, string>
   ctaHref?: string // si está presente, el CTA navega a esta URL en vez de hacer scroll al shop
   img: string
+  imgContain?: boolean // true → object-fit: contain (fotos de producto cuadradas)
   categoriaId: number // para filtrar productos cuando el usuario hace click en el CTA
 }
 
@@ -74,6 +75,13 @@ function getFase(): Fase {
   return 'default'
 }
 const FASE = getFase()
+
+function isMesOctubreLima(): boolean {
+  // Lima = UTC-5 (sin horario de verano)
+  const ahora = new Date(Date.now() - 5 * 60 * 60 * 1000)
+  return ahora.getUTCMonth() + 1 === 10 // octubre
+}
+
 const MODO_APERTURA = true // plataforma en apertura — quitar cuando haya vendedores reales
 const DEMO_VENDOR_ID = '00000000-0000-0000-0000-000000000001' // vendedor_id de productos de muestra
 
@@ -801,6 +809,62 @@ const SLIDE_SANA: Slide = {
   categoriaId: 0,
 }
 
+// ── Slides de producto desde la base (precio, foto y disponibilidad en tiempo real) ─
+// Solo el copy editorial vive aquí; el resto viene de Supabase.
+const FEATURED_PRODUCT_IDS = [
+  '8ca99cc8-9c5c-44e1-b12f-22cefb3333db', // TRIMOTO ELÉCTRICA KIDS — TIVEXO
+  '45a96305-c019-49e6-9b52-e6185baf1d53', // CÁMARA PARA AUTO — TIVEXO
+] as const
+
+const PRODUCT_SLIDE_META: Record<string, {
+  tag: string
+  title: string[]
+  body: string
+}> = {
+  '8ca99cc8-9c5c-44e1-b12f-22cefb3333db': {
+    tag:   'TIVEXO',
+    title: ['TRIMOTO', 'ELÉCTRICA', 'KIDS'],
+    body:  'Triciclo eléctrico para niños — resistente, seguro y divertido.',
+  },
+  '45a96305-c019-49e6-9b52-e6185baf1d53': {
+    tag:   'TIVEXO',
+    title: ['CÁMARA', 'PARA AUTO'],
+    body:  'Cámara de conducción HD para el parabrisas — grabación continua.',
+  },
+}
+
+function productoToSlide(p: Pick<Producto, 'id' | 'precio' | 'imagenes'>): Slide {
+  const meta = PRODUCT_SLIDE_META[p.id]
+  const precio = `S/ ${p.precio}`
+  return {
+    id:         `producto-${p.id}`,
+    theme:      'stone',
+    tag:        { es: meta.tag,   en: meta.tag,       pt: meta.tag },
+    region:     'Lima, Perú',
+    title:      { es: meta.title, en: meta.title,     pt: meta.title },
+    sub:        { es: precio,     en: precio,          pt: precio },
+    body:       { es: meta.body,  en: meta.body,       pt: meta.body },
+    cta:        { es: 'Ver producto', en: 'See product', pt: 'Ver produto' },
+    ctaHref:    `/productos/${p.id}`,
+    img:        p.imagenes[0] ?? '',
+    imgContain: true,
+    categoriaId: 0,
+  }
+}
+
+// ── Slide Mes Morado (visible solo en octubre, hora Lima) ────────────────────
+const SLIDE_MES_MORADO: Slide = {
+  id: 'mes-morado', theme: 'morado',
+  tag:    { es: 'OCTUBRE · MES MORADO', en: 'OCTOBER · PURPLE MONTH', pt: 'OUTUBRO · MÊS ROXO' },
+  region: 'Lima, Perú',
+  title:  { es: ['Octubre,', 'mes morado'], en: ['October,', 'purple month'], pt: ['Outubro,', 'mês roxo'] },
+  sub:    { es: 'Celebra nuestras tradiciones', en: 'Celebrate our traditions', pt: 'Celebre nossas tradições' },
+  body:   { es: 'Celebra nuestras tradiciones y apoya a emprendedores peruanos.', en: 'Celebrate our traditions and support Peruvian entrepreneurs.', pt: 'Celebre nossas tradições e apoie empreendedores peruanos.' },
+  cta:    { es: 'Ver productos', en: 'See products', pt: 'Ver produtos' },
+  img:    'https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=1600&q=80&auto=format&fit=crop',
+  categoriaId: 0,
+}
+
 function getSetActivo(): Slide[] {
   const sets = FASE === 'feriado6ago' ? SETS_F1
              : FASE === 'rosa'        ? SETS_F2
@@ -812,7 +876,7 @@ function getSetActivo(): Slide[] {
   return [SLIDE_SANA, ...sets[indiceSet]]
 }
 
-const SLIDES: Slide[] = getSetActivo()
+const BASE_SLIDES: Slide[] = getSetActivo()
 
 type EscrowStep = { icon: IconName; labelKey: 'step_pays' | 'step_hold' | 'step_ships' | 'step_confirm' | 'step_release' }
 const ESCROW_STEPS: EscrowStep[] = [
@@ -915,10 +979,33 @@ export default function Home() {
   const accountMenuRef = useRef<HTMLDivElement>(null)
   const [muestraModal, setMuestraModal]       = useState(false)
   const [tiendasMap, setTiendasMap]           = useState<Map<string, string>>(new Map())
+  const [productSlides, setProductSlides]     = useState<Slide[]>([])
 
   const { user }  = useAuth()
   const tr        = T[lang]
   const catNames  = CAT_NAMES[lang]
+  const slides    = [
+    ...(isMesOctubreLima() ? [SLIDE_MES_MORADO] : []),
+    ...productSlides,
+    ...BASE_SLIDES,
+  ]
+
+  // ── Slides de productos destacados (precio y foto en tiempo real) ──
+  useEffect(() => {
+    supabase
+      .from('productos')
+      .select('id, precio, imagenes, estado')
+      .in('id', FEATURED_PRODUCT_IDS)
+      .eq('estado', 'publicado')
+      .then(({ data }) => {
+        if (!data || data.length === 0) return
+        const ordered = FEATURED_PRODUCT_IDS.flatMap(id => {
+          const p = data.find(d => d.id === id)
+          return p ? [productoToSlide(p as Pick<Producto, 'id' | 'precio' | 'imagenes'>)] : []
+        })
+        setProductSlides(ordered)
+      })
+  }, [])
 
   // ── Idioma persistido ──
   useEffect(() => {
@@ -940,8 +1027,8 @@ export default function Home() {
   }, [])
 
   // ── Carousel ──
-  const siguiente = useCallback(() => setSlideIdx((p) => (p + 1) % SLIDES.length), [])
-  const anterior  = useCallback(() => setSlideIdx((p) => (p - 1 + SLIDES.length) % SLIDES.length), [])
+  const siguiente = useCallback(() => setSlideIdx((p) => (p + 1) % slides.length), [slides.length])
+  const anterior  = useCallback(() => setSlideIdx((p) => (p - 1 + slides.length) % slides.length), [slides.length])
   useEffect(() => {
     if (slideLocked) return
     const t = setInterval(siguiente, 6500)
@@ -962,7 +1049,7 @@ export default function Home() {
       for (const row of data) counts.set(row.categoria_id, (counts.get(row.categoria_id) || 0) + 1)
       let topCat = 0, topCount = 0
       for (const [cat, n] of counts) if (n > topCount) { topCount = n; topCat = cat }
-      const idx = SLIDES.findIndex((s) => s.categoriaId === topCat)
+      const idx = slides.findIndex((s) => s.categoriaId === topCat)
       if (idx >= 0) {
         setSlideIdx(idx)
         setSlideLocked(true)
@@ -1245,7 +1332,7 @@ export default function Home() {
           onMouseEnter={() => setSlideLocked(true)}
           onMouseLeave={() => setSlideLocked(false)}
         >
-          {SLIDES.map((sl, k) => (
+          {slides.map((sl, k) => (
             <div key={sl.id} className={`mk-hslide mk-theme-${sl.theme}${k === slideIdx ? ' on' : ''}`}>
               <div className="mk-hslide-copy">
                 <span className="mk-hero-tag"><Icon name="zap" size={13} /> {sl.tag[lang]}</span>
@@ -1266,7 +1353,7 @@ export default function Home() {
               </div>
               <div className="mk-hslide-media">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={sl.img} alt={sl.region} loading={k === 0 ? 'eager' : 'lazy'} />
+                <img src={sl.img} alt={sl.region} loading={k <= 2 ? 'eager' : 'lazy'} style={sl.imgContain ? { objectFit: 'contain' } : undefined} />
                 <span className="mk-hslide-region">
                   <Icon name="mapPin" size={13} stroke={2} /> {sl.region}
                 </span>
@@ -1276,7 +1363,7 @@ export default function Home() {
           <button className="mk-hero-arrow left" onClick={anterior} aria-label="Anterior"><Icon name="chevronLeft" size={26} /></button>
           <button className="mk-hero-arrow right" onClick={siguiente} aria-label="Siguiente"><Icon name="chevronRight" size={26} /></button>
           <div className="mk-hero-dots">
-            {SLIDES.map((s, k) => (
+            {slides.map((s, k) => (
               <button
                 key={s.id}
                 className={'mk-dot' + (k === slideIdx ? ' on' : '')}
