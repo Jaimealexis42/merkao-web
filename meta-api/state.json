@@ -1,32 +1,8 @@
 {
-  "lastIndex": 6,
-  "lastPostedDate": "2026-10-26",
-  "totalPosts": 139,
+  "lastIndex": 0,
+  "lastPostedDate": "2026-10-27",
+  "totalPosts": 140,
   "history": [
-    {
-      "fecha": "2026-09-05T15:50:57.726Z",
-      "fechaPeru": "2026-09-05",
-      "variantIndex": 6,
-      "variantId": 7,
-      "enfoque": "Invitación corta y cálida",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122142072849345830",
-      "fbPhotoId": "122142072825345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122142072849345830",
-      "image": {
-        "source": "unsplash",
-        "query": "ropa colorida peru",
-        "theme": "moda",
-        "photo_id": "57g5bfFhhFM",
-        "photo_url": "https://images.unsplash.com/photo-1553550491-0895a24ffdac?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxM3x8cm9wYSUyMGNvbG9yaWRhJTIwcGVydXxlbnwxfDB8fHwxNzg4NjIzNDUxfDA&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Jeison Higuita",
-        "photographer_url": "https://unsplash.com/@jeison",
-        "alt": "women wearing white and yellow dress"
-      },
-      "ig": {
-        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Saturday, 05-Sep-26 08:50:57 PDT."
-      }
-    },
     {
       "fecha": "2026-09-06T16:01:30.151Z",
       "fechaPeru": "2026-09-06",
@@ -1201,6 +1177,30 @@
       },
       "ig": {
         "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Monday, 26-Oct-26 12:03:57 PDT."
+      }
+    },
+    {
+      "fecha": "2026-10-27T18:35:35.576Z",
+      "fechaPeru": "2026-10-27",
+      "variantIndex": 0,
+      "variantId": 1,
+      "enfoque": "Comparativa con números",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122154925695345830",
+      "fbPhotoId": "122154925671345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122154925695345830",
+      "image": {
+        "source": "unsplash",
+        "query": "paisaje peru",
+        "theme": "general",
+        "photo_id": "qTHRF2rvGjA",
+        "photo_url": "https://images.unsplash.com/photo-1570553603941-c50de855fdac?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwyfHxwYWlzYWplJTIwcGVydXxlbnwxfDB8fHwxNzkzMTI2MTMwfDA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Wolfgang Lutz",
+        "photographer_url": "https://unsplash.com/@wolfi",
+        "alt": "river between mountain"
+      },
+      "ig": {
+        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Tuesday, 27-Oct-26 11:35:35 PDT."
       }
     }
   ]
