@@ -809,41 +809,43 @@ const SLIDE_SANA: Slide = {
   categoriaId: 0,
 }
 
-// ── Slides de producto desde la base (precio, foto y disponibilidad en tiempo real) ─
-// Solo el copy editorial vive aquí; el resto viene de Supabase.
-const FEATURED_PRODUCT_IDS = [
-  '8ca99cc8-9c5c-44e1-b12f-22cefb3333db', // TRIMOTO ELÉCTRICA KIDS — TIVEXO
-  '45a96305-c019-49e6-9b52-e6185baf1d53', // CÁMARA PARA AUTO — TIVEXO
-] as const
-
-const PRODUCT_SLIDE_META: Record<string, {
-  tag: string
-  title: string[]
-  body: string
-}> = {
-  '8ca99cc8-9c5c-44e1-b12f-22cefb3333db': {
-    tag:   'TIVEXO',
-    title: ['TRIMOTO', 'ELÉCTRICA', 'KIDS'],
-    body:  'Triciclo eléctrico para niños — resistente, seguro y divertido.',
-  },
-  '45a96305-c019-49e6-9b52-e6185baf1d53': {
-    tag:   'TIVEXO',
-    title: ['CÁMARA', 'PARA AUTO'],
-    body:  'Cámara de conducción HD para el parabrisas — grabación continua.',
-  },
+// ── Slides de producto — vendedores reales con foto real, del más nuevo al más antiguo ─
+function nombresALineas(nombre: string): string[] {
+  const palabras = nombre.split(/\s+/)
+  const lineas: string[] = []
+  let actual = ''
+  for (let i = 0; i < palabras.length; i++) {
+    const prueba = actual ? `${actual} ${palabras[i]}` : palabras[i]
+    if (prueba.length > 20 && actual) {
+      lineas.push(actual)
+      actual = palabras[i]
+      if (lineas.length >= 2) {
+        actual = palabras.slice(i).join(' ')
+        break
+      }
+    } else {
+      actual = prueba
+    }
+  }
+  if (actual) lineas.push(actual)
+  return lineas.slice(0, 3)
 }
 
-function productoToSlide(p: Pick<Producto, 'id' | 'precio' | 'imagenes'>): Slide {
-  const meta = PRODUCT_SLIDE_META[p.id]
+function productoToSlide(
+  p: Pick<Producto, 'id' | 'nombre' | 'precio' | 'imagenes' | 'vendedor_id'>,
+  tMap: Map<string, string>
+): Slide {
+  const tag    = (p.vendedor_id && tMap.get(p.vendedor_id)) ?? 'Merkao'
+  const lines  = nombresALineas(p.nombre)
   const precio = `S/ ${p.precio}`
   return {
     id:         `producto-${p.id}`,
     theme:      'stone',
-    tag:        { es: meta.tag,   en: meta.tag,       pt: meta.tag },
+    tag:        { es: tag,      en: tag,               pt: tag },
     region:     'Lima, Perú',
-    title:      { es: meta.title, en: meta.title,     pt: meta.title },
-    sub:        { es: precio,     en: precio,          pt: precio },
-    body:       { es: meta.body,  en: meta.body,       pt: meta.body },
+    title:      { es: lines,    en: lines,              pt: lines },
+    sub:        { es: precio,   en: precio,              pt: precio },
+    body:       { es: p.nombre, en: p.nombre,           pt: p.nombre },
     cta:        { es: 'Ver producto', en: 'See product', pt: 'Ver produto' },
     ctaHref:    `/productos/${p.id}`,
     img:        p.imagenes[0] ?? '',
@@ -990,21 +992,33 @@ export default function Home() {
     ...BASE_SLIDES,
   ]
 
-  // ── Slides de productos destacados (precio y foto en tiempo real) ──
+  // ── Slides de productos reales con foto Supabase, más recientes primero ──
   useEffect(() => {
-    supabase
-      .from('productos')
-      .select('id, precio, imagenes, estado')
-      .in('id', FEATURED_PRODUCT_IDS)
-      .eq('estado', 'publicado')
-      .then(({ data }) => {
-        if (!data || data.length === 0) return
-        const ordered = FEATURED_PRODUCT_IDS.flatMap(id => {
-          const p = data.find(d => d.id === id)
-          return p ? [productoToSlide(p as Pick<Producto, 'id' | 'precio' | 'imagenes'>)] : []
-        })
-        setProductSlides(ordered)
-      })
+    async function cargarProductSlides() {
+      const { data } = await supabase
+        .from('productos')
+        .select('id, nombre, precio, imagenes, vendedor_id')
+        .eq('estado', 'activo')
+        .not('vendedor_id', 'is', null)
+        .neq('vendedor_id', DEMO_VENDOR_ID)
+        .order('created_at', { ascending: false })
+      if (!data || data.length === 0) return
+      const rows = data as Array<Pick<Producto, 'id' | 'nombre' | 'precio' | 'imagenes' | 'vendedor_id'>>
+      const conFotoReal = rows.filter(
+        p => Array.isArray(p.imagenes) &&
+             p.imagenes.length > 0 &&
+             p.imagenes[0].includes('supabase.co/storage')
+      )
+      if (conFotoReal.length === 0) return
+      const vids = [...new Set(conFotoReal.map(p => p.vendedor_id as string))]
+      const { data: tiendas } = await supabase
+        .from('tiendas')
+        .select('id, nombre')
+        .in('id', vids)
+      const tMap = new Map<string, string>((tiendas ?? []).map(t => [t.id as string, t.nombre as string]))
+      setProductSlides(conFotoReal.map(p => productoToSlide(p, tMap)))
+    }
+    cargarProductSlides()
   }, [])
 
   // ── Idioma persistido ──
