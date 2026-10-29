@@ -1084,6 +1084,7 @@ export default function Home() {
         .from('productos')
         .select('id, nombre, descripcion, precio, precio_mayoreo, cantidad_minima_mayoreo, costo_envio, stock, categoria_id, imagenes, estado, ciudad, vistas, vendedor_id')
         .eq('estado', 'activo')
+        .not('vendedor_id', 'is', null)   // excluir productos de demo (sin vendedor real)
         .order('vistas', { ascending: false })
       if (categoriaFiltro !== 0) q = q.eq('categoria_id', categoriaFiltro)
       if (ciudadFiltro)          q = q.eq('ciudad', ciudadFiltro)
