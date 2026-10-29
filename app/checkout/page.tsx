@@ -208,8 +208,7 @@ function CheckoutContent() {
           </div>
           <h1>¡Pago recibido y protegido!</h1>
           <p>
-            Tu dinero está retenido en Escrow. Lo liberamos al vendedor cuando confirmes que
-            recibiste el producto en buen estado.
+            Tu dinero está retenido en Escrow. Te mandamos un correo para que confirmes cuando llegue tu pedido. Si en 7 días de la entrega no reportas ningún problema, se libera automáticamente.
           </p>
 
           <div className="mk-ck-timeline">
@@ -522,7 +521,7 @@ function CheckoutContent() {
               <div className="mk-ck-secure">
                 <Icon name="shield" size={16} stroke={2} />
                 <span>
-                  Tu pago quedará <strong>retenido en Escrow</strong> hasta que confirmes la recepción del producto.
+                  Tu pago quedará <strong>retenido en Escrow</strong> hasta que confirmes la recepción. Te enviaremos un correo con el enlace de confirmación. Si en 7 días de la entrega no reportas ningún problema, se libera automáticamente.
                 </span>
               </div>
             </section>

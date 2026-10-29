@@ -24,6 +24,9 @@ A diferencia de PresupIA, Merkao **se deploya automáticamente** al hacer push a
 1. Trabajar siempre en una rama feature.
 2. Antes de `git push origin main` o `git merge → push`, **AVISAR explícitamente** y esperar OK.
 3. Si se mergea por error, el deploy ya salió — solo se mitiga con un revert push (que también se autodeploya).
+4. **NUNCA usar `npx vercel` ni `vercel --prod` directamente** — el proyecto real (`merkao.org`) vive en el scope `alexisoficina42-4643s-projects` (cuenta distinta). Si se corre `npx vercel` desde este directorio, se despliega en el scope equivocado (`alexisaranap21-dotcoms-projects`) sin las variables de entorno y sin apuntar a `merkao.org`. El único mecanismo de deploy válido es `git push origin main`.
+
+> **Nota (oct 2026)**: se borró el proyecto `merkao-web` de `alexisaranap21-dotcoms-projects` y se eliminó la carpeta `.vercel/` local para que no quede ningún enlace residual al scope incorrecto.
 
 GitHub Actions **no hace deploy**: el único workflow (`.github/workflows/merkao-facebook-post.yml`) corre cron diario 13:00 UTC (8:00 Lima) para auto-post FB+IG + reel diario via `meta-api/post-facebook.mjs` y `meta-api/create-reel.mjs`.
 

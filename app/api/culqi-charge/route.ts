@@ -3,6 +3,9 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
 import { comisionEfectiva, MESES_GRATIS } from '@/lib/comisiones'
 import { calcularPrecios } from '@/lib/precios'
+import { urlsEscrow } from '@/lib/escrow-token'
+import { sendEmail } from '@/lib/email'
+import { escrowConfirmacionHtml, escrowConfirmacionText } from '@/lib/email-escrow'
 
 // CORS abierto: protegido por rate-limit + validación de inputs + verificación
 // server-side del precio. El navegador/app móvil necesita estos headers.
@@ -314,7 +317,37 @@ export async function POST(req: NextRequest) {
       if (eItem) console.error('[culqi-charge] pedido_items falló (pedido OK):', eItem.message, 'pedido:', pedidoId)
     })
 
-  // 9. Ledger de split Merkao (soft fail — el pedido ya está pagado)
+  // 9. Email de confirmación al comprador (soft fail — el pedido ya está pagado)
+  void (async () => {
+    try {
+      const urls = urlsEscrow(pedidoId)
+      const total = `S/ ${totalSoles.toFixed(2)}`
+      await sendEmail({
+        to: email,
+        subject: `Tu pedido en Merkao — confirma cuando llegue`,
+        html: escrowConfirmacionHtml({
+          nombreComprador: nombreSafe,
+          nombreProducto:  producto.nombre as string,
+          total,
+          pedidoId,
+          urlOk:       urls.ok,
+          urlProblema: urls.problema,
+        }),
+        text: escrowConfirmacionText({
+          nombreComprador: nombreSafe,
+          nombreProducto:  producto.nombre as string,
+          total,
+          pedidoId,
+          urlOk:       urls.ok,
+          urlProblema: urls.problema,
+        }),
+      })
+    } catch (e) {
+      console.error('[culqi-charge] email escrow falló (pedido ok):', e, 'pedido:', pedidoId)
+    }
+  })()
+
+  // 10. Ledger de split Merkao (soft fail — el pedido ya está pagado)
   const montoTotal    = totalSoles
   const categoriaId   = typeof producto.categoria_id === 'number' ? producto.categoria_id : 0
 

@@ -8,9 +8,10 @@ import { isAdminEmail } from '@/lib/admin'
 type NavItem = { href: string; label: string }
 
 const NAV: NavItem[] = [
-  { href: '/admin/metricas',   label: 'Métricas' },
-  { href: '/admin/comisiones', label: 'Comisiones' },
-  { href: '/admin/soporte',    label: 'Soporte' },
+  { href: '/admin/metricas',     label: 'Métricas' },
+  { href: '/admin/comisiones',   label: 'Comisiones' },
+  { href: '/admin/liberaciones', label: 'Liberaciones' },
+  { href: '/admin/soporte',      label: 'Soporte' },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
