@@ -1,25 +1,7 @@
 {
-  "lastReelDate": "2026-10-28",
-  "totalReels": 135,
+  "lastReelDate": "2026-10-29",
+  "totalReels": 136,
   "history": [
-    {
-      "fecha": "2026-09-07T18:09:54.367Z",
-      "fechaPeru": "2026-09-07",
-      "product": {
-        "id": "2d571db8-6969-43f0-89b2-a8cc2dfff4bf",
-        "nombre": "Chompa de alpaca baby tejida a mano - Cusco",
-        "ciudad": "Cusco",
-        "precio": 85
-      },
-      "ig": {
-        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Monday, 07-Sep-26 11:09:48 PDT."
-      },
-      "fb": {
-        "videoId": "1548608949842684",
-        "permalink": "https://www.facebook.com/reel/1548608949842684",
-        "elapsedMs": 6292
-      }
-    },
     {
       "fecha": "2026-09-09T17:04:52.119Z",
       "fechaPeru": "2026-09-09",
@@ -900,6 +882,24 @@
         "videoId": "2130664474239429",
         "permalink": "https://www.facebook.com/reel/2130664474239429",
         "elapsedMs": 8049
+      }
+    },
+    {
+      "fecha": "2026-10-29T18:50:26.296Z",
+      "fechaPeru": "2026-10-29",
+      "product": {
+        "id": "4f45299d-7db1-41d8-8d74-cb8bc4640787",
+        "nombre": "Café especial Villa Rica 500 g — Molido",
+        "ciudad": "Pasco",
+        "precio": 35
+      },
+      "ig": {
+        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Thursday, 29-Oct-26 11:50:16 PDT."
+      },
+      "fb": {
+        "videoId": "1368765401877629",
+        "permalink": "https://www.facebook.com/reel/1368765401877629",
+        "elapsedMs": 9423
       }
     }
   ]
