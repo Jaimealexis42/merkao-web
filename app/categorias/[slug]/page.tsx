@@ -114,6 +114,7 @@ export default function CategoriaPage() {
         'id, nombre, descripcion, precio, precio_mayoreo, cantidad_minima_mayoreo, costo_envio, stock, categoria_id, imagenes, estado, ciudad, vistas',
       )
       .eq('estado', 'activo')
+      .not('vendedor_id', 'is', null)
       .eq('categoria_id', cat.id)
       .order('vistas', { ascending: false })
       .then(({ data }) => {

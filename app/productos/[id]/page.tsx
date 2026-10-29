@@ -106,6 +106,7 @@ export default function ProductoDetalle() {
         .from('productos')
         .select(PRODUCTO_SELECT)
         .eq('id', id)
+        .not('vendedor_id', 'is', null)
         .maybeSingle()
 
       if (cancelled) return
