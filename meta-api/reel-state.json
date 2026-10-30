@@ -1,25 +1,7 @@
 {
-  "lastReelDate": "2026-10-29",
-  "totalReels": 136,
+  "lastReelDate": "2026-10-30",
+  "totalReels": 137,
   "history": [
-    {
-      "fecha": "2026-09-09T17:04:52.119Z",
-      "fechaPeru": "2026-09-09",
-      "product": {
-        "id": "a6a26730-79db-4615-b02f-9f22fb2cd6d9",
-        "nombre": "Polo de algodón pima peruano — Pack x3",
-        "ciudad": "Lima",
-        "precio": 65
-      },
-      "ig": {
-        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Wednesday, 09-Sep-26 10:04:43 PDT."
-      },
-      "fb": {
-        "videoId": "1735873311036145",
-        "permalink": "https://www.facebook.com/reel/1735873311036145",
-        "elapsedMs": 8240
-      }
-    },
     {
       "fecha": "2026-09-10T16:56:01.277Z",
       "fechaPeru": "2026-09-10",
@@ -900,6 +882,24 @@
         "videoId": "1368765401877629",
         "permalink": "https://www.facebook.com/reel/1368765401877629",
         "elapsedMs": 9423
+      }
+    },
+    {
+      "fecha": "2026-10-30T18:27:29.447Z",
+      "fechaPeru": "2026-10-30",
+      "product": {
+        "id": "a6a26730-79db-4615-b02f-9f22fb2cd6d9",
+        "nombre": "Polo de algodón pima peruano — Pack x3",
+        "ciudad": "Lima",
+        "precio": 65
+      },
+      "ig": {
+        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Friday, 30-Oct-26 11:27:22 PDT."
+      },
+      "fb": {
+        "videoId": "2729814640806108",
+        "permalink": "https://www.facebook.com/reel/2729814640806108",
+        "elapsedMs": 6898
       }
     }
   ]
