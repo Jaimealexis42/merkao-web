@@ -1,25 +1,7 @@
 {
-  "lastReelDate": "2026-10-31",
-  "totalReels": 138,
+  "lastReelDate": "2026-11-01",
+  "totalReels": 139,
   "history": [
-    {
-      "fecha": "2026-09-11T16:57:45.376Z",
-      "fechaPeru": "2026-09-11",
-      "product": {
-        "id": "4f45299d-7db1-41d8-8d74-cb8bc4640787",
-        "nombre": "Café especial Villa Rica 500 g — Molido",
-        "ciudad": "Pasco",
-        "precio": 35
-      },
-      "ig": {
-        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Friday, 11-Sep-26 09:57:32 PDT."
-      },
-      "fb": {
-        "videoId": "4608208086104559",
-        "permalink": "https://www.facebook.com/reel/4608208086104559",
-        "elapsedMs": 12925
-      }
-    },
     {
       "fecha": "2026-09-12T16:05:27.003Z",
       "fechaPeru": "2026-09-12",
@@ -900,6 +882,24 @@
         "videoId": "2677133399466551",
         "permalink": "https://www.facebook.com/reel/2677133399466551",
         "elapsedMs": 8595
+      }
+    },
+    {
+      "fecha": "2026-11-01T18:18:01.516Z",
+      "fechaPeru": "2026-11-01",
+      "product": {
+        "id": "4f45299d-7db1-41d8-8d74-cb8bc4640787",
+        "nombre": "Café especial Villa Rica 500 g — Molido",
+        "ciudad": "Pasco",
+        "precio": 35
+      },
+      "ig": {
+        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Sunday, 01-Nov-26 10:17:54 PST."
+      },
+      "fb": {
+        "videoId": "1650886453257083",
+        "permalink": "https://www.facebook.com/reel/1650886453257083",
+        "elapsedMs": 6681
       }
     }
   ]
