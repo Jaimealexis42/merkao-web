@@ -1,25 +1,7 @@
 {
-  "lastReelDate": "2026-11-04",
-  "totalReels": 142,
+  "lastReelDate": "2026-11-05",
+  "totalReels": 143,
   "history": [
-    {
-      "fecha": "2026-09-15T17:32:48.978Z",
-      "fechaPeru": "2026-09-15",
-      "product": {
-        "id": "1a3394c1-f45f-4312-8482-b79421abcaf2",
-        "nombre": "Cerámica Chulucanas — Jarrón decorativo grande",
-        "ciudad": "Piura",
-        "precio": 220
-      },
-      "ig": {
-        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Tuesday, 15-Sep-26 10:32:40 PDT."
-      },
-      "fb": {
-        "videoId": "1397435501854322",
-        "permalink": "https://www.facebook.com/reel/1397435501854322",
-        "elapsedMs": 8298
-      }
-    },
     {
       "fecha": "2026-09-16T17:33:10.375Z",
       "fechaPeru": "2026-09-16",
@@ -900,6 +882,24 @@
         "videoId": "2061280071026566",
         "permalink": "https://www.facebook.com/reel/2061280071026566",
         "elapsedMs": 7003
+      }
+    },
+    {
+      "fecha": "2026-11-05T20:30:22.231Z",
+      "fechaPeru": "2026-11-05",
+      "product": {
+        "id": "1a3394c1-f45f-4312-8482-b79421abcaf2",
+        "nombre": "Cerámica Chulucanas — Jarrón decorativo grande",
+        "ciudad": "Piura",
+        "precio": 220
+      },
+      "ig": {
+        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Thursday, 05-Nov-26 12:30:11 PST."
+      },
+      "fb": {
+        "videoId": "1107793295189492",
+        "permalink": "https://www.facebook.com/reel/1107793295189492",
+        "elapsedMs": 10770
       }
     }
   ]
