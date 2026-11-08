@@ -1,32 +1,8 @@
 {
-  "lastIndex": 4,
-  "lastPostedDate": "2026-11-07",
-  "totalPosts": 151,
+  "lastIndex": 5,
+  "lastPostedDate": "2026-11-08",
+  "totalPosts": 152,
   "history": [
-    {
-      "fecha": "2026-09-18T16:58:46.115Z",
-      "fechaPeru": "2026-09-18",
-      "variantIndex": 4,
-      "variantId": 5,
-      "enfoque": "Testimonio en primera persona",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122145134751345830",
-      "fbPhotoId": "122145134727345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122145134751345830",
-      "image": {
-        "source": "unsplash",
-        "query": "peruvian market fruits",
-        "theme": "alimentos",
-        "photo_id": "WSsEj4oqXWo",
-        "photo_url": "https://images.unsplash.com/photo-1760726361439-4afaa0d26808?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxfHxwZXJ1dmlhbiUyMG1hcmtldCUyMGZydWl0c3xlbnwxfDB8fHwxNzg5NzUwNzIwfDA&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Darya Luganskaya",
-        "photographer_url": "https://unsplash.com/@dlugansky",
-        "alt": "Street vendor with drinks and snacks for sale"
-      },
-      "ig": {
-        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Friday, 18-Sep-26 09:58:46 PDT."
-      }
-    },
     {
       "fecha": "2026-09-19T16:18:26.343Z",
       "fechaPeru": "2026-09-19",
@@ -1201,6 +1177,30 @@
       },
       "ig": {
         "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Saturday, 07-Nov-26 09:57:48 PST."
+      }
+    },
+    {
+      "fecha": "2026-11-08T18:15:07.811Z",
+      "fechaPeru": "2026-11-08",
+      "variantIndex": 5,
+      "variantId": 6,
+      "enfoque": "Tip de venta + mención natural",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122157170349345830",
+      "fbPhotoId": "122157170325345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122157170349345830",
+      "image": {
+        "source": "unsplash",
+        "query": "cafe peru plantacion",
+        "theme": "cafe",
+        "photo_id": "VO0fNzSM-Z4",
+        "photo_url": "https://images.unsplash.com/photo-1613399421011-1e634fa4dacc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHw1fHxjYWZlJTIwcGVydSUyMHBsYW50YWNpb258ZW58MXwwfHx8MTc5NDE2MTcwMnww&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Esteban Benites",
+        "photographer_url": "https://unsplash.com/@estebanbenites",
+        "alt": "man in white crew neck t-shirt standing in the middle of the forest during daytime"
+      },
+      "ig": {
+        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Sunday, 08-Nov-26 10:15:07 PST."
       }
     }
   ]
