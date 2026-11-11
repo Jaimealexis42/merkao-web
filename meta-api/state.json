@@ -1,32 +1,8 @@
 {
-  "lastIndex": 0,
-  "lastPostedDate": "2026-11-10",
-  "totalPosts": 154,
+  "lastIndex": 1,
+  "lastPostedDate": "2026-11-11",
+  "totalPosts": 155,
   "history": [
-    {
-      "fecha": "2026-09-21T18:33:14.583Z",
-      "fechaPeru": "2026-09-21",
-      "variantIndex": 0,
-      "variantId": 1,
-      "enfoque": "Comparativa con números",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122145994677345830",
-      "fbPhotoId": "122145994653345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122145994677345830",
-      "image": {
-        "source": "unsplash",
-        "query": "paisaje peru",
-        "theme": "general",
-        "photo_id": "fqqGUuEodc8",
-        "photo_url": "https://images.unsplash.com/photo-1739210856310-b50baecfa9f1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxNXx8cGFpc2FqZSUyMHBlcnV8ZW58MXwwfHx8MTc5MDAxNTU4N3ww&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Anyela Málaga Lazarte",
-        "photographer_url": "https://unsplash.com/@capturando_maravillas",
-        "alt": "A large body of water with a mountain in the background"
-      },
-      "ig": {
-        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Monday, 21-Sep-26 11:33:14 PDT."
-      }
-    },
     {
       "fecha": "2026-09-22T17:33:32.144Z",
       "fechaPeru": "2026-09-22",
@@ -1201,6 +1177,30 @@
       },
       "ig": {
         "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Tuesday, 10-Nov-26 12:19:08 PST."
+      }
+    },
+    {
+      "fecha": "2026-11-11T20:02:17.495Z",
+      "fechaPeru": "2026-11-11",
+      "variantIndex": 1,
+      "variantId": 2,
+      "enfoque": "Para la que recién empieza",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122157755655345830",
+      "fbPhotoId": "122157755631345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122157755655345830",
+      "image": {
+        "source": "unsplash",
+        "query": "paisaje peru",
+        "theme": "general",
+        "photo_id": "sQHSqHC3yl8",
+        "photo_url": "https://images.unsplash.com/photo-1580530719779-9492fd167363?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHw1fHxwYWlzYWplJTIwcGVydXxlbnwxfDB8fHwxNzk0NDI3MzMyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Eduardo Garcia",
+        "photographer_url": "https://unsplash.com/@eduardoxxvlll",
+        "alt": "silhouette of mountain under blue sky and white clouds during daytime"
+      },
+      "ig": {
+        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Wednesday, 11-Nov-26 12:02:17 PST."
       }
     }
   ]

@@ -1,25 +1,7 @@
 {
-  "lastReelDate": "2026-11-10",
-  "totalReels": 148,
+  "lastReelDate": "2026-11-11",
+  "totalReels": 149,
   "history": [
-    {
-      "fecha": "2026-09-21T18:33:48.567Z",
-      "fechaPeru": "2026-09-21",
-      "product": {
-        "id": "2d571db8-6969-43f0-89b2-a8cc2dfff4bf",
-        "nombre": "Chompa de alpaca baby tejida a mano - Cusco",
-        "ciudad": "Cusco",
-        "precio": 85
-      },
-      "ig": {
-        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Monday, 21-Sep-26 11:33:39 PDT."
-      },
-      "fb": {
-        "videoId": "1764583581542908",
-        "permalink": "https://www.facebook.com/reel/1764583581542908",
-        "elapsedMs": 9170
-      }
-    },
     {
       "fecha": "2026-09-22T17:34:15.431Z",
       "fechaPeru": "2026-09-22",
@@ -900,6 +882,24 @@
         "videoId": "1782060393088999",
         "permalink": "https://www.facebook.com/reel/1782060393088999",
         "elapsedMs": 8633
+      }
+    },
+    {
+      "fecha": "2026-11-11T20:02:42.183Z",
+      "fechaPeru": "2026-11-11",
+      "product": {
+        "id": "0cf6af2c-0c1c-4b44-b070-478129251122",
+        "nombre": "Cacao puro en polvo Amazonas 1 kg — Orgánico",
+        "ciudad": "San Martín",
+        "precio": 28
+      },
+      "ig": {
+        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Wednesday, 11-Nov-26 12:02:34 PST."
+      },
+      "fb": {
+        "videoId": "1107593998937290",
+        "permalink": "https://www.facebook.com/reel/1107593998937290",
+        "elapsedMs": 7990
       }
     }
   ]
