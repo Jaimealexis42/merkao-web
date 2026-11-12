@@ -1,32 +1,8 @@
 {
-  "lastIndex": 1,
-  "lastPostedDate": "2026-11-11",
-  "totalPosts": 155,
+  "lastIndex": 2,
+  "lastPostedDate": "2026-11-12",
+  "totalPosts": 156,
   "history": [
-    {
-      "fecha": "2026-09-22T17:33:32.144Z",
-      "fechaPeru": "2026-09-22",
-      "variantIndex": 1,
-      "variantId": 2,
-      "enfoque": "Para la que recién empieza",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122146280229345830",
-      "fbPhotoId": "122146280205345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122146280229345830",
-      "image": {
-        "source": "unsplash",
-        "query": "paisaje peru",
-        "theme": "general",
-        "photo_id": "sQHSqHC3yl8",
-        "photo_url": "https://images.unsplash.com/photo-1580530719779-9492fd167363?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHw2fHxwYWlzYWplJTIwcGVydXxlbnwxfDB8fHwxNzkwMDk4NDA1fDA&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Eduardo Garcia",
-        "photographer_url": "https://unsplash.com/@eduardoxxvlll",
-        "alt": "silhouette of mountain under blue sky and white clouds during daytime"
-      },
-      "ig": {
-        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Tuesday, 22-Sep-26 10:33:32 PDT."
-      }
-    },
     {
       "fecha": "2026-09-23T17:45:46.200Z",
       "fechaPeru": "2026-09-23",
@@ -1201,6 +1177,30 @@
       },
       "ig": {
         "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Wednesday, 11-Nov-26 12:02:17 PST."
+      }
+    },
+    {
+      "fecha": "2026-11-12T20:41:04.194Z",
+      "fechaPeru": "2026-11-12",
+      "variantIndex": 2,
+      "variantId": 3,
+      "enfoque": "Artesana / productora regional",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122157946143345830",
+      "fbPhotoId": "122157946119345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122157946143345830",
+      "image": {
+        "source": "unsplash",
+        "query": "weaving peru",
+        "theme": "artesania",
+        "photo_id": "0JmXy8-pUok",
+        "photo_url": "https://images.unsplash.com/photo-1773613927259-a1f954d1671e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHw3fHx3ZWF2aW5nJTIwcGVydXxlbnwxfDB8fHwxNzk0NTE2MDU2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Alberto Lung",
+        "photographer_url": "https://unsplash.com/@albertolung",
+        "alt": "Elderly woman wearing a decorated hat and shawl"
+      },
+      "ig": {
+        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Thursday, 12-Nov-26 12:41:04 PST."
       }
     }
   ]
