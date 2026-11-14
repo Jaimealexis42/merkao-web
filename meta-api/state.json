@@ -1,32 +1,8 @@
 {
-  "lastIndex": 3,
-  "lastPostedDate": "2026-11-13",
-  "totalPosts": 157,
+  "lastIndex": 4,
+  "lastPostedDate": "2026-11-14",
+  "totalPosts": 158,
   "history": [
-    {
-      "fecha": "2026-09-24T17:47:11.379Z",
-      "fechaPeru": "2026-09-24",
-      "variantIndex": 3,
-      "variantId": 4,
-      "enfoque": "Pregunta abierta a la comunidad",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122147008221345830",
-      "fbPhotoId": "122147008197345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122147008221345830",
-      "image": {
-        "source": "unsplash",
-        "query": "paisaje peru",
-        "theme": "general",
-        "photo_id": "G9-g7Iy79Cs",
-        "photo_url": "https://images.unsplash.com/photo-1725413529942-dbfed487e580?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxNnx8cGFpc2FqZSUyMHBlcnV8ZW58MXwwfHx8MTc5MDI3MjAyNnww&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Josep Garip",
-        "photographer_url": "https://unsplash.com/@josep_garip",
-        "alt": "A view of a roller coaster from the top of a hill"
-      },
-      "ig": {
-        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Thursday, 24-Sep-26 10:47:11 PDT."
-      }
-    },
     {
       "fecha": "2026-09-25T17:49:07.526Z",
       "fechaPeru": "2026-09-25",
@@ -1201,6 +1177,30 @@
       },
       "ig": {
         "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Friday, 13-Nov-26 12:23:37 PST."
+      }
+    },
+    {
+      "fecha": "2026-11-14T18:40:25.870Z",
+      "fechaPeru": "2026-11-14",
+      "variantIndex": 4,
+      "variantId": 5,
+      "enfoque": "Testimonio en primera persona",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122158295757345830",
+      "fbPhotoId": "122158295733345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122158295757345830",
+      "image": {
+        "source": "unsplash",
+        "query": "peruvian market fruits",
+        "theme": "alimentos",
+        "photo_id": "WSsEj4oqXWo",
+        "photo_url": "https://images.unsplash.com/photo-1760726361439-4afaa0d26808?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxfHxwZXJ1dmlhbiUyMG1hcmtldCUyMGZydWl0c3xlbnwxfDB8fHwxNzk0NjgxNjE4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Darya Luganskaya",
+        "photographer_url": "https://unsplash.com/@dlugansky",
+        "alt": "Street vendor with drinks and snacks for sale"
+      },
+      "ig": {
+        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Saturday, 14-Nov-26 10:40:25 PST."
       }
     }
   ]

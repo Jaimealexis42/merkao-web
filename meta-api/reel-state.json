@@ -1,25 +1,7 @@
 {
-  "lastReelDate": "2026-11-13",
-  "totalReels": 151,
+  "lastReelDate": "2026-11-14",
+  "totalReels": 152,
   "history": [
-    {
-      "fecha": "2026-09-24T17:47:46.416Z",
-      "fechaPeru": "2026-09-24",
-      "product": {
-        "id": "79d0e769-b856-4de9-83ab-321266096a70",
-        "nombre": "Chompa de alpaca tejida a mano — Cusco",
-        "ciudad": "Cusco",
-        "precio": 85
-      },
-      "ig": {
-        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Thursday, 24-Sep-26 10:47:38 PDT."
-      },
-      "fb": {
-        "videoId": "2274264480091429",
-        "permalink": "https://www.facebook.com/reel/2274264480091429",
-        "elapsedMs": 7468
-      }
-    },
     {
       "fecha": "2026-09-25T17:49:45.130Z",
       "fechaPeru": "2026-09-25",
@@ -900,6 +882,24 @@
         "videoId": "1402588534993600",
         "permalink": "https://www.facebook.com/reel/1402588534993600",
         "elapsedMs": 13113
+      }
+    },
+    {
+      "fecha": "2026-11-14T18:40:48.756Z",
+      "fechaPeru": "2026-11-14",
+      "product": {
+        "id": "f6d3d48d-6fb5-4ac2-b2e9-da0b80040e79",
+        "nombre": "Quinua orgánica blanca Puno — 5 kg",
+        "ciudad": "Puno",
+        "precio": 45
+      },
+      "ig": {
+        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Saturday, 14-Nov-26 10:40:40 PST."
+      },
+      "fb": {
+        "videoId": "1428948868978409",
+        "permalink": "https://www.facebook.com/reel/1428948868978409",
+        "elapsedMs": 8170
       }
     }
   ]
