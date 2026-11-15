@@ -1,32 +1,8 @@
 {
-  "lastIndex": 4,
-  "lastPostedDate": "2026-11-14",
-  "totalPosts": 158,
+  "lastIndex": 5,
+  "lastPostedDate": "2026-11-15",
+  "totalPosts": 159,
   "history": [
-    {
-      "fecha": "2026-09-25T17:49:07.526Z",
-      "fechaPeru": "2026-09-25",
-      "variantIndex": 4,
-      "variantId": 5,
-      "enfoque": "Testimonio en primera persona",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122147271291345830",
-      "fbPhotoId": "122147271267345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122147271291345830",
-      "image": {
-        "source": "unsplash",
-        "query": "peruvian market fruits",
-        "theme": "alimentos",
-        "photo_id": "BWUvkv93HU4",
-        "photo_url": "https://images.unsplash.com/photo-1774082290292-eeef41f4d889?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwyfHxwZXJ1dmlhbiUyMG1hcmtldCUyMGZydWl0c3xlbnwxfDB8fHwxNzkwMzU4NTQwfDA&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Sheila C",
-        "photographer_url": "https://unsplash.com/@qld_traveller",
-        "alt": "Woman selling colorful textiles at a market stall"
-      },
-      "ig": {
-        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Friday, 25-Sep-26 10:49:07 PDT."
-      }
-    },
     {
       "fecha": "2026-09-26T16:55:56.774Z",
       "fechaPeru": "2026-09-26",
@@ -1201,6 +1177,30 @@
       },
       "ig": {
         "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Saturday, 14-Nov-26 10:40:25 PST."
+      }
+    },
+    {
+      "fecha": "2026-11-15T19:16:24.875Z",
+      "fechaPeru": "2026-11-15",
+      "variantIndex": 5,
+      "variantId": 6,
+      "enfoque": "Tip de venta + mención natural",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122158485015345830",
+      "fbPhotoId": "122158484991345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122158485015345830",
+      "image": {
+        "source": "unsplash",
+        "query": "cafe peru plantacion",
+        "theme": "cafe",
+        "photo_id": "AgPj0maIEEs",
+        "photo_url": "https://images.unsplash.com/photo-1633437805600-2c58bf56663c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwyfHxjYWZlJTIwcGVydSUyMHBsYW50YWNpb258ZW58MXwwfHx8MTc5NDc3MDE4MHww&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Dhan Sugui",
+        "photographer_url": "https://unsplash.com/@dhansugui",
+        "alt": "a lush green valley surrounded by mountains"
+      },
+      "ig": {
+        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Sunday, 15-Nov-26 11:16:24 PST."
       }
     }
   ]
