@@ -106,8 +106,6 @@ export default function TiendaPublicaPage() {
 
   const nombreVisible = tienda?.nombre || 'Tienda en Merkao'
   const ciudadVisible = productos[0]?.ciudad || null
-  const reputacion = null
-  const ventasTotales = 0
   const productosActivos = productos.length
 
   const categoriasUsadas = useMemo(() => {
@@ -188,37 +186,17 @@ export default function TiendaPublicaPage() {
               <div className="l">Productos</div>
             </div>
             <div className="mk-stf-stat green">
-              <div className="v">{ventasTotales}</div>
+              <div className="v">0</div>
               <div className="l">Ventas</div>
             </div>
-            {reputacion != null && (
-              <div className="mk-stf-stat">
-                <div className="v">
-                  {reputacion.toFixed(1)}<small style={{ fontSize: 12, color: 'var(--muted-2)', fontWeight: 600 }}>/5</small>
-                </div>
-                <div className="l">Reputación</div>
-              </div>
-            )}
           </div>
         </section>
 
         {/* Reputación bar */}
-        {reputacion != null ? (
-          <div className="mk-stf-rep">
-            <Icon name="star" size={16} className="mk-star on" />
-            <span>
-              <strong>Reputación del vendedor:</strong> {reputacion.toFixed(1)} de 5
-            </span>
-            <div className="mk-stf-rep-bar">
-              <div style={{ width: `${Math.min(100, (reputacion / 5) * 100)}%` }} />
-            </div>
-          </div>
-        ) : (
-          <div className="mk-stf-rep">
-            <Icon name="store" size={16} stroke={1.8} />
-            <span style={{ color: 'var(--muted)' }}>Vendedor nuevo · aún no tiene ventas completadas.</span>
-          </div>
-        )}
+        <div className="mk-stf-rep">
+          <Icon name="store" size={16} stroke={1.8} />
+          <span style={{ color: 'var(--muted)' }}>Vendedor nuevo · aún no tiene ventas completadas.</span>
+        </div>
 
         {/* Toolbar productos */}
         <div className="mk-stf-toolbar">
