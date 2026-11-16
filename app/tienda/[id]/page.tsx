@@ -16,6 +16,7 @@ type Tienda = {
   ciudad: string | null
   reputacion: number | null
   ventas_totales: number | null
+  verificado: boolean | null
 }
 
 type Producto = {
@@ -82,8 +83,8 @@ export default function TiendaPublicaPage() {
       const [tiendaRes, productosRes] = await Promise.all([
         supabase
           .from('tiendas')
-          .select('id, nombre, descripcion, logo_url, ciudad, reputacion, ventas_totales')
-          .eq('vendedor_id', id)
+          .select('id, nombre, descripcion, logo_url, ciudad, reputacion, ventas_totales, verificado')
+          .eq('id', id)
           .maybeSingle(),
         supabase
           .from('productos')
@@ -97,7 +98,7 @@ export default function TiendaPublicaPage() {
       if (cancelled) return
       setTienda(
         (tiendaRes.data as Tienda | null) ??
-          { id, nombre: null, descripcion: null, logo_url: null, ciudad: null, reputacion: null, ventas_totales: null },
+          { id, nombre: null, descripcion: null, logo_url: null, ciudad: null, reputacion: null, ventas_totales: null, verificado: null },
       )
       setProductos((productosRes.data ?? []) as Producto[])
       setLoading(false)
@@ -107,8 +108,8 @@ export default function TiendaPublicaPage() {
   }, [id])
 
   const nombreVisible = tienda?.nombre || 'Tienda en Merkao'
-  const ciudadVisible = tienda?.ciudad || (productos[0]?.ciudad ?? 'Perú')
-  const reputacion = tienda?.reputacion ?? 4.7
+  const ciudadVisible = tienda?.ciudad || productos[0]?.ciudad || null
+  const reputacion = tienda?.reputacion ?? null
   const ventasTotales = tienda?.ventas_totales ?? 0
   const productosActivos = productos.length
 
@@ -158,12 +159,14 @@ export default function TiendaPublicaPage() {
           <div className="mk-stf-id">
             <h1>
               {nombreVisible}
-              <span className="mk-stf-verif">
-                <Icon name="checkCircle" size={12} stroke={2} /> Verificado
-              </span>
+              {tienda?.verificado && (
+                <span className="mk-stf-verif">
+                  <Icon name="checkCircle" size={12} stroke={2} /> Verificado
+                </span>
+              )}
             </h1>
             <span className="mk-stf-loc">
-              <Icon name="mapPin" size={13} stroke={2} /> {ciudadVisible}, Perú
+              <Icon name="mapPin" size={13} stroke={2} /> {ciudadVisible ? `${ciudadVisible}, Perú` : 'Perú'}
             </span>
             {tienda?.descripcion ? (
               <p className="mk-stf-desc" style={{ whiteSpace: 'pre-line' }}>{tienda.descripcion}</p>
@@ -191,25 +194,34 @@ export default function TiendaPublicaPage() {
               <div className="v">{ventasTotales}</div>
               <div className="l">Ventas</div>
             </div>
-            <div className="mk-stf-stat">
-              <div className="v">
-                {reputacion.toFixed(1)}<small style={{ fontSize: 12, color: 'var(--muted-2)', fontWeight: 600 }}>/5</small>
+            {reputacion != null && (
+              <div className="mk-stf-stat">
+                <div className="v">
+                  {reputacion.toFixed(1)}<small style={{ fontSize: 12, color: 'var(--muted-2)', fontWeight: 600 }}>/5</small>
+                </div>
+                <div className="l">Reputación</div>
               </div>
-              <div className="l">Reputación</div>
-            </div>
+            )}
           </div>
         </section>
 
         {/* Reputación bar */}
-        <div className="mk-stf-rep">
-          <Icon name="star" size={16} className="mk-star on" />
-          <span>
-            <strong>Reputación del vendedor:</strong> {reputacion.toFixed(1)} de 5
-          </span>
-          <div className="mk-stf-rep-bar">
-            <div style={{ width: `${Math.min(100, (reputacion / 5) * 100)}%` }} />
+        {reputacion != null ? (
+          <div className="mk-stf-rep">
+            <Icon name="star" size={16} className="mk-star on" />
+            <span>
+              <strong>Reputación del vendedor:</strong> {reputacion.toFixed(1)} de 5
+            </span>
+            <div className="mk-stf-rep-bar">
+              <div style={{ width: `${Math.min(100, (reputacion / 5) * 100)}%` }} />
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="mk-stf-rep">
+            <Icon name="store" size={16} stroke={1.8} />
+            <span style={{ color: 'var(--muted)' }}>Vendedor nuevo · aún no tiene ventas completadas.</span>
+          </div>
+        )}
 
         {/* Toolbar productos */}
         <div className="mk-stf-toolbar">
@@ -283,9 +295,9 @@ export default function TiendaPublicaPage() {
           </div>
         ) : (
           <div className="mk-prod-grid">
-            {filtrados.map((prod) => {
+            {filtrados.filter(prod => prod.imagenes?.[0]).map((prod) => {
               const p = calcularPrecios(prod.precio)
-              const img = prod.imagenes?.[0] ?? `https://picsum.photos/seed/${prod.id}/600/600`
+              const img = prod.imagenes![0]
               const catNombre = CAT_BY_ID[prod.categoria_id]?.nombre ?? ''
               const tieneMayoreo = !!(prod.precio_mayoreo && prod.cantidad_minima_mayoreo)
               const sinStock = prod.stock <= 0

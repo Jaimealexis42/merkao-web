@@ -97,12 +97,34 @@ export default function PublicarProducto() {
     return urls
   }
 
+  const PROHIBIDO_DESCRIPCION = [
+    /9\d{8}/,                                               // teléfono PE: 9XXXXXXXX
+    /whatsapp|wsp\b/i,
+    /\byape\b|\bplin\b/i,
+    /transferencia|dep[oó]sito|cuenta bancaria/i,
+    /\b(bcp|interbank|bbva|scotiabank)\b/i,
+  ]
+
+  const validarDescripcion = (texto: string): string | null => {
+    for (const re of PROHIBIDO_DESCRIPCION) {
+      if (re.test(texto)) return 'La descripción no puede incluir teléfonos, Yape/Plin, WhatsApp ni datos bancarios. Todos los pagos y contactos deben hacerse a través de Merkao.'
+    }
+    return null
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
     setSinTienda(false)
     setExito(false)
+
+    const descErr = validarDescripcion(form.descripcion)
+    if (descErr) {
+      setError(descErr)
+      setLoading(false)
+      return
+    }
 
     const { data: tienda } = await supabase
       .from('tiendas')

@@ -263,7 +263,7 @@ function CheckoutContent() {
     )
   }
 
-  const imagen = producto.imagenes?.[0] ?? `https://picsum.photos/seed/${producto.id}/400/400`
+  const imagen = producto.imagenes?.[0] ?? null
   const arancelInfo = ARANCELES[pais]
   const hayMayoreo = !!(producto.precio_mayoreo && producto.cantidad_minima_mayoreo)
   const ahorroMayoreo = hayMayoreo
@@ -299,7 +299,10 @@ function CheckoutContent() {
               <div className="mk-ck-prod">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <div className="mk-ck-prod-thumb">
-                  <img src={imagen} alt={producto.nombre} />
+                  {imagen
+                    ? <img src={imagen} alt={producto.nombre} />
+                    : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', borderRadius: 8 }}><Icon name="box" size={32} stroke={1.4} /></div>
+                  }
                 </div>
                 <div className="mk-ck-prod-info">
                   <div className="mk-ck-prod-name">{producto.nombre}</div>

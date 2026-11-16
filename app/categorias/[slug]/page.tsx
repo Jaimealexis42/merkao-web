@@ -48,14 +48,6 @@ const SORT_LABELS: Record<SortKey, string> = {
   recientes: 'Más recientes',
 }
 
-function ratingFromId(id: string) {
-  const n = id.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
-  return Math.round((4.0 + (n % 11) / 10) * 10) / 10
-}
-function reviewsFromId(id: string) {
-  const n = id.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
-  return 50 + (n % 950)
-}
 
 function Stars({ value, count }: { value: number; count?: number }) {
   const full = Math.round(value)
@@ -345,10 +337,8 @@ export default function CategoriaPage() {
             <div className="mk-prod-grid">
               {loading && Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
 
-              {!loading && filtrados.map((prod) => {
-                const rating = ratingFromId(prod.id)
-                const reviews = reviewsFromId(prod.id)
-                const imagen = prod.imagenes?.[0] ?? `https://picsum.photos/seed/${prod.id}/600/600`
+              {!loading && filtrados.filter(prod => prod.imagenes?.[0]).map((prod) => {
+                const imagen = prod.imagenes![0]
                 const p = calcularPrecios(prod.precio, 'PE')
                 const tieneMayoreo = !!(prod.precio_mayoreo && prod.cantidad_minima_mayoreo)
 
@@ -372,7 +362,6 @@ export default function CategoriaPage() {
                       <Link href={`/productos/${prod.id}`} className="mk-card-title-link">
                         <h3 className="mk-card-title">{prod.nombre}</h3>
                       </Link>
-                      <Stars value={rating} count={reviews} />
                       <div className="mk-card-price">{fmt(p.total)}</div>
                       <div className="mk-card-breakdown">
                         <div className="mk-bd-row"><span>Base</span><span>{fmt(p.base)}</span></div>

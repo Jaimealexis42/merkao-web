@@ -796,14 +796,14 @@ const SETS_PRIMAVERA: Slide[][] = [
   [SP_23SEP, S7_VEHICULO, S7_MODA, S7_PROV],
 ]
 
-// Slide dedicado a SANA PRODUCTS — tienda verificada real
+// Slide dedicado a SANA PRODUCTS
 const SLIDE_SANA: Slide = {
   id: 'sana-products', theme: 'gold',
-  tag:    { es: '⭐ TIENDA VERIFICADA', en: '⭐ VERIFIED STORE', pt: '⭐ LOJA VERIFICADA' },
+  tag:    { es: '🌿 VENDEDOR EN MERKAO', en: '🌿 SELLER ON MERKAO', pt: '🌿 VENDEDOR NO MERKAO' },
   region: 'Lima, Perú',
   title:  { es: ['SANA PRODUCTS', 'suplementos', 'naturales'], en: ['SANA PRODUCTS', 'natural', 'supplements'], pt: ['SANA PRODUCTS', 'suplementos', 'naturais'] },
   sub:    { es: 'Vitafer-L · Colágeno Renova Plus · Uro Probiotic', en: 'Vitafer-L · Renova Plus Collagen · Uro Probiotic', pt: 'Vitafer-L · Colágeno Renova Plus · Uro Probiotic' },
-  body:   { es: 'Primera tienda verificada de Merkao. Suplementos naturales de calidad para tu bienestar. Puedes comprar ahora mismo.', en: "Merkao's first verified store. Quality natural supplements for your wellbeing — shop now.", pt: 'Primeira loja verificada do Merkao. Suplementos naturais de qualidade para o seu bem-estar — compre agora.' },
+  body:   { es: 'Suplementos naturales de calidad para tu bienestar. Compra con Pago Escrow protegido en Merkao.', en: 'Quality natural supplements for your wellbeing — shop with protected Escrow Payment on Merkao.', pt: 'Suplementos naturais de qualidade para o seu bem-estar — compre com Pagamento Escrow no Merkao.' },
   cta:    { es: 'Ver productos', en: 'See products', pt: 'Ver produtos' },
   img:    'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=1600&q=80&auto=format&fit=crop',
   categoriaId: 0,
@@ -922,14 +922,6 @@ function esVendedorReal(vendedorId: string | number | null | undefined, tMap: Ma
 
 /* ─────────────────────────── HELPERS ─────────────────────────── */
 
-function ratingFromId(id: string) {
-  const n = id.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
-  return Math.round((4.0 + (n % 11) / 10) * 10) / 10
-}
-function reviewsFromId(id: string) {
-  const n = id.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
-  return 50 + (n % 950)
-}
 
 function Stars({ value, count }: { value: number; count?: number }) {
   const full = Math.round(value)
@@ -1503,10 +1495,8 @@ export default function Home() {
             <div className="mk-prod-grid">
               {loading && Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
 
-              {!loading && productosFiltrados.map((prod) => {
-                const rating  = ratingFromId(prod.id)
-                const reviews = reviewsFromId(prod.id)
-                const imagen  = prod.imagenes?.[0] ?? `https://picsum.photos/seed/${prod.id}/600/600`
+              {!loading && productosFiltrados.filter(prod => prod.imagenes?.[0]).map((prod) => {
+                const imagen  = prod.imagenes![0]
                 const enCarrito = agregarAnim === prod.id
                 const p = calcularPrecios(prod.precio, pais)
                 const tieneMayoreo = prod.precio_mayoreo && prod.cantidad_minima_mayoreo
@@ -1553,7 +1543,6 @@ export default function Home() {
                       <a href={`/productos/${prod.id}`} className="mk-card-title-link">
                         <h3 className="mk-card-title">{prod.nombre}</h3>
                       </a>
-                      <Stars value={rating} count={reviews} />
                       <div className="mk-card-price">{fmt(p.total)}</div>
                       <div className="mk-card-breakdown">
                         <div className="mk-bd-row"><span>{lang === 'en' ? 'Base price' : lang === 'pt' ? 'Preço base' : 'Base'}</span><span>{fmt(p.base)}</span></div>

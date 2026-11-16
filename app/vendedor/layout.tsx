@@ -143,8 +143,8 @@ export default function VendedorLayout({ children }: { children: React.ReactNode
                 <div className="mk-vhdr-avatar lg">{inicial}{inicial2}</div>
                 <div style={{ minWidth: 0 }}>
                   <strong style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{nombre}</strong>
-                  <span className="mk-vstore-rating">
-                    <Icon name="checkCircle" size={12} className="mk-star on" /> Verificado
+                  <span className="mk-vstore-rating" style={{ color: 'var(--muted)' }}>
+                    Vendedor activo
                   </span>
                 </div>
               </div>

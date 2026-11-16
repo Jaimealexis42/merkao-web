@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
@@ -61,18 +61,6 @@ function Stars({ value, size = 14 }: { value: number; size?: number }) {
   )
 }
 
-function ratingFromId(id: string) {
-  const n = id.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
-  return Math.round((4.0 + (n % 11) / 10) * 10) / 10
-}
-function reviewsFromId(id: string) {
-  const n = id.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
-  return 50 + (n % 950)
-}
-function soldFromId(id: string) {
-  const n = id.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
-  return 80 + (n % 240)
-}
 
 export default function ProductoDetalle() {
   const { id } = useParams<{ id: string }>()
@@ -87,6 +75,7 @@ export default function ProductoDetalle() {
   const [added, setAdded] = useState(false)
   const [fav, setFav] = useState(false)
   const [relacionados, setRelacionados] = useState<Producto[]>([])
+  const [tiendaNombre, setTiendaNombre] = useState<string | null>(null)
 
   const agregarItem = useCarritoStore((s) => s.agregarItem)
   const totalItems = useCarritoStore((s) => s.totalItems)
@@ -137,6 +126,16 @@ export default function ProductoDetalle() {
       setImagenActiva(0)
       setLoading(false)
 
+      // Fetch tienda name for seller card
+      if (prod.vendedor_id) {
+        const { data: tienda } = await supabase
+          .from('tiendas')
+          .select('nombre')
+          .eq('id', prod.vendedor_id)
+          .maybeSingle()
+        if (!cancelled && tienda?.nombre) setTiendaNombre(tienda.nombre)
+      }
+
       // Related: misma categoría, excluyendo actual, máx 4. No bloquea el render.
       const { data: rel, error: relErr } = await supabase
         .from('productos')
@@ -144,6 +143,7 @@ export default function ProductoDetalle() {
         .eq('estado', 'activo')
         .eq('categoria_id', prod.categoria_id)
         .neq('id', prod.id)
+        .not('vendedor_id', 'is', null)
         .order('vistas', { ascending: false })
         .limit(4)
       if (relErr) console.warn('[productos/[id]] related error:', relErr.message)
@@ -153,9 +153,6 @@ export default function ProductoDetalle() {
     return () => { cancelled = true }
   }, [id])
 
-  const rating = useMemo(() => (producto ? ratingFromId(producto.id) : 0), [producto])
-  const numResenas = useMemo(() => (producto ? reviewsFromId(producto.id) : 0), [producto])
-  const sold = useMemo(() => (producto ? soldFromId(producto.id) : 0), [producto])
 
   if (loading) {
     return (
@@ -268,8 +265,6 @@ export default function ProductoDetalle() {
     if (cantidad > 1) setCantidad((q) => q - 1)
   }
 
-  const distribucion: [string, number][] = [['5', 78], ['4', 15], ['3', 5], ['2', 1], ['1', 1]]
-
   return (
     <>
       {/* ── Header compacto ── */}
@@ -359,13 +354,6 @@ export default function ProductoDetalle() {
           <div className="mk-buybox">
             <span className="mk-bb-cat">{catNombre}</span>
             <h1 className="mk-bb-title">{producto.nombre}</h1>
-            <div className="mk-bb-meta">
-              <Stars value={rating} />
-              <span className="mk-bb-rating-num">{rating}</span>
-              <a href="#mk-reviews" className="mk-bb-link">{numResenas} reseñas</a>
-              <span className="mk-bb-dot">·</span>
-              <span className="mk-bb-sold">{sold.toLocaleString('es-PE')} vendidos</span>
-            </div>
 
             {/* Card precio */}
             <div className="mk-bb-price-card">
@@ -532,10 +520,7 @@ export default function ProductoDetalle() {
                 </div>
                 <div className="mk-seller-info">
                   <div className="mk-seller-name">
-                    Tienda Merkao
-                    <span className="mk-seller-verif">
-                      <Icon name="checkCircle" size={12} /> Verificado
-                    </span>
+                    {tiendaNombre ?? 'Vendedor Merkao'}
                   </div>
                   <div className="mk-seller-sub">
                     <Icon name="mapPin" size={12} stroke={2} />
@@ -544,18 +529,7 @@ export default function ProductoDetalle() {
                 </div>
               </div>
               <div className="mk-seller-stats">
-                <div className="mk-seller-stat">
-                  <strong>{rating}</strong>
-                  <span><Icon name="star" size={11} className="mk-star on" /> Rating</span>
-                </div>
-                <div className="mk-seller-stat">
-                  <strong>98%</strong>
-                  <span>Buenas ventas</span>
-                </div>
-                <div className="mk-seller-stat">
-                  <strong>{sold}</strong>
-                  <span>Vendidos</span>
-                </div>
+                <span style={{ fontSize: 12, color: 'var(--muted)', fontStyle: 'italic' }}>Vendedor nuevo</span>
               </div>
               <div className="mk-seller-actions">
                 <Link
@@ -575,62 +549,24 @@ export default function ProductoDetalle() {
         {/* Reseñas */}
         <section className="mk-reviews" id="mk-reviews">
           <h2>Reseñas de compradores</h2>
-          <div className="mk-rev-wrap">
-            <div className="mk-rev-summary">
-              <div className="mk-rev-big">{rating}</div>
-              <Stars value={rating} size={16} />
-              <span className="mk-rev-count">{numResenas} reseñas verificadas</span>
-              <div className="mk-rev-dist">
-                {distribucion.map(([star, pct]) => (
-                  <div className="mk-rev-dist-row" key={star}>
-                    <span className="mk-rev-dist-star">
-                      {star} <Icon name="star" size={11} className="mk-star on" />
-                    </span>
-                    <div className="mk-rev-dist-bar"><div style={{ width: pct + '%' }} /></div>
-                    <span className="mk-rev-dist-pct">{pct}%</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="mk-rev-list">
-              {[
-                { autor: 'María Q.', loc: 'Arequipa', estrellas: 5, fecha: 'hace 3 días', txt: 'Hermoso producto, llegó bien empaquetado y en 4 días. La calidad es la que esperaba. Muy recomendado.' },
-                { autor: 'Carlos M.', loc: 'Lima', estrellas: 5, fecha: 'hace 1 semana', txt: 'Excelente acabado. El pago con Escrow me dio mucha confianza para comprar a un vendedor nuevo.' },
-                { autor: 'Ana T.', loc: 'Trujillo', estrellas: 4, fecha: 'hace 2 semanas', txt: 'Muy bonito, llegó tal cual se ve en la foto. La talla me quedó un poco grande pero el material es buenísimo.' },
-              ].map((r, i) => (
-                <article className="mk-rev-item" key={i}>
-                  <div className="mk-rev-item-head">
-                    <div className="mk-rev-avatar">{r.autor[0]}</div>
-                    <div className="mk-rev-who">
-                      <strong>{r.autor}</strong>
-                      <span className="mk-rev-loc"><Icon name="mapPin" size={11} stroke={2} /> {r.loc}</span>
-                    </div>
-                    <span className="mk-rev-verif">
-                      <Icon name="checkCircle" size={13} /> Compra verificada
-                    </span>
-                  </div>
-                  <div className="mk-rev-item-meta">
-                    <Stars value={r.estrellas} />
-                    <span className="mk-rev-date">{r.fecha}</span>
-                  </div>
-                  <p className="mk-rev-txt">{r.txt}</p>
-                </article>
-              ))}
-            </div>
+          <div style={{ padding: '32px 0', textAlign: 'center', color: 'var(--muted)' }}>
+            <Icon name="star" size={40} stroke={1.3} style={{ display: 'block', margin: '0 auto 12px', color: 'var(--muted-2)' }} />
+            <p style={{ fontWeight: 600, fontSize: 15, marginBottom: 6 }}>Sin reseñas todavía</p>
+            <small style={{ fontSize: 13 }}>Este producto aún no tiene reseñas de compra. Sé el primero en comprar y opinar.</small>
           </div>
         </section>
 
         {/* Related */}
-        {relacionados.length > 0 && (
+        {relacionados.filter(r => r.imagenes?.[0]).length > 0 && (
           <section className="mk-related">
             <div>
               <h2>Productos relacionados</h2>
               <p className="mk-related-sub">Más {catNombre.toLowerCase()} que podrían gustarte.</p>
             </div>
             <div className="mk-rgrid">
-              {relacionados.map((r) => {
+              {relacionados.filter(r => r.imagenes?.[0]).map((r) => {
                 const p = calcularPrecios(r.precio)
-                const img = r.imagenes?.[0] ?? `https://picsum.photos/seed/${r.id}/600/600`
+                const img = r.imagenes![0]
                 const rCat = CAT_BY_ID[r.categoria_id]?.nombre ?? ''
                 return (
                   <Link key={r.id} href={`/productos/${r.id}`} className="mk-rcard mk-rcard-link">
