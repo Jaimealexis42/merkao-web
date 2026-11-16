@@ -26,6 +26,12 @@ A diferencia de PresupIA, Merkao **se deploya automáticamente** al hacer push a
 3. Si se mergea por error, el deploy ya salió — solo se mitiga con un revert push (que también se autodeploya).
 4. **NUNCA usar `npx vercel` ni `vercel --prod` directamente** — el proyecto real (`merkao.org`) vive en el scope `alexisoficina42-4643s-projects` (cuenta distinta). Si se corre `npx vercel` desde este directorio, se despliega en el scope equivocado (`alexisaranap21-dotcoms-projects`) sin las variables de entorno y sin apuntar a `merkao.org`. El único mecanismo de deploy válido es `git push origin main`.
 
+**Checklist obligatorio antes y después de cada push**:
+- Correr `npm run build` y esperar que termine sin errores. **Si falla, no hacer push** — corregir primero.
+- Después del push, esperar a que Vercel termine el build (verificar con `gh api repos/Jaimealexis42/merkao-web/commits/HEAD/statuses` que `state` sea `success` y no `pending` ni `failure`).
+- Abrir la página afectada en **merkao.org** y confirmar visualmente que funciona.
+- Solo entonces reportar que el deploy está listo.
+
 > **Nota (oct 2026)**: se borró el proyecto `merkao-web` de `alexisaranap21-dotcoms-projects` y se eliminó la carpeta `.vercel/` local para que no quede ningún enlace residual al scope incorrecto.
 
 GitHub Actions **no hace deploy**: el único workflow (`.github/workflows/merkao-facebook-post.yml`) corre cron diario 13:00 UTC (8:00 Lima) para auto-post FB+IG + reel diario via `meta-api/post-facebook.mjs` y `meta-api/create-reel.mjs`.
@@ -140,7 +146,8 @@ Reclamaciones: tabla y RPC `crear_reclamacion` en Supabase Merkao; email constan
 - **CRÍTICO Merkao**: como `push a main` autodeploya a producción:
   - Trabajar siempre en rama feature
   - **Avisar SIEMPRE** antes de mergear o pushear a `main`
-  - Tener `npm run build` exitoso antes del push
+  - `npm run build` debe pasar sin errores antes del push; si falla, no pushear
+  - Después del push, esperar que Vercel termine (`state: success`) y verificar en merkao.org antes de reportar listo
   - Si rompiste prod, mitigá con **revert push** (que también autodeploya el revert) — no hay rollback de un click en Vercel sin promoting un deploy previo
 
 ---
