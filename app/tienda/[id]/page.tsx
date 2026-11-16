@@ -13,9 +13,6 @@ type Tienda = {
   nombre: string | null
   descripcion: string | null
   logo_url: string | null
-  ciudad: string | null
-  reputacion: number | null
-  ventas_totales: number | null
   verificado: boolean | null
 }
 
@@ -83,7 +80,7 @@ export default function TiendaPublicaPage() {
       const [tiendaRes, productosRes] = await Promise.all([
         supabase
           .from('tiendas')
-          .select('id, nombre, descripcion, logo_url, ciudad, reputacion, ventas_totales, verificado')
+          .select('id, nombre, descripcion, logo_url, verificado')
           .eq('id', id)
           .maybeSingle(),
         supabase
@@ -98,7 +95,7 @@ export default function TiendaPublicaPage() {
       if (cancelled) return
       setTienda(
         (tiendaRes.data as Tienda | null) ??
-          { id, nombre: null, descripcion: null, logo_url: null, ciudad: null, reputacion: null, ventas_totales: null, verificado: null },
+          { id, nombre: null, descripcion: null, logo_url: null, verificado: null },
       )
       setProductos((productosRes.data ?? []) as Producto[])
       setLoading(false)
@@ -108,9 +105,9 @@ export default function TiendaPublicaPage() {
   }, [id])
 
   const nombreVisible = tienda?.nombre || 'Tienda en Merkao'
-  const ciudadVisible = tienda?.ciudad || productos[0]?.ciudad || null
-  const reputacion = tienda?.reputacion ?? null
-  const ventasTotales = tienda?.ventas_totales ?? 0
+  const ciudadVisible = productos[0]?.ciudad || null
+  const reputacion = null
+  const ventasTotales = 0
   const productosActivos = productos.length
 
   const categoriasUsadas = useMemo(() => {
