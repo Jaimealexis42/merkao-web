@@ -1,25 +1,7 @@
 {
-  "lastReelDate": "2026-11-19",
-  "totalReels": 157,
+  "lastReelDate": "2026-11-20",
+  "totalReels": 158,
   "history": [
-    {
-      "fecha": "2026-09-30T18:19:18.002Z",
-      "fechaPeru": "2026-09-30",
-      "product": {
-        "id": "79d0e769-b856-4de9-83ab-321266096a70",
-        "nombre": "Chompa de alpaca tejida a mano — Cusco",
-        "ciudad": "Cusco",
-        "precio": 85
-      },
-      "ig": {
-        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Wednesday, 30-Sep-26 11:19:10 PDT."
-      },
-      "fb": {
-        "videoId": "2719411331789260",
-        "permalink": "https://www.facebook.com/reel/2719411331789260",
-        "elapsedMs": 7456
-      }
-    },
     {
       "fecha": "2026-10-01T18:44:37.704Z",
       "fechaPeru": "2026-10-01",
@@ -900,6 +882,24 @@
         "videoId": "1183724167552863",
         "permalink": "https://www.facebook.com/reel/1183724167552863",
         "elapsedMs": 6923
+      }
+    },
+    {
+      "fecha": "2026-11-20T20:57:55.362Z",
+      "fechaPeru": "2026-11-20",
+      "product": {
+        "id": "45a96305-c019-49e6-9b52-e6185baf1d53",
+        "nombre": "CAMARA PARA AUTO",
+        "ciudad": "Arequipa",
+        "precio": 170
+      },
+      "ig": {
+        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Friday, 20-Nov-26 12:57:48 PST."
+      },
+      "fb": {
+        "videoId": "1436066605351648",
+        "permalink": "https://www.facebook.com/reel/1436066605351648",
+        "elapsedMs": 7052
       }
     }
   ]
