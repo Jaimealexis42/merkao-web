@@ -1,25 +1,7 @@
 {
-  "lastReelDate": "2026-11-21",
-  "totalReels": 159,
+  "lastReelDate": "2026-11-22",
+  "totalReels": 160,
   "history": [
-    {
-      "fecha": "2026-10-02T18:16:02.630Z",
-      "fechaPeru": "2026-10-02",
-      "product": {
-        "id": "0cf6af2c-0c1c-4b44-b070-478129251122",
-        "nombre": "Cacao puro en polvo Amazonas 1 kg — Orgánico",
-        "ciudad": "San Martín",
-        "precio": 28
-      },
-      "ig": {
-        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Friday, 02-Oct-26 11:15:51 PDT."
-      },
-      "fb": {
-        "videoId": "1655391366231955",
-        "permalink": "https://www.facebook.com/reel/1655391366231955",
-        "elapsedMs": 11203
-      }
-    },
     {
       "fecha": "2026-10-03T17:03:31.157Z",
       "fechaPeru": "2026-10-03",
@@ -900,6 +882,24 @@
         "videoId": "1459784802961665",
         "permalink": "https://www.facebook.com/reel/1459784802961665",
         "elapsedMs": 6062
+      }
+    },
+    {
+      "fecha": "2026-11-22T20:12:06.968Z",
+      "fechaPeru": "2026-11-22",
+      "product": {
+        "id": "5440e495-243c-495e-8565-243953108ac1",
+        "nombre": "Alfombra de Yute Redondo – 120 cm ",
+        "ciudad": "Lima",
+        "precio": 67
+      },
+      "ig": {
+        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Sunday, 22-Nov-26 12:11:59 PST."
+      },
+      "fb": {
+        "videoId": "1827618442218961",
+        "permalink": "https://www.facebook.com/reel/1827618442218961",
+        "elapsedMs": 7320
       }
     }
   ]
