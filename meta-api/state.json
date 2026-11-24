@@ -1,32 +1,8 @@
 {
-  "lastIndex": 5,
-  "lastPostedDate": "2026-11-22",
-  "totalPosts": 166,
+  "lastIndex": 6,
+  "lastPostedDate": "2026-11-23",
+  "totalPosts": 167,
   "history": [
-    {
-      "fecha": "2026-10-03T17:03:02.168Z",
-      "fechaPeru": "2026-10-03",
-      "variantIndex": 5,
-      "variantId": 6,
-      "enfoque": "Tip de venta + mención natural",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122149586985345830",
-      "fbPhotoId": "122149586955345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122149586985345830",
-      "image": {
-        "source": "unsplash",
-        "query": "cafe peru plantacion",
-        "theme": "cafe",
-        "photo_id": "ouob6k2zsLw",
-        "photo_url": "https://images.unsplash.com/photo-1652015496419-58606c1b5d1c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxMXx8Y2FmZSUyMHBlcnUlMjBwbGFudGFjaW9ufGVufDF8MHx8fDE3OTEwNDY5Nzh8MA&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "PROJETO CAFÉ GATO-MOURISCO",
-        "photographer_url": "https://unsplash.com/@projetocafegatomourisco",
-        "alt": "a green hillside with trees"
-      },
-      "ig": {
-        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Saturday, 03-Oct-26 10:03:02 PDT."
-      }
-    },
     {
       "fecha": "2026-10-04T17:20:50.334Z",
       "fechaPeru": "2026-10-04",
@@ -1201,6 +1177,30 @@
       },
       "ig": {
         "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Sunday, 22-Nov-26 12:11:39 PST."
+      }
+    },
+    {
+      "fecha": "2026-11-24T00:37:49.460Z",
+      "fechaPeru": "2026-11-23",
+      "variantIndex": 6,
+      "variantId": 7,
+      "enfoque": "Invitación corta y cálida",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122160157917345830",
+      "fbPhotoId": "122160157893345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122160157917345830",
+      "image": {
+        "source": "unsplash",
+        "query": "peruvian textiles",
+        "theme": "moda",
+        "photo_id": "0JmXy8-pUok",
+        "photo_url": "https://images.unsplash.com/photo-1773613927259-a1f954d1671e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHw5fHxwZXJ1dmlhbiUyMHRleHRpbGVzfGVufDF8MHx8fDE3OTU0ODA2NjR8MA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Alberto Lung",
+        "photographer_url": "https://unsplash.com/@albertolung",
+        "alt": "Elderly woman wearing a decorated hat and shawl"
+      },
+      "ig": {
+        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Monday, 23-Nov-26 16:37:49 PST."
       }
     }
   ]

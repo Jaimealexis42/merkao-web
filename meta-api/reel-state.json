@@ -1,25 +1,7 @@
 {
-  "lastReelDate": "2026-11-22",
-  "totalReels": 160,
+  "lastReelDate": "2026-11-23",
+  "totalReels": 161,
   "history": [
-    {
-      "fecha": "2026-10-03T17:03:31.157Z",
-      "fechaPeru": "2026-10-03",
-      "product": {
-        "id": "0cf6af2c-0c1c-4b44-b070-478129251122",
-        "nombre": "Cacao puro en polvo Amazonas 1 kg — Orgánico",
-        "ciudad": "San Martín",
-        "precio": 28
-      },
-      "ig": {
-        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Saturday, 03-Oct-26 10:03:24 PDT."
-      },
-      "fb": {
-        "videoId": "1783058192785849",
-        "permalink": "https://www.facebook.com/reel/1783058192785849",
-        "elapsedMs": 6374
-      }
-    },
     {
       "fecha": "2026-10-04T17:21:28.608Z",
       "fechaPeru": "2026-10-04",
@@ -900,6 +882,24 @@
         "videoId": "1827618442218961",
         "permalink": "https://www.facebook.com/reel/1827618442218961",
         "elapsedMs": 7320
+      }
+    },
+    {
+      "fecha": "2026-11-24T00:38:15.471Z",
+      "fechaPeru": "2026-11-23",
+      "product": {
+        "id": "bfcdd4a5-5ade-46ab-b27a-d3ff0a3c44a0",
+        "nombre": "Nacimiento estilo Pop hecho a mano – 5 piezas",
+        "ciudad": "Lima",
+        "precio": 270
+      },
+      "ig": {
+        "error": "ig container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Monday, 23-Nov-26 16:38:08 PST."
+      },
+      "fb": {
+        "videoId": "1821521922376394",
+        "permalink": "https://www.facebook.com/reel/1821521922376394",
+        "elapsedMs": 6764
       }
     }
   ]
