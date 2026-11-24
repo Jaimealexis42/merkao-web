@@ -1,32 +1,8 @@
 {
-  "lastIndex": 6,
-  "lastPostedDate": "2026-11-23",
-  "totalPosts": 167,
+  "lastIndex": 0,
+  "lastPostedDate": "2026-11-24",
+  "totalPosts": 168,
   "history": [
-    {
-      "fecha": "2026-10-04T17:20:50.334Z",
-      "fechaPeru": "2026-10-04",
-      "variantIndex": 6,
-      "variantId": 7,
-      "enfoque": "Invitación corta y cálida",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122149830351345830",
-      "fbPhotoId": "122149830327345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122149830351345830",
-      "image": {
-        "source": "unsplash",
-        "query": "ropa colorida peru",
-        "theme": "moda",
-        "photo_id": "DxAFftFWkNY",
-        "photo_url": "https://images.unsplash.com/photo-1583202806174-ab03e16760d5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHw2fHxyb3BhJTIwY29sb3JpZGElMjBwZXJ1fGVufDF8MHx8fDE3OTExMzQ0NDR8MA&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Deb Dowd",
-        "photographer_url": "https://unsplash.com/@fin777",
-        "alt": "woman in orange and blue dress with brown and white long coated dog"
-      },
-      "ig": {
-        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Sunday, 04-Oct-26 10:20:50 PDT."
-      }
-    },
     {
       "fecha": "2026-10-06T18:50:05.857Z",
       "fechaPeru": "2026-10-06",
@@ -1201,6 +1177,30 @@
       },
       "ig": {
         "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Monday, 23-Nov-26 16:37:49 PST."
+      }
+    },
+    {
+      "fecha": "2026-11-24T22:56:25.067Z",
+      "fechaPeru": "2026-11-24",
+      "variantIndex": 0,
+      "variantId": 1,
+      "enfoque": "Comparativa con números",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122160358581345830",
+      "fbPhotoId": "122160358557345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122160358581345830",
+      "image": {
+        "source": "unsplash",
+        "query": "paisaje peru",
+        "theme": "general",
+        "photo_id": "rFhF1C_nvgc",
+        "photo_url": "https://images.unsplash.com/photo-1562786992-4db45ffdbcd3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxNXx8cGFpc2FqZSUyMHBlcnV8ZW58MXwwfHx8MTc5NTU2MDk3OXww&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Amilcar Alvarez Garcia",
+        "photographer_url": "https://unsplash.com/@amil_style",
+        "alt": "green grass field"
+      },
+      "ig": {
+        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Tuesday, 24-Nov-26 14:56:24 PST."
       }
     }
   ]
