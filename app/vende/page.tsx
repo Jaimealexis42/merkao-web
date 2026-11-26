@@ -4,6 +4,7 @@ import { Icon } from '@/lib/icons'
 import { SiteTopnav, SiteFootnav } from '@/components/SiteShell'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/vende' },
   title: 'Merkao — Vende en Merkao',
   description:
     'Abre tu tienda gratis y vende a todo el Perú con pago protegido. 0% de comisión por 12 meses.',

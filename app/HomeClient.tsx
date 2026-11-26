@@ -1,0 +1,1760 @@
+'use client'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { supabase } from '@/lib/supabase'
+import { calcularPrecios, fmt, ARANCELES } from '@/lib/precios'
+import { useAuth } from '@/lib/useAuth'
+import { T, CAT_NAMES, type Lang } from '@/lib/translations'
+import { useCarritoStore } from '@/src/store/carritoStore'
+import { Icon, type IconName } from '@/lib/icons'
+import { DEPARTAMENTOS_PERU } from '@/lib/peru-geo'
+import TrackPageView from '@/components/TrackPageView'
+
+/* ─────────────────────────── CONSTANTES ─────────────────────────── */
+
+type CatDef = { id: number; icon: IconName; accent?: boolean }
+
+const CATEGORIAS: CatDef[] = [
+  { id: 1, icon: 'shirt' },
+  { id: 2, icon: 'smartphone' },
+  { id: 3, icon: 'food' },
+  { id: 4, icon: 'palette' },
+  { id: 5, icon: 'home' },
+  { id: 6, icon: 'car' },
+  { id: 7, icon: 'sprout' },
+  { id: 8, icon: 'box' },
+]
+
+const CAT_SLUG: Record<number, string> = {
+  1: 'ropa-y-moda',
+  2: 'electronicos',
+  3: 'alimentos',
+  4: 'artesanias',
+  5: 'hogar',
+  6: 'autos-y-motos',
+  7: 'agricola',
+  8: 'otros',
+}
+
+type HeroTheme = 'terra' | 'stone' | 'jungle' | 'gold' | 'desert' | 'peru' | 'morado'
+type Slide = {
+  id: string
+  theme: HeroTheme
+  tag: Record<Lang, string>
+  region: string
+  title: Record<Lang, string[]> // líneas
+  sub: Record<Lang, string>
+  body: Record<Lang, string>
+  cta: Record<Lang, string>
+  ctaHref?: string // si está presente, el CTA navega a esta URL en vez de hacer scroll al shop
+  img: string
+  imgContain?: boolean // true → object-fit: contain (fotos de producto cuadradas)
+  categoriaId: number // para filtrar productos cuando el usuario hace click en el CTA
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// ROTACIÓN AUTOMÁTICA DE 7 SETS DE HERO (cambia cada 1 día)
+// ──────────────────────────────────────────────────────────────────────
+// Ciclo de 7 días: cada día muestra un set distinto.
+//   indiceSet = diasTranscurridos % 7
+// Determinístico: misma fecha → mismo set, sin cron ni DB.
+//
+// ══════════════════════════════════════════════════════════════════════
+
+// UTC para evitar que SSR (Vercel UTC) y cliente (timezone local) difieran.
+const FECHA_BASE   = new Date('2026-06-24T00:00:00Z')
+const DIAS_POR_SET = 1
+const MS_POR_DIA   = 1000 * 60 * 60 * 24
+
+type Fase = 'feriado6ago' | 'rosa' | 'primavera' | 'default'
+function getFase(): Fase {
+  const mes = new Date().getUTCMonth() + 1  // 1-12
+  const dia = new Date().getUTCDate()
+  if (mes < 8 || (mes === 8 && dia <= 6)) return 'feriado6ago'
+  if (mes === 8) return 'rosa'
+  if (mes === 9) return 'primavera'
+  return 'default'
+}
+const FASE = getFase()
+
+function isMesOctubreLima(): boolean {
+  // Lima = UTC-5 (sin horario de verano)
+  const ahora = new Date(Date.now() - 5 * 60 * 60 * 1000)
+  return ahora.getUTCMonth() + 1 === 10 // octubre
+}
+
+const MODO_APERTURA = true // plataforma en apertura — quitar cuando haya vendedores reales
+const DEMO_VENDOR_ID = '00000000-0000-0000-0000-000000000001' // vendedor_id de productos de muestra
+
+// ══════════════════════════════════════════════════════════════════════
+// SLIDES COMPARTIDOS — sin referencia a fecha, reutilizados en todas las fases
+// ══════════════════════════════════════════════════════════════════════
+
+const S2_CAFE: Slide = {
+  id: 's2-cafe', theme: 'terra',
+  tag:    { es: 'CAFÉ DE ALTURA', en: 'HIGH-ALTITUDE COFFEE', pt: 'CAFÉ DE ALTITUDE' },
+  region: 'Cajamarca · Cusco',
+  title:  { es: ['Café peruano', 'de altura'], en: ['Peruvian coffee', 'from the highlands'], pt: ['Café peruano', 'de altitude'] },
+  sub:    { es: 'Granos cultivados sobre los 1,500 msnm', en: 'Beans grown above 1,500 m above sea level', pt: 'Grãos cultivados acima de 1.500 m de altitude' },
+  body:   { es: 'El café peruano ganó premios mundiales — pedilo directo del productor.', en: 'Peruvian coffee has won world awards — order it direct from the producer.', pt: 'O café peruano ganhou prêmios mundiais — peça direto do produtor.' },
+  cta:    { es: 'Ver alimentos', en: 'See food', pt: 'Ver alimentos' },
+  img:    'https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=1600&q=80&auto=format&fit=crop',
+  categoriaId: 3,
+}
+const S2_QUINUA: Slide = {
+  id: 's2-quinua', theme: 'terra',
+  tag:    { es: 'SUPERALIMENTOS ANDINOS', en: 'ANDEAN SUPERFOODS', pt: 'SUPERALIMENTOS ANDINOS' },
+  region: 'Puno · Cusco · Arequipa',
+  title:  { es: ['Quinua y granos', 'andinos'], en: ['Quinoa and', 'Andean grains'], pt: ['Quinoa e grãos', 'andinos'] },
+  sub:    { es: 'Kiwicha, cañihua, maca y más superalimentos', en: 'Kiwicha, cañihua, maca and more superfoods', pt: 'Kiwicha, cañihua, maca e mais superalimentos' },
+  body:   { es: 'Los superalimentos más potentes del planeta, cultivados en los Andes peruanos.', en: "The planet's most powerful superfoods, grown in the Peruvian Andes.", pt: 'Os superalimentos mais poderosos do planeta, cultivados nos Andes peruanos.' },
+  cta:    { es: 'Ver alimentos', en: 'See food', pt: 'Ver alimentos' },
+  img:    'https://images.unsplash.com/photo-1547592180-85f173990554?w=1600&q=80&auto=format&fit=crop',
+  categoriaId: 3,
+}
+const S2_REGISTRO: Slide = {
+  id: 's2-registro', theme: 'gold',
+  tag:    { es: '¿VENDES PRODUCTOS?', en: 'DO YOU SELL PRODUCTS?', pt: 'VOCÊ VENDE PRODUTOS?' },
+  region: 'Regístrate gratis',
+  title:  { es: ['Regístrate', 'en Merkao', '¡Es gratis!'], en: ['Sign up', 'on Merkao', "It's free!"], pt: ['Cadastre-se', 'no Merkao', 'É grátis!'] },
+  sub:    { es: 'Vende tus productos a todo el Perú sin comisiones', en: 'Sell your products across Peru without commissions', pt: 'Venda seus produtos em todo o Peru sem comissões' },
+  body:   { es: 'Crea tu tienda gratis hoy y empieza a vender mañana.', en: 'Create your free store today and start selling tomorrow.', pt: 'Crie sua loja grátis hoje e comece a vender amanhã.' },
+  cta:    { es: 'Registrarme', en: 'Sign me up', pt: 'Cadastrar-me' },
+  ctaHref: '/register',
+  img:    'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1600&q=80&auto=format&fit=crop',
+  categoriaId: 0,
+}
+const S3_TEXTILES: Slide = {
+  id: 's3-textiles', theme: 'jungle',
+  tag:    { es: 'TEXTILES ANDINOS', en: 'ANDEAN TEXTILES', pt: 'TÊXTEIS ANDINOS' },
+  region: 'Tejedores de los Andes',
+  title:  { es: ['Textiles y tejidos', 'peruanos'], en: ['Peruvian textiles', 'and weavings'], pt: ['Têxteis e tecelagens', 'peruanos'] },
+  sub:    { es: 'Alpaca, lana y algodón nativo de los Andes', en: 'Alpaca, wool and native Andean cotton', pt: 'Alpaca, lã e algodão nativo dos Andes' },
+  body:   { es: 'Chales, mantas, alfombras y tapices tejidos a mano por artesanos.', en: 'Shawls, blankets, rugs and tapestries handwoven by artisans.', pt: 'Xales, cobertores, tapetes e tapeçarias tecidos à mão por artesãos.' },
+  cta:    { es: 'Ver artesanías', en: 'See crafts', pt: 'Ver artesanato' },
+  img:    'https://images.unsplash.com/photo-1544942557-b7a0e50a5d7b?w=1600&q=80&auto=format&fit=crop',
+  categoriaId: 4,
+}
+const S3_DECO: Slide = {
+  id: 's3-deco', theme: 'desert',
+  tag:    { es: 'HOGAR Y DECORACIÓN', en: 'HOME & DECORATION', pt: 'CASA E DECORAÇÃO' },
+  region: 'Todo el Perú',
+  title:  { es: ['Decoración', 'para tu hogar'], en: ['Decoration', 'for your home'], pt: ['Decoração', 'para sua casa'] },
+  sub:    { es: 'Muebles y accesorios para cada ambiente', en: 'Furniture and accessories for every room', pt: 'Móveis e acessórios para cada ambiente' },
+  body:   { es: 'Transforma tu espacio con productos peruanos de calidad.', en: 'Transform your space with quality Peruvian products.', pt: 'Transforme seu espaço com produtos peruanos de qualidade.' },
+  cta:    { es: 'Ver hogar', en: 'See home décor', pt: 'Ver decoração' },
+  img:    'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1600&q=80&auto=format&fit=crop',
+  categoriaId: 5,
+}
+const S3_PROV: Slide = {
+  id: 's3-proveedores', theme: 'gold',
+  tag:    { es: 'TU NEGOCIO MERECE BRILLAR', en: 'YOUR BUSINESS DESERVES TO SHINE', pt: 'SEU NEGÓCIO MERECE BRILHAR' },
+  region: 'Emprendedores peruanos',
+  title:  { es: ['Tu negocio', 'merece brillar', 'en Merkao'], en: ['Your business', 'deserves', 'to shine'], pt: ['Seu negócio', 'merece', 'brilhar'] },
+  sub:    { es: 'Registra tu tienda y llega a todo el Perú', en: 'Register your store and reach all of Peru', pt: 'Registre sua loja e alcance todo o Peru' },
+  body:   { es: 'Más de 200 vendedores activos confían en Merkao. Únete hoy.', en: 'Over 200 active sellers trust Merkao. Join today.', pt: 'Mais de 200 vendedores ativos confiam no Merkao. Junte-se hoje.' },
+  cta:    { es: 'Registra tu tienda', en: 'Register your store', pt: 'Registre sua loja' },
+  ctaHref: '/register?role=vendedor',
+  img:    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1600&q=80&auto=format&fit=crop',
+  categoriaId: 0,
+}
+const S4_MUEBLES: Slide = {
+  id: 's4-muebles', theme: 'desert',
+  tag:    { es: 'MUEBLES Y DECO', en: 'FURNITURE & DÉCOR', pt: 'MÓVEIS E DECORAÇÃO' },
+  region: 'Hogar y muebles',
+  title:  { es: ['Muebles y', 'decoración'], en: ['Furniture', 'and decoration'], pt: ['Móveis e', 'decoração'] },
+  sub:    { es: 'Salas, comedores y dormitorios para cada presupuesto', en: 'Living rooms, dining rooms and bedrooms for every budget', pt: 'Salas, salas de jantar e quartos para cada orçamento' },
+  body:   { es: 'Renueva tu hogar con muebles de calidad a precios peruanos.', en: 'Renew your home with quality furniture at Peruvian prices.', pt: 'Renove sua casa com móveis de qualidade a preços peruanos.' },
+  cta:    { es: 'Ver muebles', en: 'See furniture', pt: 'Ver móveis' },
+  img:    'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1600&q=80&auto=format&fit=crop',
+  categoriaId: 5,
+}
+const S4_CASA: Slide = {
+  id: 's4-casa', theme: 'desert',
+  tag:    { es: 'TODO PARA TU CASA', en: 'EVERYTHING FOR YOUR HOME', pt: 'TUDO PARA SUA CASA' },
+  region: 'Hogar completo',
+  title:  { es: ['Todo para', 'tu casa'], en: ['Everything', 'for your home'], pt: ['Tudo para', 'sua casa'] },
+  sub:    { es: 'Cocina, baño, jardín y más en un solo lugar', en: 'Kitchen, bathroom, garden and more in one place', pt: 'Cozinha, banheiro, jardim e mais em um só lugar' },
+  body:   { es: 'Encuentra todo lo que necesitas para tu hogar en Merkao.', en: 'Find everything you need for your home on Merkao.', pt: 'Encontre tudo que você precisa para sua casa no Merkao.' },
+  cta:    { es: 'Ver hogar', en: 'See home', pt: 'Ver casa' },
+  img:    'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1600&q=80&auto=format&fit=crop',
+  categoriaId: 5,
+}
+const S4_REGISTRO: Slide = {
+  id: 's4-registro', theme: 'gold',
+  tag:    { es: 'MERKAO NECESITA VENDEDORES', en: 'MERKAO NEEDS SELLERS', pt: 'MERKAO PRECISA DE VENDEDORES' },
+  region: 'Gratis por 1 año',
+  title:  { es: ['Vende en Merkao', 'gratis', '1 año entero'], en: ['Sell on Merkao', 'free for', 'a full year'], pt: ['Venda no Merkao', 'grátis', '1 ano inteiro'] },
+  sub:    { es: '0% comisión · Sin mensualidad · Sin contrato', en: '0% commission · No monthly fee · No contract', pt: '0% comissão · Sem mensalidade · Sem contrato' },
+  body:   { es: 'Publica tus productos hoy y empieza a recibir pedidos de todo el Perú.', en: 'List your products today and start receiving orders from all over Peru.', pt: 'Publique seus produtos hoje e comece a receber pedidos de todo o Peru.' },
+  cta:    { es: 'Registrarme', en: 'Sign me up', pt: 'Cadastrar-me' },
+  ctaHref: '/register',
+  img:    'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1600&q=80&auto=format&fit=crop',
+  categoriaId: 0,
+}
+const S5_PRODUCTOR: Slide = {
+  id: 's5-productor', theme: 'jungle',
+  tag:    { es: 'DEL CAMPO A TU MESA', en: 'FROM FIELD TO YOUR TABLE', pt: 'DO CAMPO À SUA MESA' },
+  region: 'Productores locales',
+  title:  { es: ['Del productor', 'a tu mesa'], en: ['From producer', 'to your table'], pt: ['Do produtor', 'à sua mesa'] },
+  sub:    { es: 'Mercado digital de productores peruanos', en: 'Digital marketplace of Peruvian producers', pt: 'Mercado digital de produtores peruanos' },
+  body:   { es: 'Apoya al agricultor peruano comprando directo en Merkao.', en: 'Support the Peruvian farmer by buying directly on Merkao.', pt: 'Apoie o agricultor peruano comprando diretamente no Merkao.' },
+  cta:    { es: 'Ver agrícolas', en: 'See produce', pt: 'Ver agrícolas' },
+  img:    'https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=1600&q=80&auto=format&fit=crop',
+  categoriaId: 7,
+}
+const S5_CAMPO: Slide = {
+  id: 's5-campo', theme: 'terra',
+  tag:    { es: 'LO MEJOR DEL CAMPO', en: 'THE BEST OF THE FIELD', pt: 'O MELHOR DO CAMPO' },
+  region: 'Alimentos peruanos',
+  title:  { es: ['Lo mejor del', 'campo peruano'], en: ['The best of', 'the Peruvian field'], pt: ['O melhor do', 'campo peruano'] },
+  sub:    { es: 'Alimentos naturales cultivados en suelo peruano', en: 'Natural foods grown in Peruvian soil', pt: 'Alimentos naturais cultivados em solo peruano' },
+  body:   { es: 'Superalimentos, especias y productos naturales de todo el Perú.', en: 'Superfoods, spices and natural products from all over Peru.', pt: 'Superalimentos, especiarias e produtos naturais de todo o Peru.' },
+  cta:    { es: 'Ver alimentos', en: 'See food', pt: 'Ver alimentos' },
+  img:    'https://images.unsplash.com/photo-1498557850523-fd3d118b962e?w=1600&q=80&auto=format&fit=crop',
+  categoriaId: 3,
+}
+const S5_PROV: Slide = {
+  id: 's5-proveedores', theme: 'gold',
+  tag:    { es: 'VENDE SIN COMISIONES', en: 'SELL WITHOUT COMMISSIONS', pt: 'VENDA SEM COMISSÕES' },
+  region: 'Para productores y agricultores',
+  title:  { es: ['Vende tus', 'productos sin', 'comisiones'], en: ['Sell your', 'products without', 'commissions'], pt: ['Venda seus', 'produtos sem', 'comissões'] },
+  sub:    { es: 'Ideal para productores agrícolas y proveedores de alimentos', en: 'Ideal for agricultural producers and food suppliers', pt: 'Ideal para produtores agrícolas e fornecedores de alimentos' },
+  body:   { es: 'Publica tus cosechas y productos en Merkao — gratis el primer año.', en: 'List your harvests and products on Merkao — free for the first year.', pt: 'Publique suas colheitas e produtos no Merkao — grátis no primeiro ano.' },
+  cta:    { es: 'Quiero vender', en: 'I want to sell', pt: 'Quero vender' },
+  ctaHref: '/register?role=vendedor',
+  img:    'https://images.unsplash.com/photo-1471193945509-9ad0617afabf?w=1600&q=80&auto=format&fit=crop',
+  categoriaId: 0,
+}
+const S6_CELULARES: Slide = {
+  id: 's6-celulares', theme: 'stone',
+  tag:    { es: 'CELULARES Y GADGETS', en: 'PHONES & GADGETS', pt: 'CELULARES E GADGETS' },
+  region: 'Smartphones y accesorios',
+  title:  { es: ['Celulares', 'y gadgets'], en: ['Phones', 'and gadgets'], pt: ['Celulares', 'e gadgets'] },
+  sub:    { es: 'Smartphones, audífonos y accesorios tech', en: 'Smartphones, headphones and tech accessories', pt: 'Smartphones, fones de ouvido e acessórios tech' },
+  body:   { es: 'Encuentra el celular que buscas a precio peruano en Merkao.', en: "Find the phone you're looking for at Peruvian prices on Merkao.", pt: 'Encontre o celular que você procura a preço peruano no Merkao.' },
+  cta:    { es: 'Ver electrónicos', en: 'See electronics', pt: 'Ver eletrônicos' },
+  img:    'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=1600&q=80&auto=format&fit=crop',
+  categoriaId: 2,
+}
+const S6_TECH: Slide = {
+  id: 's6-tech', theme: 'stone',
+  tag:    { es: 'TECNOLOGÍA PERUANA', en: 'PERUVIAN TECHNOLOGY', pt: 'TECNOLOGIA PERUANA' },
+  region: 'Todo en tecnología',
+  title:  { es: ['Tecnología', 'peruana'], en: ['Peruvian', 'technology'], pt: ['Tecnologia', 'peruana'] },
+  sub:    { es: 'Vendedores peruanos de electrónicos con garantía', en: 'Peruvian electronics sellers with guarantee', pt: 'Vendedores peruanos de eletrônicos com garantia' },
+  body:   { es: 'Compra tecnología con escrow protegido — si no llega, te devolvemos el dinero.', en: "Buy tech with escrow protection — if it doesn't arrive, we refund you.", pt: 'Compre tecnologia com escrow protegido — se não chegar, devolvemos o dinheiro.' },
+  cta:    { es: 'Ver electrónicos', en: 'See electronics', pt: 'Ver eletrônicos' },
+  img:    'https://images.unsplash.com/photo-1518770660439-4636190af475?w=1600&q=80&auto=format&fit=crop',
+  categoriaId: 2,
+}
+const S6_REGISTRO: Slide = {
+  id: 's6-registro', theme: 'gold',
+  tag:    { es: 'REGÍSTRATE COMO VENDEDOR', en: 'REGISTER AS A SELLER', pt: 'CADASTRE-SE COMO VENDEDOR' },
+  region: 'Panel de vendedor gratis',
+  title:  { es: ['Regístrate', 'como vendedor', 'gratis'], en: ['Register', 'as a seller', 'for free'], pt: ['Cadastre-se', 'como vendedor', 'grátis'] },
+  sub:    { es: 'Panel completo · Pedidos · Estadísticas · Sin costo', en: 'Full dashboard · Orders · Stats · No cost', pt: 'Painel completo · Pedidos · Estatísticas · Sem custo' },
+  body:   { es: 'Abre tu tienda en minutos y llega a compradores de todo el Perú.', en: 'Open your store in minutes and reach buyers from all over Peru.', pt: 'Abra sua loja em minutos e alcance compradores de todo o Peru.' },
+  cta:    { es: 'Registrarme', en: 'Sign me up', pt: 'Cadastrar-me' },
+  ctaHref: '/register',
+  img:    'https://images.unsplash.com/photo-1556761175-4b46a572b786?w=1600&q=80&auto=format&fit=crop',
+  categoriaId: 0,
+}
+const S7_VEHICULO: Slide = {
+  id: 's7-vehiculo', theme: 'terra',
+  tag:    { es: 'TODO PARA TU VEHÍCULO', en: 'EVERYTHING FOR YOUR VEHICLE', pt: 'TUDO PARA SEU VEÍCULO' },
+  region: 'Repuestos y accesorios',
+  title:  { es: ['Todo para', 'tu vehículo'], en: ['Everything', 'for your vehicle'], pt: ['Tudo para', 'seu veículo'] },
+  sub:    { es: 'Repuestos, aceites y accesorios de auto y moto', en: 'Spare parts, oils and car & motorcycle accessories', pt: 'Peças de reposição, óleos e acessórios de carro e moto' },
+  body:   { es: 'Mantenimiento, tuning y más — todo en Merkao con garantía de escrow.', en: 'Maintenance, tuning and more — all on Merkao with escrow guarantee.', pt: 'Manutenção, tuning e mais — tudo no Merkao com garantia escrow.' },
+  cta:    { es: 'Ver autos y motos', en: 'See cars & motos', pt: 'Ver carros e motos' },
+  img:    'https://images.unsplash.com/photo-1530046339160-ce3e530c7d2f?w=1600&q=80&auto=format&fit=crop',
+  categoriaId: 6,
+}
+const S7_MODA: Slide = {
+  id: 's7-moda', theme: 'peru',
+  tag:    { es: 'MODA PERUANA', en: 'PERUVIAN FASHION', pt: 'MODA PERUANA' },
+  region: 'Ropa y estilo',
+  title:  { es: ['Moda peruana', 'para cada ocasión'], en: ['Peruvian fashion', 'for every occasion'], pt: ['Moda peruana', 'para cada ocasião'] },
+  sub:    { es: 'Prendas únicas de diseñadores y marcas peruanas', en: 'Unique garments from Peruvian designers and brands', pt: 'Roupas únicas de designers e marcas peruanas' },
+  body:   { es: 'Descubre la moda peruana — moderna, colorida y con identidad propia.', en: 'Discover Peruvian fashion — modern, colorful and with its own identity.', pt: 'Descubra a moda peruana — moderna, colorida e com identidade própria.' },
+  cta:    { es: 'Ver moda', en: 'See fashion', pt: 'Ver moda' },
+  img:    'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&q=80&auto=format&fit=crop',
+  categoriaId: 1,
+}
+const S7_PROV: Slide = {
+  id: 's7-proveedores', theme: 'gold',
+  tag:    { es: 'MERKAO BUSCA PROVEEDORES', en: 'MERKAO SEEKS SUPPLIERS', pt: 'MERKAO BUSCA FORNECEDORES' },
+  region: 'Únete hoy',
+  title:  { es: ['Merkao busca', 'proveedores', '· Únete hoy'], en: ['Merkao seeks', 'suppliers', '· Join today'], pt: ['Merkao busca', 'fornecedores', '· Junte-se hoje'] },
+  sub:    { es: 'Vende desde cualquier rincón del Perú, sin comisiones el primer año', en: 'Sell from any corner of Peru, without commissions the first year', pt: 'Venda de qualquer canto do Peru, sem comissões no primeiro ano' },
+  body:   { es: 'Registra tu tienda gratis y empieza a recibir pedidos de todo el país.', en: 'Register your store for free and start receiving orders from all over the country.', pt: 'Registre sua loja gratuitamente e comece a receber pedidos de todo o país.' },
+  cta:    { es: 'Quiero vender', en: 'I want to sell', pt: 'Quero vender' },
+  ctaHref: '/register?role=vendedor',
+  img:    'https://images.unsplash.com/photo-1560472355-536de3962603?w=1600&q=80&auto=format&fit=crop',
+  categoriaId: 0,
+}
+
+// ── SLIDES COMPARTIDOS — SEPTIEMBRE / PRIMAVERA ───────────────────────
+const SP_23SEP: Slide = {
+  id: 'sp-23sep', theme: 'gold',
+  tag:    { es: '23 DE SEPTIEMBRE · PRIMAVERA Y JUVENTUD', en: 'SEPTEMBER 23 · SPRING & YOUTH DAY', pt: '23 DE SETEMBRO · PRIMAVERA E JUVENTUDE' },
+  region: 'Todo el Perú',
+  title:  { es: ['Día de la', 'Primavera', 'y la Juventud'], en: ['Spring', 'and Youth', 'Day'], pt: ['Dia da', 'Primavera', 'e Juventude'] },
+  sub:    { es: 'El regalo perfecto para el 23 de septiembre', en: 'The perfect gift for September 23rd', pt: 'O presente perfeito para 23 de setembro' },
+  body:   { es: 'Celebra la primavera con algo especial. Artesanías, moda y más de vendedores peruanos en Merkao.', en: 'Celebrate spring with something special. Crafts, fashion and more from Peruvian sellers on Merkao.', pt: 'Comemore a primavera com algo especial. Artesanato, moda e mais de vendedores peruanos no Merkao.' },
+  cta:    { es: 'Ver regalos', en: 'See gifts', pt: 'Ver presentes' },
+  img:    'https://images.unsplash.com/photo-1490750967868-88df5691cc2b?w=1600&q=80&auto=format&fit=crop',
+  categoriaId: 4,
+}
+const SP_BIENVENIDA: Slide = {
+  id: 'sp-bienvenida', theme: 'terra',
+  tag:    { es: 'SEPTIEMBRE EN MERKAO', en: 'SEPTEMBER ON MERKAO', pt: 'SETEMBRO NO MERKAO' },
+  region: 'Todo el Perú',
+  title:  { es: ['Bienvenido', 'a septiembre', 'en Merkao'], en: ['Welcome to', 'September', 'on Merkao'], pt: ['Bem-vindo', 'a setembro', 'no Merkao'] },
+  sub:    { es: 'Los mejores productos peruanos, todo el mes', en: 'The best Peruvian products, all month long', pt: 'Os melhores produtos peruanos, o mês todo' },
+  body:   { es: 'Septiembre llegó con todo. Explora Merkao y encuentra lo que buscas de vendedores peruanos.', en: 'September is here. Explore Merkao and find what you\'re looking for from Peruvian sellers.', pt: 'Setembro chegou. Explore o Merkao e encontre o que procura de vendedores peruanos.' },
+  cta:    { es: 'Explorar Merkao', en: 'Explore Merkao', pt: 'Explorar Merkao' },
+  img:    'https://images.unsplash.com/photo-1526392060635-9d6019884377?w=1600&q=80&auto=format&fit=crop',
+  categoriaId: 0,
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// FASE 1 — Feriado 6 de agosto (hasta el 6 de agosto inclusive)
+// ══════════════════════════════════════════════════════════════════════
+const SETS_F1: Slide[][] = [
+  // ─ SET 1 ─ Principal temático del feriado ────────────────────────────
+  [
+    {
+      id: 's1f1-moda', theme: 'stone',
+      tag:    { es: 'BATALLA DE JUNÍN · 6 DE AGOSTO', en: 'BATTLE OF JUNÍN · AUGUST 6', pt: 'BATALHA DE JUNÍN · 6 DE AGOSTO' },
+      region: 'Ropa y accesorios',
+      title:  { es: ['Vestite con', 'lo peruano'], en: ['Dress Peruvian', 'this holiday'], pt: ['Vista o que é', 'peruano'] },
+      sub:    { es: 'Moda peruana para la Batalla de Junín', en: 'Peruvian fashion for the Battle of Junín', pt: 'Moda peruana para a Batalha de Junín' },
+      body:   { es: 'Batalla de Junín: el momento ideal para renovar tu ropa con prendas de vendedores peruanos.', en: 'Battle of Junín: the perfect time to refresh your wardrobe with Peruvian sellers.', pt: 'Batalha de Junín: o momento ideal para renovar seu guarda-roupa com vendedores peruanos.' },
+      cta:    { es: 'Ver moda', en: 'See fashion', pt: 'Ver moda' },
+      img:    'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&q=80&auto=format&fit=crop',
+      categoriaId: 1,
+    },
+    {
+      id: 's1f1-artesania', theme: 'stone',
+      tag:    { es: 'HECHO EN PERÚ · 6 DE AGOSTO', en: 'MADE IN PERU · AUG 6', pt: 'FEITO NO PERU · 6 DE AGOSTO' },
+      region: 'Sierra y selva peruana',
+      title:  { es: ['Artesanía andina', 'con orgullo'], en: ['Andean crafts', 'with pride'], pt: ['Artesanato andino', 'com orgulho'] },
+      sub:    { es: 'Textiles, tejidos y cerámica de los Andes peruanos', en: 'Textiles, weavings and ceramics from the Peruvian Andes', pt: 'Têxteis, tecelagens e cerâmicas dos Andes peruanos' },
+      body:   { es: 'El arte andino tiene siglos de historia. Llevate algo hecho con manos peruanas — único e irrepetible.', en: 'Andean art has centuries of history. Take home something made with Peruvian hands — unique.', pt: 'A arte andina tem séculos de história. Leve algo feito com mãos peruanas — único e inigualável.' },
+      cta:    { es: 'Ver artesanías', en: 'See crafts', pt: 'Ver artesanato' },
+      img:    'https://images.unsplash.com/photo-1582582494705-f8ce0b0c24f0?w=1600&q=80&auto=format&fit=crop',
+      categoriaId: 4,
+    },
+    {
+      id: 's1f1-alimentos', theme: 'jungle',
+      tag:    { es: 'BATALLA DE JUNÍN · SABORES DEL PERÚ', en: 'BATTLE OF JUNÍN · FLAVORS OF PERU', pt: 'BATALHA DE JUNÍN · SABORES DO PERU' },
+      region: 'Campos del Perú',
+      title:  { es: ['Alimentos frescos', 'para el feriado'], en: ['Fresh food', 'for the holiday'], pt: ['Alimentos frescos', 'para o feriado'] },
+      sub:    { es: 'Cacao, café, quinua y más productos del campo peruano', en: 'Cacao, coffee, quinoa and more Peruvian field products', pt: 'Cacau, café, quinoa e mais produtos do campo peruano' },
+      body:   { es: 'Aprovecha la Batalla de Junín para abastecerte con los mejores alimentos peruanos, directo del productor.', en: 'Make the most of Battle of Junín to stock up on the best Peruvian food, direct from the producer.', pt: 'Aproveite a Batalha de Junín para abastecer-se com os melhores alimentos peruanos, direto do produtor.' },
+      cta:    { es: 'Ver alimentos', en: 'See food', pt: 'Ver alimentos' },
+      img:    'https://images.unsplash.com/photo-1547592180-85f173990554?w=1600&q=80&auto=format&fit=crop',
+      categoriaId: 3,
+    },
+    {
+      id: 's1f1-prov', theme: 'gold',
+      tag:    { es: 'MERKAO BUSCA PROVEEDORES', en: 'MERKAO SEEKS SUPPLIERS', pt: 'MERKAO BUSCA FORNECEDORES' },
+      region: 'Vendé sin comisiones',
+      title:  { es: ['Vende gratis', '1 año en', 'Merkao'], en: ['Sell free', '1 year on', 'Merkao'], pt: ['Venda grátis', '1 ano no', 'Merkao'] },
+      sub:    { es: '0% comisión durante los primeros 12 meses', en: '0% commission for the first 12 months', pt: '0% comissão nos primeiros 12 meses' },
+      body:   { es: 'Llega a compradores de todo el Perú desde el día 1, sin pagar comisiones.', en: 'Reach buyers across Peru from day 1, without paying commissions.', pt: 'Alcance compradores em todo o Peru desde o dia 1, sem pagar comissões.' },
+      cta:    { es: 'Quiero vender', en: 'I want to sell', pt: 'Quero vender' },
+      ctaHref: '/register?role=vendedor',
+      img:    'https://images.unsplash.com/photo-1552664730-d307ca884978?w=1600&q=80&auto=format&fit=crop',
+      categoriaId: 0,
+    },
+  ],
+
+  // ─ SET 2 ─ Sabores · slide 1 feriado ─────────────────────────────────
+  [
+    {
+      id: 's2f1-cacao', theme: 'terra',
+      tag:    { es: 'BATALLA DE JUNÍN · SUPERALIMENTOS ANDINOS', en: 'BATTLE OF JUNÍN · ANDEAN SUPERFOODS', pt: 'BATALHA DE JUNÍN · SUPERALIMENTOS ANDINOS' },
+      region: 'Amazonas · San Martín',
+      title:  { es: ['Cacao puro', 'de los Andes'], en: ['Pure cacao', 'from the Andes'], pt: ['Cacau puro', 'dos Andes'] },
+      sub:    { es: 'Chocolate y cacao orgánico peruano — aprovecha la Batalla de Junín', en: 'Organic Peruvian chocolate and cacao — make the most of Battle of Junín', pt: 'Chocolate e cacau orgânico peruano — aproveite a Batalha de Junín' },
+      body:   { es: 'El mejor cacao del mundo viene del Perú. Aprovecha la Batalla de Junín y pídelo directo del productor.', en: "The world's best cacao comes from Peru. Make the most of Battle of Junín and order direct from the producer.", pt: 'O melhor cacau do mundo vem do Peru. Aproveite a Batalha de Junín e peça direto do produtor.' },
+      cta:    { es: 'Ver alimentos', en: 'See food', pt: 'Ver alimentos' },
+      img:    'https://images.unsplash.com/photo-1606312619070-d48b9d92b3f4?w=1600&q=80&auto=format&fit=crop',
+      categoriaId: 3,
+    },
+    S2_CAFE, S2_QUINUA, S2_REGISTRO,
+  ],
+  // ─ SET 3 ─ Artesanía · slide 1 feriado ───────────────────────────────
+  [
+    {
+      id: 's3f1-artesania', theme: 'jungle',
+      tag:    { es: 'HECHO EN PERÚ · BATALLA DE JUNÍN', en: 'MADE IN PERU · BATTLE OF JUNÍN', pt: 'FEITO NO PERU · BATALHA DE JUNÍN' },
+      region: 'Cusco · Puno · Ayacucho',
+      title:  { es: ['Artesanía peruana', 'auténtica'], en: ['Authentic', 'Peruvian crafts'], pt: ['Artesanato', 'peruano autêntico'] },
+      sub:    { es: 'Textiles, tejidos y cerámica de cada región — perfecto para regalar', en: 'Textiles, weavings and ceramics from every region — perfect for gifts', pt: 'Têxteis, tecelagens e cerâmicas de cada região — perfeito para presentear' },
+      body:   { es: 'Batalla de Junín para comprar algo especial. Llevate artesanía hecha con manos peruanas — única, irrepetible.', en: 'Battle of Junín to buy something special. Take home crafts made with Peruvian hands — unique, unrepeatable.', pt: 'Batalha de Junín para comprar algo especial. Leve artesanato feito com mãos peruanas — único, inigualável.' },
+      cta:    { es: 'Ver artesanías', en: 'See crafts', pt: 'Ver artesanato' },
+      img:    'https://images.unsplash.com/photo-1582582494705-f8ce0b0c24f0?w=1600&q=80&auto=format&fit=crop',
+      categoriaId: 4,
+    },
+    S3_TEXTILES, S3_DECO, S3_PROV,
+  ],
+  // ─ SET 4 ─ Hogar · slide 1 feriado ──────────────────────────────────
+  [
+    {
+      id: 's4f1-hogar', theme: 'desert',
+      tag:    { es: 'BATALLA DE JUNÍN · HOGAR PERUANO', en: 'BATTLE OF JUNÍN · PERUVIAN HOME', pt: 'BATALHA DE JUNÍN · LAR PERUANO' },
+      region: 'Decoración y muebles',
+      title:  { es: ['Decora tu hogar', 'para el feriado'], en: ['Decorate your home', 'for the holiday'], pt: ['Decore sua casa', 'para o feriado'] },
+      sub:    { es: 'Muebles y decoración para recibir a la familia', en: 'Furniture and décor to welcome the family', pt: 'Móveis e decoração para receber a família' },
+      body:   { es: 'El 6 de agosto es la Batalla de Junín. Aprovecha para renovar tu hogar con productos de vendedores peruanos.', en: 'August 6 is the Battle of Junín. Take advantage to renew your home with products from Peruvian sellers.', pt: '6 de agosto é a Batalha de Junín. Aproveite para renovar sua casa com produtos de vendedores peruanos.' },
+      cta:    { es: 'Ver hogar', en: 'See home', pt: 'Ver casa' },
+      img:    'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1600&q=80&auto=format&fit=crop',
+      categoriaId: 5,
+    },
+    S4_MUEBLES, S4_CASA, S4_REGISTRO,
+  ],
+  // ─ SET 5 ─ Agrícola · slide 1 feriado ────────────────────────────────
+  [
+    {
+      id: 's5f1-campo', theme: 'jungle',
+      tag:    { es: 'BATALLA DE JUNÍN · CAMPO PERUANO', en: 'BATTLE OF JUNÍN · PERUVIAN FIELD', pt: 'BATALHA DE JUNÍN · CAMPO PERUANO' },
+      region: 'Campos del Perú',
+      title:  { es: ['Productos frescos', 'para el feriado'], en: ['Fresh products', 'for the holiday'], pt: ['Produtos frescos', 'para o feriado'] },
+      sub:    { es: 'Frutas, verduras y tubérculos de productores peruanos', en: 'Fruits, vegetables and tubers from Peruvian producers', pt: 'Frutas, legumes e tubérculos de produtores peruanos' },
+      body:   { es: 'Batalla de Junín: el momento perfecto para abastecerte con productos frescos directo del productor peruano.', en: 'Battle of Junín: the perfect moment to stock up on fresh products direct from the Peruvian producer.', pt: 'Batalha de Junín: o momento perfeito para abastecer-se com produtos frescos direto do produtor peruano.' },
+      cta:    { es: 'Ver agrícolas', en: 'See produce', pt: 'Ver agrícolas' },
+      img:    'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=1600&q=80&auto=format&fit=crop',
+      categoriaId: 7,
+    },
+    S5_PRODUCTOR, S5_CAMPO, S5_PROV,
+  ],
+  // ─ SET 6 ─ Tecnología · slide 1 feriado ──────────────────────────────
+  [
+    {
+      id: 's6f1-tech', theme: 'stone',
+      tag:    { es: 'BATALLA DE JUNÍN · TECNOLOGÍA', en: 'BATTLE OF JUNÍN · ELECTRONICS', pt: 'BATALHA DE JUNÍN · TECNOLOGIA' },
+      region: 'Laptops y computadoras',
+      title:  { es: ['Electrónicos', 'al mejor precio'], en: ['Electronics', 'at the best price'], pt: ['Eletrônicos', 'ao melhor preço'] },
+      sub:    { es: 'Las mejores laptops y equipos para la Batalla de Junín', en: 'The best laptops and equipment for Battle of Junín', pt: 'Os melhores laptops e equipamentos para a Batalha de Junín' },
+      body:   { es: 'Batalla de Junín: el momento perfecto para renovar tu tecnología. Compra con escrow protegido.', en: 'Battle of Junín: the perfect moment to upgrade your tech. Buy with escrow protection.', pt: 'Batalha de Junín: o momento perfeito para renovar sua tecnologia. Compre com escrow protegido.' },
+      cta:    { es: 'Ver electrónicos', en: 'See electronics', pt: 'Ver eletrônicos' },
+      img:    'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=1600&q=80&auto=format&fit=crop',
+      categoriaId: 2,
+    },
+    S6_CELULARES, S6_TECH, S6_REGISTRO,
+  ],
+  // ─ SET 7 ─ Motor · slide 1 feriado ───────────────────────────────────
+  [
+    {
+      id: 's7f1-autos', theme: 'terra',
+      tag:    { es: 'BATALLA DE JUNÍN · MOTOR PERUANO', en: 'BATTLE OF JUNÍN · PERUVIAN MOTOR', pt: 'BATALHA DE JUNÍN · MOTOR PERUANO' },
+      region: 'Motor peruano',
+      title:  { es: ['Autos y motos', 'para el feriado'], en: ['Cars and motorcycles', 'for the holiday'], pt: ['Carros e motos', 'para o feriado'] },
+      sub:    { es: 'Vehículos, repuestos y accesorios para tu auto', en: 'Vehicles, spare parts and accessories for your car', pt: 'Veículos, peças e acessórios para o seu carro' },
+      body:   { es: 'Batalla de Junín: preparate para el viaje con repuestos y accesorios de vendedores peruanos.', en: 'Battle of Junín: get ready for the trip with spare parts and accessories from Peruvian sellers.', pt: 'Batalha de Junín: prepare-se para a viagem com peças e acessórios de vendedores peruanos.' },
+      cta:    { es: 'Ver autos y motos', en: 'See cars & motos', pt: 'Ver carros e motos' },
+      img:    'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=1600&q=80&auto=format&fit=crop',
+      categoriaId: 6,
+    },
+    S7_VEHICULO, S7_MODA, S7_PROV,
+  ],
+]
+
+// ══════════════════════════════════════════════════════════════════════
+// FASE DEFAULT — Septiembre en adelante (evergreen, sin fecha)
+// ══════════════════════════════════════════════════════════════════════
+const SETS_DEFAULT: Slide[][] = [
+  // ─ SET 1 ─ Moda, tech y artesanía (sin referencia a fecha) ──────────
+  [
+    {
+      id: 's1def-moda', theme: 'jungle',
+      tag:    { es: 'MODA PERUANA', en: 'PERUVIAN FASHION', pt: 'MODA PERUANA' },
+      region: 'Ropa y accesorios',
+      title:  { es: ['Moda peruana', 'para cada día'], en: ['Peruvian fashion', 'for every day'], pt: ['Moda peruana', 'para cada dia'] },
+      sub:    { es: 'Ropa y accesorios de vendedores peruanos', en: 'Clothing and accessories from Peruvian sellers', pt: 'Roupas e acessórios de vendedores peruanos' },
+      body:   { es: 'Descubre las mejores prendas peruanas — moda que tiene identidad, color y calidad.', en: 'Discover the best Peruvian garments — fashion with identity, color and quality.', pt: 'Descubra as melhores peças peruanas — moda com identidade, cor e qualidade.' },
+      cta:    { es: 'Ver moda', en: 'See fashion', pt: 'Ver moda' },
+      img:    'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&q=80&auto=format&fit=crop',
+      categoriaId: 1,
+    },
+    {
+      id: 's1def-tech', theme: 'stone',
+      tag:    { es: 'TECNOLOGÍA', en: 'ELECTRONICS', pt: 'TECNOLOGIA' },
+      region: 'Electrónicos',
+      title:  { es: ['Electrónicos', 'a precio peruano'], en: ['Electronics', 'at Peruvian prices'], pt: ['Eletrônicos', 'a preço peruano'] },
+      sub:    { es: 'Laptops, celulares y más — directo de vendedores locales', en: 'Laptops, phones and more — direct from local sellers', pt: 'Laptops, celulares e mais — direto de vendedores locais' },
+      body:   { es: 'La mejor tecnología disponible en Merkao, con escrow protegido.', en: 'The best technology available on Merkao, with escrow protection.', pt: 'A melhor tecnologia disponível no Merkao, com escrow protegido.' },
+      cta:    { es: 'Ver electrónicos', en: 'See electronics', pt: 'Ver eletrônicos' },
+      img:    'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=1600&q=80&auto=format&fit=crop',
+      categoriaId: 2,
+    },
+    {
+      id: 's1def-artesania', theme: 'terra',
+      tag:    { es: 'HECHO EN PERÚ', en: 'MADE IN PERU', pt: 'FEITO NO PERU' },
+      region: 'Cusco · Puno · Ayacucho',
+      title:  { es: ['Artesanía', 'peruana auténtica'], en: ['Authentic', 'Peruvian crafts'], pt: ['Artesanato', 'peruano autêntico'] },
+      sub:    { es: 'Textiles, tejidos y cerámica de cada región', en: 'Textiles, weavings and ceramics from every region', pt: 'Têxteis, tecelagens e cerâmicas de cada região' },
+      body:   { es: 'Llevate algo hecho con manos peruanas — único, irrepetible.', en: 'Take home something made with Peruvian hands — unique, unrepeatable.', pt: 'Leve para casa algo feito com mãos peruanas — único, inigualável.' },
+      cta:    { es: 'Ver artesanías', en: 'See crafts', pt: 'Ver artesanato' },
+      img:    'https://images.unsplash.com/photo-1582582494705-f8ce0b0c24f0?w=1600&q=80&auto=format&fit=crop',
+      categoriaId: 4,
+    },
+    {
+      id: 's1def-prov', theme: 'gold',
+      tag:    { es: 'MERKAO BUSCA PROVEEDORES', en: 'MERKAO SEEKS SUPPLIERS', pt: 'MERKAO BUSCA FORNECEDORES' },
+      region: 'Vende sin comisiones',
+      title:  { es: ['Vende gratis', '1 año en', 'Merkao'], en: ['Sell free', '1 year on', 'Merkao'], pt: ['Venda grátis', '1 ano no', 'Merkao'] },
+      sub:    { es: '0% comisión durante los primeros 12 meses', en: '0% commission for the first 12 months', pt: '0% comissão nos primeiros 12 meses' },
+      body:   { es: 'Llega a compradores de todo el Perú desde el día 1, sin pagar comisiones.', en: 'Reach buyers across Peru from day 1, without paying commissions.', pt: 'Alcance compradores em todo o Peru desde o dia 1, sem pagar comissões.' },
+      cta:    { es: 'Quiero vender', en: 'I want to sell', pt: 'Quero vender' },
+      ctaHref: '/register?role=vendedor',
+      img:    'https://images.unsplash.com/photo-1552664730-d307ca884978?w=1600&q=80&auto=format&fit=crop',
+      categoriaId: 0,
+    },
+  ],
+  // ─ SET 2 ─ Sabores (sin cambio) ──────────────────────────────────────
+  [
+    {
+      id: 's2-cacao', theme: 'terra',
+      tag:    { es: 'CACAO DE AMAZONAS', en: 'AMAZON CACAO', pt: 'CACAU DA AMAZÔNIA' },
+      region: 'Amazonas · San Martín',
+      title:  { es: ['Cacao puro', 'de Amazonas'], en: ['Pure cacao', 'from the Amazon'], pt: ['Cacau puro', 'da Amazônia'] },
+      sub:    { es: 'Chocolate y cacao orgánico peruano', en: 'Organic Peruvian chocolate and cacao', pt: 'Chocolate e cacau orgânico peruano' },
+      body:   { es: 'El mejor cacao del mundo viene del Perú — encontralo en Merkao.', en: "The world's best cacao comes from Peru — find it on Merkao.", pt: 'O melhor cacau do mundo vem do Peru — encontre no Merkao.' },
+      cta:    { es: 'Ver alimentos', en: 'See food', pt: 'Ver alimentos' },
+      img:    'https://images.unsplash.com/photo-1606312619070-d48b9d92b3f4?w=1600&q=80&auto=format&fit=crop',
+      categoriaId: 3,
+    },
+    S2_CAFE, S2_QUINUA, S2_REGISTRO,
+  ],
+  // ─ SET 3 ─ Artesanía (sin cambio) ────────────────────────────────────
+  [
+    {
+      id: 's3-artesania', theme: 'jungle',
+      tag:    { es: 'HECHO EN PERÚ', en: 'MADE IN PERU', pt: 'FEITO NO PERU' },
+      region: 'Cusco · Puno · Ayacucho',
+      title:  { es: ['Artesanía peruana', 'auténtica'], en: ['Authentic', 'Peruvian crafts'], pt: ['Artesanato', 'peruano autêntico'] },
+      sub:    { es: 'Textiles, tejidos y cerámica de cada región', en: 'Textiles, weavings and ceramics from every region', pt: 'Têxteis, tecelagens e cerâmicas de cada região' },
+      body:   { es: 'Llevate algo hecho con manos peruanas — único, irrepetible.', en: 'Take home something made with Peruvian hands — unique, unrepeatable.', pt: 'Leve para casa algo feito com mãos peruanas — único, inigualável.' },
+      cta:    { es: 'Ver artesanías', en: 'See crafts', pt: 'Ver artesanato' },
+      img:    'https://images.unsplash.com/photo-1582582494705-f8ce0b0c24f0?w=1600&q=80&auto=format&fit=crop',
+      categoriaId: 4,
+    },
+    S3_TEXTILES, S3_DECO, S3_PROV,
+  ],
+  // ─ SET 4 ─ Hogar · slide 1 limpio ────────────────────────────────────
+  [
+    {
+      id: 's4def-hogar', theme: 'desert',
+      tag:    { es: 'HOGAR Y DECO', en: 'HOME & DÉCOR', pt: 'LAR E DECO' },
+      region: 'Decoración y muebles',
+      title:  { es: ['Decora', 'tu hogar'], en: ['Decorate', 'your home'], pt: ['Decore', 'sua casa'] },
+      sub:    { es: 'Muebles y decoración de vendedores peruanos', en: 'Furniture and décor from Peruvian sellers', pt: 'Móveis e decoração de vendedores peruanos' },
+      body:   { es: 'Transforma tu espacio con muebles y accesorios de calidad a precios peruanos.', en: 'Transform your space with quality furniture and accessories at Peruvian prices.', pt: 'Transforme seu espaço com móveis e acessórios de qualidade a preços peruanos.' },
+      cta:    { es: 'Ver hogar', en: 'See home', pt: 'Ver casa' },
+      img:    'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1600&q=80&auto=format&fit=crop',
+      categoriaId: 5,
+    },
+    S4_MUEBLES, S4_CASA, S4_REGISTRO,
+  ],
+  // ─ SET 5 ─ Agrícola (sin cambio) ─────────────────────────────────────
+  [
+    {
+      id: 's5-agricola', theme: 'jungle',
+      tag:    { es: 'DIRECTO DEL PRODUCTOR', en: 'DIRECT FROM PRODUCER', pt: 'DIRETO DO PRODUTOR' },
+      region: 'Campos del Perú',
+      title:  { es: ['Productos', 'agrícolas frescos'], en: ['Fresh', 'agricultural products'], pt: ['Produtos', 'agrícolas frescos'] },
+      sub:    { es: 'Frutas, verduras y tubérculos de productores peruanos', en: 'Fruits, vegetables and tubers from Peruvian producers', pt: 'Frutas, legumes e tubérculos de produtores peruanos' },
+      body:   { es: 'Compra directo al productor — sin intermediarios, más fresco y más barato.', en: 'Buy direct from the producer — no middlemen, fresher and cheaper.', pt: 'Compre direto do produtor — sem intermediários, mais fresco e mais barato.' },
+      cta:    { es: 'Ver agrícolas', en: 'See produce', pt: 'Ver agrícolas' },
+      img:    'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=1600&q=80&auto=format&fit=crop',
+      categoriaId: 7,
+    },
+    S5_PRODUCTOR, S5_CAMPO, S5_PROV,
+  ],
+  // ─ SET 6 ─ Tecnología · slide 1 limpio ───────────────────────────────
+  [
+    {
+      id: 's6def-tech', theme: 'stone',
+      tag:    { es: 'ELECTRÓNICOS', en: 'ELECTRONICS', pt: 'ELETRÔNICOS' },
+      region: 'Laptops y computadoras',
+      title:  { es: ['Electrónicos', 'al mejor precio'], en: ['Electronics', 'at the best price'], pt: ['Eletrônicos', 'ao melhor preço'] },
+      sub:    { es: 'Las mejores laptops y equipos de vendedores peruanos', en: 'The best laptops and equipment from Peruvian sellers', pt: 'Os melhores laptops e equipamentos de vendedores peruanos' },
+      body:   { es: 'Tecnología con escrow protegido — si no llega, te devolvemos el dinero.', en: "Technology with escrow protection — if it doesn't arrive, we refund you.", pt: 'Tecnologia com escrow protegido — se não chegar, devolvemos o dinheiro.' },
+      cta:    { es: 'Ver electrónicos', en: 'See electronics', pt: 'Ver eletrônicos' },
+      img:    'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=1600&q=80&auto=format&fit=crop',
+      categoriaId: 2,
+    },
+    S6_CELULARES, S6_TECH, S6_REGISTRO,
+  ],
+  // ─ SET 7 ─ Motor y estilo (sin cambio) ───────────────────────────────
+  [
+    {
+      id: 's7-autos', theme: 'terra',
+      tag:    { es: 'AUTOS Y MOTOS', en: 'CARS & MOTORCYCLES', pt: 'CARROS E MOTOS' },
+      region: 'Motor peruano',
+      title:  { es: ['Autos y motos', 'en Merkao'], en: ['Cars and motorcycles', 'on Merkao'], pt: ['Carros e motos', 'no Merkao'] },
+      sub:    { es: 'Vehículos, repuestos y accesorios para tu auto', en: 'Vehicles, spare parts and accessories for your car', pt: 'Veículos, peças e acessórios para o seu carro' },
+      body:   { es: 'Encuentra lo que necesitas para tu vehículo en vendedores peruanos de confianza.', en: 'Find what you need for your vehicle from trusted Peruvian sellers.', pt: 'Encontre o que você precisa para seu veículo em vendedores peruanos de confiança.' },
+      cta:    { es: 'Ver autos y motos', en: 'See cars & motos', pt: 'Ver carros e motos' },
+      img:    'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=1600&q=80&auto=format&fit=crop',
+      categoriaId: 6,
+    },
+    S7_VEHICULO, S7_MODA, S7_PROV,
+  ],
+]
+
+// FASE 2: Santa Rosa de Lima (7–31 de agosto)
+const SETS_F2: Slide[][] = [
+  // SET 1 — Artesanía, flores y moda (temas Santa Rosa)
+  [
+    {
+      id: 's1f2-artesania', theme: 'terra',
+      tag:    { es: 'SANTA ROSA DE LIMA · 30 DE AGOSTO', en: 'SANTA ROSA DE LIMA · AUGUST 30', pt: 'SANTA ROSA DE LIMA · 30 DE AGOSTO' },
+      region: 'Artesanía peruana',
+      title:  { es: ['Las manos que', 'crean belleza'], en: ['Hands that', 'create beauty'], pt: ['As mãos que', 'criam beleza'] },
+      sub:    { es: 'Artesanas y emprendedoras peruanas en Merkao', en: 'Peruvian artisans and entrepreneurs in Merkao', pt: 'Artesãs e empreendedoras peruanas no Merkao' },
+      body:   { es: 'Santa Rosa trabajó con sus manos toda su vida. Hoy, miles de artesanas peruanas siguen esa tradición creando con amor y maestría.', en: 'Santa Rosa worked with her hands her entire life. Today, thousands of Peruvian artisans continue that tradition.', pt: 'Santa Rosa trabalhou com as mãos toda a vida. Hoje, milhares de artesãs peruanas continuam essa tradição.' },
+      cta:    { es: 'Ver artesanía', en: 'See crafts', pt: 'Ver artesanato' },
+      img:    'https://images.unsplash.com/photo-1582582494705-f8ce0b0c24f0?w=1600&q=80&auto=format&fit=crop',
+      categoriaId: 4,
+    },
+    {
+      id: 's1f2-flores', theme: 'terra',
+      tag:    { es: 'PATRONA DEL PERÚ Y AMÉRICA', en: 'PATRON OF PERU AND THE AMERICAS', pt: 'PADROEIRA DO PERU E AMERICAS' },
+      region: 'Flores y jardín',
+      title:  { es: ['Flores, plantas', 'y jardín'], en: ['Flowers, plants', 'and garden'], pt: ['Flores, plantas', 'e jardim'] },
+      sub:    { es: 'Cultiva tu espacio como ella cultivó su jardín', en: 'Cultivate your space as she cultivated her garden', pt: 'Cultive seu espaço como ela cultivou o jardim' },
+      body:   { es: 'Santa Rosa de Lima cultivaba flores y hierbas con devoción. Encuentra plantas, flores y todo para tu jardín en Merkao.', en: 'Santa Rosa de Lima cultivated flowers and herbs with devotion. Find plants, flowers and more for your garden in Merkao.', pt: 'Santa Rosa de Lima cultivava flores e ervas com devoção. Encontre plantas, flores e tudo para o seu jardim no Merkao.' },
+      cta:    { es: 'Ver flores y jardín', en: 'See flowers & garden', pt: 'Ver flores e jardim' },
+      img:    'https://images.unsplash.com/photo-1490750967868-88df5691cc2b?w=1600&q=80&auto=format&fit=crop',
+      categoriaId: 7,
+    },
+    {
+      id: 's1f2-moda', theme: 'terra',
+      tag:    { es: 'BORDADO Y TEJIDO PERUANO', en: 'PERUVIAN EMBROIDERY & WEAVING', pt: 'BORDADO E TECIDO PERUANO' },
+      region: 'Moda peruana',
+      title:  { es: ['Moda peruana', 'con historia'], en: ['Peruvian fashion', 'with history'], pt: ['Moda peruana', 'com história'] },
+      sub:    { es: 'Bordado, tejido y diseño de emprendedoras peruanas', en: 'Embroidery, weaving and design by Peruvian entrepreneurs', pt: 'Bordado, tecido e design de empreendedoras peruanas' },
+      body:   { es: 'La tradición del bordado y la aguja vive en la moda peruana. Descubre prendas únicas de emprendedoras que llevan ese legado.', en: 'The embroidery tradition lives in Peruvian fashion. Discover unique garments from entrepreneurs who carry that legacy.', pt: 'A tradição do bordado vive na moda peruana. Descubra peças únicas de empreendedoras que carregam esse legado.' },
+      cta:    { es: 'Ver moda peruana', en: 'See Peruvian fashion', pt: 'Ver moda peruana' },
+      img:    'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&q=80&auto=format&fit=crop',
+      categoriaId: 1,
+    },
+    {
+      id: 's1f2-prov', theme: 'gold',
+      tag:    { es: 'VENDE EN MERKAO', en: 'SELL ON MERKAO', pt: 'VENDA NO MERKAO' },
+      region: 'Para proveedores',
+      title:  { es: ['¿Tienes productos', 'para vender?'], en: ['Have products', 'to sell?'], pt: ['Tem produtos', 'para vender?'] },
+      sub:    { es: 'Regístrate gratis y llega a más clientes', en: 'Register free and reach more customers', pt: 'Registre-se grátis e alcance mais clientes' },
+      body:   { es: 'Merkao conecta proveedores peruanos con compradores en todo el país. Comisiones desde 3%.', en: 'Merkao connects Peruvian providers with buyers nationwide. Commissions from 3%.', pt: 'Merkao conecta fornecedores peruanos com compradores em todo o país. Comissões a partir de 3%.' },
+      cta:    { es: 'Regístrate como proveedor', en: 'Register as provider', pt: 'Registre-se como fornecedor' },
+      img:    'https://images.unsplash.com/photo-1552664730-d307ca884978?w=1600&q=80&auto=format&fit=crop',
+      categoriaId: 0,
+    },
+  ],
+  // SET 2 — Alimentos (cacao + compartidos)
+  [
+    {
+      id: 's2f2-cacao', theme: 'jungle',
+      tag:    { es: 'SANTA ROSA · SABORES DEL PERÚ', en: 'SANTA ROSA · FLAVORS OF PERU', pt: 'SANTA ROSA · SABORES DO PERU' },
+      region: 'Superalimentos andinos',
+      title:  { es: ['Superalimentos', 'andinos'], en: ['Andean', 'superfoods'], pt: ['Superalimentos', 'andinos'] },
+      sub:    { es: 'Del campo peruano directo a tu mesa', en: 'From the Peruvian field direct to your table', pt: 'Do campo peruano direto à sua mesa' },
+      body:   { es: 'Cacao, quinua, café y más. Productores peruanos que trabajan con la misma dedicación de Santa Rosa.', en: 'Cacao, quinoa, coffee and more. Peruvian producers who work with the same dedication as Santa Rosa.', pt: 'Cacau, quinoa, café e mais. Produtores peruanos que trabalham com a mesma dedicação de Santa Rosa.' },
+      cta:    { es: 'Ver alimentos', en: 'See food', pt: 'Ver alimentos' },
+      img:    'https://images.unsplash.com/photo-1606312619070-d48b9d92b3f4?w=1600&q=80&auto=format&fit=crop',
+      categoriaId: 3,
+    },
+    S2_CAFE, S2_QUINUA, S2_REGISTRO,
+  ],
+  // SET 3 — Artesanía (artesanas + compartidos)
+  [
+    {
+      id: 's3f2-artesania', theme: 'terra',
+      tag:    { es: '30 DE AGOSTO · ARTESANAS PERUANAS', en: 'AUGUST 30 · PERUVIAN ARTISANS', pt: '30 DE AGOSTO · ARTESÃS PERUANAS' },
+      region: 'Artesanía',
+      title:  { es: ['El legado del', 'bordado y la aguja'], en: ['The legacy of', 'embroidery and needle'], pt: ['O legado do', 'bordado e da agulha'] },
+      sub:    { es: 'Artesanas que llevan adelante una tradición ancestral', en: 'Artisans who carry forward an ancestral tradition', pt: 'Artesãs que mantêm uma tradição ancestral' },
+      body:   { es: 'Cada pieza bordada a mano lleva el espíritu de Santa Rosa. Encuentra artesanía peruana auténtica en Merkao.', en: 'Each hand-embroidered piece carries the spirit of Santa Rosa. Find authentic Peruvian crafts in Merkao.', pt: 'Cada peça bordada à mão carrega o espírito de Santa Rosa. Encontre artesanato peruano autêntico no Merkao.' },
+      cta:    { es: 'Ver artesanía', en: 'See crafts', pt: 'Ver artesanato' },
+      img:    'https://images.unsplash.com/photo-1582582494705-f8ce0b0c24f0?w=1600&q=80&auto=format&fit=crop',
+      categoriaId: 4,
+    },
+    S3_TEXTILES, S3_DECO, S3_PROV,
+  ],
+  // SET 4 — Hogar (flores/Lima + compartidos)
+  [
+    {
+      id: 's4f2-hogar', theme: 'terra',
+      tag:    { es: 'HOGAR LIMEÑO · SANTA ROSA', en: 'LIMA HOME · SANTA ROSA', pt: 'LAR LIMEÑO · SANTA ROSA' },
+      region: 'Decoración y hogar',
+      title:  { es: ['Tu hogar merece', 'florecer'], en: ['Your home deserves', 'to blossom'], pt: ['Sua casa merece', 'florescer'] },
+      sub:    { es: 'Decoración, flores y todo para tu espacio', en: 'Décor, flowers and everything for your space', pt: 'Decoração, flores e tudo para o seu espaço' },
+      body:   { es: 'Lima se viste de flores cada 30 de agosto. Decora tu hogar con productos peruanos que llevan ese espíritu de belleza.', en: 'Lima dresses in flowers every August 30. Decorate your home with Peruvian products that carry that spirit of beauty.', pt: 'Lima se veste de flores todo 30 de agosto. Decore sua casa com produtos peruanos que carregam esse espírito de beleza.' },
+      cta:    { es: 'Ver hogar', en: 'See home', pt: 'Ver casa' },
+      img:    'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1600&q=80&auto=format&fit=crop',
+      categoriaId: 5,
+    },
+    S4_MUEBLES, S4_CASA, S4_REGISTRO,
+  ],
+  // SET 5 — Flores y plantas
+  [
+    {
+      id: 's5f2-flores', theme: 'terra',
+      tag:    { es: 'FLORES Y PLANTAS · 30 DE AGOSTO', en: 'FLOWERS & PLANTS · AUGUST 30', pt: 'FLORES E PLANTAS · 30 DE AGOSTO' },
+      region: 'Plantas y jardín',
+      title:  { es: ['Cultiva tu jardín', 'como ella'], en: ['Cultivate your garden', 'as she did'], pt: ['Cultive seu jardim', 'como ela'] },
+      sub:    { es: 'Plantas, flores y semillas de proveedores peruanos', en: 'Plants, flowers and seeds from Peruvian providers', pt: 'Plantas, flores e sementes de fornecedores peruanos' },
+      body:   { es: 'Santa Rosa cultivaba rosas y flores con devoción. Este agosto, lleva un poco de ese jardín a tu hogar.', en: 'Santa Rosa cultivated roses and flowers with devotion. This August, bring a little of that garden to your home.', pt: 'Santa Rosa cultivava rosas e flores com devoção. Neste agosto, leve um pouco desse jardim para sua casa.' },
+      cta:    { es: 'Ver flores y plantas', en: 'See flowers & plants', pt: 'Ver flores e plantas' },
+      img:    'https://images.unsplash.com/photo-1490750967868-88df5691cc2b?w=1600&q=80&auto=format&fit=crop',
+      categoriaId: 7,
+    },
+    S5_PRODUCTOR, S5_CAMPO, S5_PROV,
+  ],
+  // SET 6 — Tecnología (genérico agosto)
+  [
+    {
+      id: 's6f2-tech', theme: 'stone',
+      tag:    { es: 'TECNOLOGÍA · AGOSTO EN MERKAO', en: 'TECH · AUGUST IN MERKAO', pt: 'TECNOLOGIA · AGOSTO NO MERKAO' },
+      region: 'Laptops y computadoras',
+      title:  { es: ['Tecnología', 'peruana conectada'], en: ['Peruvian tech', 'connected'], pt: ['Tecnologia', 'peruana conectada'] },
+      sub:    { es: 'Celulares, accesorios y equipos con garantía', en: 'Phones, accessories and equipment with warranty', pt: 'Celulares, acessórios e equipamentos com garantia' },
+      body:   { es: 'Encuentra tecnología de calidad de proveedores verificados en Merkao. Compra con confianza desde cualquier rincón del Perú.', en: 'Find quality tech from verified providers in Merkao. Buy with confidence from anywhere in Peru.', pt: 'Encontre tecnologia de qualidade de fornecedores verificados no Merkao. Compre com confiança de qualquer lugar do Peru.' },
+      cta:    { es: 'Ver tecnología', en: 'See electronics', pt: 'Ver tecnologia' },
+      img:    'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=1600&q=80&auto=format&fit=crop',
+      categoriaId: 2,
+    },
+    S6_CELULARES, S6_TECH, S6_REGISTRO,
+  ],
+  // SET 7 — Autos (catId 6, no moda para evitar duplicado con SET 1)
+  [
+    {
+      id: 's7f2-autos', theme: 'desert',
+      tag:    { es: 'MOTOR PERUANO · AGOSTO', en: 'PERUVIAN MOTOR · AUGUST', pt: 'MOTOR PERUANO · AGOSTO' },
+      region: 'Motor peruano',
+      title:  { es: ['Vehículos y', 'repuestos en Merkao'], en: ['Vehicles and', 'spare parts in Merkao'], pt: ['Veículos e', 'peças no Merkao'] },
+      sub:    { es: 'Autos, motos y accesorios de proveedores verificados', en: 'Cars, motorcycles and accessories from verified providers', pt: 'Carros, motos e acessórios de fornecedores verificados' },
+      body:   { es: 'Encuentra vehículos y repuestos con respaldo de proveedores peruanos. Agosto es buen momento para renovar tu motor.', en: 'Find vehicles and spare parts backed by Peruvian providers. August is a great time to upgrade your ride.', pt: 'Encontre veículos e peças com respaldo de fornecedores peruanos. Agosto é um bom momento para renovar seu veículo.' },
+      cta:    { es: 'Ver autos y motos', en: 'See cars & motos', pt: 'Ver carros e motos' },
+      img:    'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=1600&q=80&auto=format&fit=crop',
+      categoriaId: 6,
+    },
+    S7_VEHICULO, S7_MODA, S7_PROV,
+  ],
+]
+
+// ══════════════════════════════════════════════════════════════════════
+// FASE PRIMAVERA — Septiembre (1–30)
+// Sep 23 = indiceSet 0 → SET 1 es el banner principal del Día de la Primavera
+// ══════════════════════════════════════════════════════════════════════
+const SETS_PRIMAVERA: Slide[][] = [
+  // ─ SET 1 ─ 23 de septiembre · Día de la Primavera y la Juventud ──────
+  // (Índice 0 — corresponde al 23 de septiembre 2026 por la rotación base)
+  [
+    SP_23SEP,
+    {
+      id: 's1p-regalos', theme: 'terra',
+      tag:    { es: 'REGALOS DE PRIMAVERA', en: 'SPRING GIFTS', pt: 'PRESENTES DE PRIMAVERA' },
+      region: 'Artesanía y moda peruana',
+      title:  { es: ['El regalo', 'perfecto ya', 'está en Merkao'], en: ['The perfect', 'spring gift', 'is on Merkao'], pt: ['O presente', 'perfeito está', 'no Merkao'] },
+      sub:    { es: 'Artesanías únicas y moda peruana para regalar', en: 'Unique crafts and Peruvian fashion to gift', pt: 'Artesanato único e moda peruana para presentear' },
+      body:   { es: 'Para el 23 de septiembre, elige algo que sorprenda — hecho con manos peruanas, irrepetible.', en: 'For September 23rd, choose something that surprises — made with Peruvian hands, one of a kind.', pt: 'Para 23 de setembro, escolha algo que surpreenda — feito com mãos peruanas, único.' },
+      cta:    { es: 'Ver artesanías', en: 'See crafts', pt: 'Ver artesanato' },
+      img:    'https://images.unsplash.com/photo-1582582494705-f8ce0b0c24f0?w=1600&q=80&auto=format&fit=crop',
+      categoriaId: 4,
+    },
+    SP_BIENVENIDA,
+    {
+      id: 's1p-prov', theme: 'gold',
+      tag:    { es: 'VENDE EN PRIMAVERA', en: 'SELL THIS SPRING', pt: 'VENDA NESTA PRIMAVERA' },
+      region: 'Gratis por 1 año',
+      title:  { es: ['Esta primavera,', 'vende en', 'Merkao'], en: ['This spring,', 'sell on', 'Merkao'], pt: ['Esta primavera,', 'venda no', 'Merkao'] },
+      sub:    { es: '0% comisión · Sin mensualidad · Sin contrato', en: '0% commission · No monthly fee · No contract', pt: '0% comissão · Sem mensalidade · Sem contrato' },
+      body:   { es: 'Publica tus productos de temporada y llega a compradores de todo el Perú.', en: 'List your seasonal products and reach buyers all over Peru.', pt: 'Publique seus produtos sazonais e alcance compradores em todo o Peru.' },
+      cta:    { es: 'Registrarme', en: 'Sign me up', pt: 'Cadastrar-me' },
+      ctaHref: '/register',
+      img:    'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1600&q=80&auto=format&fit=crop',
+      categoriaId: 0,
+    },
+  ],
+  // ─ SET 2 ─ Bienvenida + alimentos ────────────────────────────────────
+  [SP_BIENVENIDA, S2_CAFE, S2_QUINUA, S2_REGISTRO],
+  // ─ SET 3 ─ Primavera + artesanía ─────────────────────────────────────
+  [SP_23SEP, S3_TEXTILES, S3_DECO, S3_PROV],
+  // ─ SET 4 ─ Bienvenida + hogar ────────────────────────────────────────
+  [SP_BIENVENIDA, S4_MUEBLES, S4_CASA, S4_REGISTRO],
+  // ─ SET 5 ─ Primavera + agrícola ──────────────────────────────────────
+  [SP_23SEP, S5_PRODUCTOR, S5_CAMPO, S5_PROV],
+  // ─ SET 6 ─ Bienvenida + tecnología ───────────────────────────────────
+  [SP_BIENVENIDA, S6_CELULARES, S6_TECH, S6_REGISTRO],
+  // ─ SET 7 ─ Primavera + motor y moda ──────────────────────────────────
+  [SP_23SEP, S7_VEHICULO, S7_MODA, S7_PROV],
+]
+
+// Slide dedicado a SANA PRODUCTS
+const SLIDE_SANA: Slide = {
+  id: 'sana-products', theme: 'gold',
+  tag:    { es: '🌿 VENDEDOR EN MERKAO', en: '🌿 SELLER ON MERKAO', pt: '🌿 VENDEDOR NO MERKAO' },
+  region: 'Lima, Perú',
+  title:  { es: ['SANA PRODUCTS', 'suplementos', 'naturales'], en: ['SANA PRODUCTS', 'natural', 'supplements'], pt: ['SANA PRODUCTS', 'suplementos', 'naturais'] },
+  sub:    { es: 'Vitafer-L · Colágeno Renova Plus · Uro Probiotic', en: 'Vitafer-L · Renova Plus Collagen · Uro Probiotic', pt: 'Vitafer-L · Colágeno Renova Plus · Uro Probiotic' },
+  body:   { es: 'Suplementos naturales de calidad para tu bienestar. Compra con Pago Escrow protegido en Merkao.', en: 'Quality natural supplements for your wellbeing — shop with protected Escrow Payment on Merkao.', pt: 'Suplementos naturais de qualidade para o seu bem-estar — compre com Pagamento Escrow no Merkao.' },
+  cta:    { es: 'Ver productos', en: 'See products', pt: 'Ver produtos' },
+  img:    'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=1600&q=80&auto=format&fit=crop',
+  categoriaId: 0,
+}
+
+// ── Slides de producto — vendedores reales con foto real, del más nuevo al más antiguo ─
+function nombresALineas(nombre: string): string[] {
+  const palabras = nombre.split(/\s+/)
+  const lineas: string[] = []
+  let actual = ''
+  for (let i = 0; i < palabras.length; i++) {
+    const prueba = actual ? `${actual} ${palabras[i]}` : palabras[i]
+    if (prueba.length > 20 && actual) {
+      lineas.push(actual)
+      actual = palabras[i]
+      if (lineas.length >= 2) {
+        actual = palabras.slice(i).join(' ')
+        break
+      }
+    } else {
+      actual = prueba
+    }
+  }
+  if (actual) lineas.push(actual)
+  return lineas.slice(0, 3)
+}
+
+function productoToSlide(
+  p: Pick<Producto, 'id' | 'nombre' | 'precio' | 'imagenes' | 'vendedor_id'>,
+  tMap: Map<string, string>
+): Slide {
+  const tag    = (p.vendedor_id && tMap.get(p.vendedor_id)) ?? 'Merkao'
+  const lines  = nombresALineas(p.nombre)
+  const precio = `S/ ${p.precio}`
+  return {
+    id:         `producto-${p.id}`,
+    theme:      'stone',
+    tag:        { es: tag,      en: tag,               pt: tag },
+    region:     'Lima, Perú',
+    title:      { es: lines,    en: lines,              pt: lines },
+    sub:        { es: precio,   en: precio,              pt: precio },
+    body:       { es: p.nombre, en: p.nombre,           pt: p.nombre },
+    cta:        { es: 'Ver producto', en: 'See product', pt: 'Ver produto' },
+    ctaHref:    `/productos/${p.id}`,
+    img:        p.imagenes[0] ?? '',
+    imgContain: true,
+    categoriaId: 0,
+  }
+}
+
+// ── Slide Mes Morado (visible solo en octubre, hora Lima) ────────────────────
+const SLIDE_MES_MORADO: Slide = {
+  id: 'mes-morado', theme: 'morado',
+  tag:    { es: 'OCTUBRE · MES MORADO', en: 'OCTOBER · PURPLE MONTH', pt: 'OUTUBRO · MÊS ROXO' },
+  region: 'Lima, Perú',
+  title:  { es: ['Octubre,', 'mes morado'], en: ['October,', 'purple month'], pt: ['Outubro,', 'mês roxo'] },
+  sub:    { es: 'Celebra nuestras tradiciones', en: 'Celebrate our traditions', pt: 'Celebre nossas tradições' },
+  body:   { es: 'Celebra nuestras tradiciones y apoya a emprendedores peruanos.', en: 'Celebrate our traditions and support Peruvian entrepreneurs.', pt: 'Celebre nossas tradições e apoie empreendedores peruanos.' },
+  cta:    { es: 'Ver productos', en: 'See products', pt: 'Ver produtos' },
+  img:    'https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=1600&q=80&auto=format&fit=crop',
+  categoriaId: 0,
+}
+
+function getSetActivo(): Slide[] {
+  const sets = FASE === 'feriado6ago' ? SETS_F1
+             : FASE === 'rosa'        ? SETS_F2
+             : FASE === 'primavera'   ? SETS_PRIMAVERA
+             : SETS_DEFAULT
+  const diasTranscurridos = Math.floor((Date.now() - FECHA_BASE.getTime()) / MS_POR_DIA)
+  const crudo = Math.floor(diasTranscurridos / DIAS_POR_SET)
+  const indiceSet = ((crudo % sets.length) + sets.length) % sets.length
+  return [SLIDE_SANA, ...sets[indiceSet]]
+}
+
+const BASE_SLIDES: Slide[] = getSetActivo()
+
+type EscrowStep = { icon: IconName; labelKey: 'step_pays' | 'step_hold' | 'step_ships' | 'step_confirm' | 'step_release' }
+const ESCROW_STEPS: EscrowStep[] = [
+  { icon: 'card',        labelKey: 'step_pays' },
+  { icon: 'lock',        labelKey: 'step_hold' },
+  { icon: 'truck',       labelKey: 'step_ships' },
+  { icon: 'checkCircle', labelKey: 'step_confirm' },
+  { icon: 'wallet',      labelKey: 'step_release' },
+]
+
+/* ─────────────────────────── TIPOS ─────────────────────────── */
+
+type Producto = {
+  id: string
+  nombre: string
+  descripcion: string
+  precio: number
+  precio_mayoreo?: number
+  cantidad_minima_mayoreo?: number
+  costo_envio?: number
+  stock: number
+  categoria_id: number
+  imagenes: string[]
+  estado: string
+  ciudad: string
+  vistas: number
+  vendedor_id: string | null
+}
+
+function esMuestra(prod: Producto): boolean {
+  return !prod.vendedor_id || prod.vendedor_id === DEMO_VENDOR_ID
+}
+
+// Vendedor real si tiene tienda registrada O si su vendedor_id es distinto del demo.
+// Cualquiera de las dos condiciones es suficiente.
+function esVendedorReal(vendedorId: string | number | null | undefined, tMap: Map<string, string>): boolean {
+  if (!vendedorId) return false
+  const sid = String(vendedorId)
+  return tMap.has(sid) || sid !== DEMO_VENDOR_ID
+}
+
+/* ─────────────────────────── HELPERS ─────────────────────────── */
+
+
+function Stars({ value, count }: { value: number; count?: number }) {
+  const full = Math.round(value)
+  return (
+    <div className="mk-stars" aria-label={`${value} de 5`}>
+      <div className="mk-stars-track">
+        {[0, 1, 2, 3, 4].map((i) => (
+          <Icon key={i} name="star" size={14} stroke={1.5} className={i < full ? 'mk-star on' : 'mk-star off'} />
+        ))}
+      </div>
+      {count != null && <span className="mk-stars-count">({count})</span>}
+    </div>
+  )
+}
+
+function SkeletonCard() {
+  return (
+    <div className="mk-skel">
+      <div className="mk-skel-img" />
+      <div className="mk-skel-body">
+        <div className="mk-skel-line w50" />
+        <div className="mk-skel-line w90" />
+        <div className="mk-skel-line w70" />
+      </div>
+    </div>
+  )
+}
+
+/* ─────────────────────────── PÁGINA ─────────────────────────── */
+
+export default function Home() {
+  const [slideIdx, setSlideIdx]               = useState(0)
+  const [slideLocked, setSlideLocked]         = useState(false)
+  const [busqueda, setBusqueda]               = useState('')
+  const [categoriaSearch, setCategoriaSearch] = useState(0)
+  const [categoriaFiltro, setCategoriaFiltro] = useState(0)
+  const [ciudadFiltro, setCiudadFiltro]       = useState('')
+  const totalItems = useCarritoStore((s) => s.totalItems)
+  const [agregarAnim, setAgregarAnim]         = useState<string | null>(null)
+  const [productos, setProductos]             = useState<Producto[]>([])
+  const [loading, setLoading]                 = useState(true)
+  const [error, setError]                     = useState('')
+  const [pais, setPais]                       = useState('PE')
+  const [lang, setLang]                       = useState<Lang>('es')
+  const [favoritos, setFavoritos]             = useState<Set<string>>(new Set())
+  const [toast, setToast]                     = useState('')
+  const toastRef       = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false)
+  const accountMenuRef = useRef<HTMLDivElement>(null)
+  const [muestraModal, setMuestraModal]       = useState(false)
+  const [tiendasMap, setTiendasMap]           = useState<Map<string, string>>(new Map())
+  const [productSlides, setProductSlides]     = useState<Slide[]>([])
+
+  const { user }  = useAuth()
+  const tr        = T[lang]
+  const catNames  = CAT_NAMES[lang]
+  const slides    = [
+    ...(isMesOctubreLima() ? [SLIDE_MES_MORADO] : []),
+    ...productSlides,
+    ...BASE_SLIDES,
+  ]
+
+  // ── Slides de productos reales con foto Supabase, más recientes primero ──
+  useEffect(() => {
+    async function cargarProductSlides() {
+      const { data } = await supabase
+        .from('productos')
+        .select('id, nombre, precio, imagenes, vendedor_id')
+        .eq('estado', 'activo')
+        .not('vendedor_id', 'is', null)
+        .neq('vendedor_id', DEMO_VENDOR_ID)
+        .order('created_at', { ascending: false })
+      if (!data || data.length === 0) return
+      const rows = data as Array<Pick<Producto, 'id' | 'nombre' | 'precio' | 'imagenes' | 'vendedor_id'>>
+      const conFotoReal = rows.filter(
+        p => Array.isArray(p.imagenes) &&
+             p.imagenes.length > 0 &&
+             p.imagenes[0].includes('supabase.co/storage')
+      )
+      if (conFotoReal.length === 0) return
+      const vids = [...new Set(conFotoReal.map(p => p.vendedor_id as string))]
+      const { data: tiendas } = await supabase
+        .from('tiendas')
+        .select('id, nombre')
+        .in('id', vids)
+      const tMap = new Map<string, string>((tiendas ?? []).map(t => [t.id as string, t.nombre as string]))
+      setProductSlides(conFotoReal.map(p => productoToSlide(p, tMap)))
+    }
+    cargarProductSlides()
+  }, [])
+
+  // ── Idioma persistido ──
+  useEffect(() => {
+    const saved = localStorage.getItem('merkao_lang') as Lang | null
+    if (saved && ['es', 'en', 'pt'].includes(saved)) setLang(saved)
+  }, [])
+
+  const cambiarIdioma = (l: Lang) => {
+    setLang(l)
+    localStorage.setItem('merkao_lang', l)
+  }
+
+  // ── País por IP ──
+  useEffect(() => {
+    fetch('https://ipapi.co/json/')
+      .then((r) => r.json())
+      .then((d) => { if (d?.country_code) setPais(d.country_code) })
+      .catch(() => {})
+  }, [])
+
+  // ── Carousel ──
+  const siguiente = useCallback(() => setSlideIdx((p) => (p + 1) % slides.length), [slides.length])
+  const anterior  = useCallback(() => setSlideIdx((p) => (p - 1 + slides.length) % slides.length), [slides.length])
+  useEffect(() => {
+    if (slideLocked) return
+    const t = setInterval(siguiente, 6500)
+    return () => clearInterval(t)
+  }, [siguiente, slideLocked])
+
+  // ── Auto-lock hero en slide cuya categoría sea la dominante ──
+  useEffect(() => {
+    let cancel = false
+    async function detectar() {
+      const { data, error } = await supabase
+        .from('productos')
+        .select('categoria_id')
+        .eq('estado', 'activo')
+        .gt('stock', 0)
+      if (cancel || error || !data || data.length === 0) return
+      const counts = new Map<number, number>()
+      for (const row of data) counts.set(row.categoria_id, (counts.get(row.categoria_id) || 0) + 1)
+      let topCat = 0, topCount = 0
+      for (const [cat, n] of counts) if (n > topCount) { topCount = n; topCat = cat }
+      const idx = slides.findIndex((s) => s.categoriaId === topCat)
+      if (idx >= 0) {
+        setSlideIdx(idx)
+        setSlideLocked(true)
+      }
+    }
+    detectar()
+    return () => { cancel = true }
+  }, [])
+
+  // ── Cargar productos + tiendas en paralelo ──
+  // Las tiendas se cargan junto con los productos para que el sort use
+  // la fuente de verdad real (membresía en tiendas) sin race condition.
+  useEffect(() => {
+    async function cargar() {
+      setLoading(true)
+      setError('')
+      let q = supabase
+        .from('productos')
+        .select('id, nombre, descripcion, precio, precio_mayoreo, cantidad_minima_mayoreo, costo_envio, stock, categoria_id, imagenes, estado, ciudad, vistas, vendedor_id')
+        .eq('estado', 'activo')
+        .not('vendedor_id', 'is', null)   // excluir productos de demo (sin vendedor real)
+        .order('vistas', { ascending: false })
+      if (categoriaFiltro !== 0) q = q.eq('categoria_id', categoriaFiltro)
+      if (ciudadFiltro)          q = q.eq('ciudad', ciudadFiltro)
+
+      const [{ data, error: e }, { data: tiendasData }] = await Promise.all([
+        q,
+        supabase.from('tiendas').select('id, nombre'),
+      ])
+
+      const tMap = new Map<string, string>()
+      for (const t of tiendasData ?? []) tMap.set(String(t.id), t.nombre ?? '')
+      setTiendasMap(tMap)
+
+      if (e) {
+        setError(lang === 'en' ? 'Could not load products.' : lang === 'pt' ? 'Não foi possível carregar os produtos.' : 'No se pudieron cargar los productos.')
+      } else {
+        // Vendedor real = tiene tienda registrada, O su vendedor_id es distinto del demo.
+        // Ambas condiciones son suficientes (OR), no se requieren las dos.
+        const sorted = (data || []).slice().sort((a, b) => {
+          const aReal = esVendedorReal(a.vendedor_id, tMap)
+          const bReal = esVendedorReal(b.vendedor_id, tMap)
+          if (aReal && !bReal) return -1
+          if (!aReal && bReal) return 1
+          return (b.vistas ?? 0) - (a.vistas ?? 0)
+        })
+        setProductos(sorted)
+      }
+      setLoading(false)
+    }
+    cargar()
+  }, [categoriaFiltro, ciudadFiltro, lang])
+
+  const showToast = (msg: string) => {
+    setToast(msg)
+    if (toastRef.current) clearTimeout(toastRef.current)
+    toastRef.current = setTimeout(() => setToast(''), 1900)
+  }
+
+  const agregarAlCarrito = (id: string) => {
+    setAgregarAnim(id)
+    setTimeout(() => setAgregarAnim(null), 700)
+    showToast(lang === 'en' ? 'Added to cart' : lang === 'pt' ? 'Adicionado ao carrinho' : 'Producto agregado al carrito')
+  }
+
+  const abrirMuestra = () => setMuestraModal(true)
+
+  const toggleFav = (id: string) => {
+    setFavoritos((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id); else next.add(id)
+      return next
+    })
+  }
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut()
+    window.location.reload()
+  }
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (accountMenuRef.current && !accountMenuRef.current.contains(e.target as Node)) {
+        setAccountMenuOpen(false)
+      }
+    }
+    if (accountMenuOpen) document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [accountMenuOpen])
+
+  const goToShop = (catId: number) => {
+    setCategoriaFiltro(catId)
+    setSlideLocked(true)
+    setTimeout(() => {
+      const el = document.getElementById('mk-shop')
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 50)
+  }
+
+  const productosFiltrados = busqueda.trim()
+    ? productos.filter((p) => p.nombre.toLowerCase().includes(busqueda.toLowerCase()))
+    : productos
+
+  const arancelInfo = ARANCELES[pais]
+  const userLabel   = user?.email ? user.email.split('@')[0] : null
+  const esVendedor  = ((user?.user_metadata?.tipo as string | undefined) ?? '').toLowerCase() === 'vendedor'
+  const cartCount   = totalItems()
+
+  return (
+    <>
+      <TrackPageView />
+      {/* ══════════════════ HEADER ══════════════════ */}
+      <header className="mk-hdr">
+        <div className="mk-hdr-top">
+          <div className="mk-hdr-inner">
+            <a className="mk-logo" href="/">merkao<span className="mk-logo-dot">.pe</span></a>
+            {FASE === 'feriado6ago' && (
+              <span className="mk-fiestas" aria-label="Batalla de Junín 6 de Agosto">
+                <span className="mk-fiestas-red">¡Batalla de Junín!</span>
+                <span className="mk-fiestas-white">6 de Agosto</span>
+              </span>
+            )}
+            {FASE === 'rosa' && (
+              <span className="mk-fiestas" aria-label="Santa Rosa de Lima 30 de agosto">
+                <span className="mk-fiestas-red">¡Santa Rosa</span>
+                <span className="mk-fiestas-white">de Lima!</span>
+              </span>
+            )}
+
+            <div className="mk-ship-from">
+              <span className="mk-ship-label">{tr.delivering_from}</span>
+              <span className="mk-ship-where">
+                {arancelInfo ? `${arancelInfo.bandera} ${arancelInfo.pais}` : '🇵🇪 Perú'}
+              </span>
+            </div>
+
+            <div className="mk-searchbar">
+              <select
+                className="mk-search-cat"
+                value={categoriaSearch}
+                onChange={(e) => setCategoriaSearch(Number(e.target.value))}
+                aria-label="Categoría"
+              >
+                <option value={0}>{catNames[0]}</option>
+                {CATEGORIAS.map((c) => (
+                  <option key={c.id} value={c.id}>{catNames[c.id]}</option>
+                ))}
+              </select>
+              <input
+                className="mk-search-input"
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                placeholder={tr.search_placeholder}
+              />
+              <button className="mk-search-btn" aria-label="Buscar">
+                <Icon name="search" size={20} />
+              </button>
+            </div>
+
+            <div className="mk-lang">
+              {(['es', 'en', 'pt'] as Lang[]).map((l) => (
+                <button
+                  key={l}
+                  className={'mk-lang-btn' + (lang === l ? ' on' : '')}
+                  onClick={() => cambiarIdioma(l)}
+                >
+                  {l.toUpperCase()}
+                </button>
+              ))}
+            </div>
+
+            {userLabel ? (
+              <div className="mk-account-wrap" ref={accountMenuRef}>
+                <button
+                  type="button"
+                  className={'mk-hdr-link mk-account' + (accountMenuOpen ? ' open' : '')}
+                  onClick={() => setAccountMenuOpen((v) => !v)}
+                  aria-haspopup="true"
+                  aria-expanded={accountMenuOpen}
+                >
+                  <Icon name="user" size={22} stroke={1.8} />
+                  <span className="mk-hdr-link-txt">
+                    <small>{tr.hello_user} {userLabel}</small>
+                    <strong>
+                      {tr.account.replace('▾', '').trim()}
+                      <Icon name="chevronDown" size={13} className={'mk-acct-chevron' + (accountMenuOpen ? ' up' : '')} />
+                    </strong>
+                  </span>
+                </button>
+                {accountMenuOpen && (
+                  <div className="mk-account-menu" role="menu">
+                    <a href="/perfil" className="mk-account-item" role="menuitem" onClick={() => setAccountMenuOpen(false)}>
+                      <Icon name="user" size={15} stroke={2} /> {lang === 'en' ? 'My profile' : lang === 'pt' ? 'Meu perfil' : 'Mi perfil'}
+                    </a>
+                    <a href="/mis-pedidos" className="mk-account-item" role="menuitem" onClick={() => setAccountMenuOpen(false)}>
+                      <Icon name="box" size={15} stroke={2} /> {lang === 'en' ? 'My orders' : lang === 'pt' ? 'Meus pedidos' : 'Mis pedidos'}
+                    </a>
+                    {esVendedor && (
+                      <a href="/vendedor" className="mk-account-item" role="menuitem" onClick={() => setAccountMenuOpen(false)}>
+                        <Icon name="store" size={15} stroke={2} /> {lang === 'en' ? 'Seller panel' : lang === 'pt' ? 'Painel vendedor' : 'Panel vendedor'}
+                      </a>
+                    )}
+                    <div className="mk-account-divider" />
+                    <button
+                      type="button"
+                      className="mk-account-item mk-account-signout"
+                      role="menuitem"
+                      onClick={() => { setAccountMenuOpen(false); handleSignOut() }}
+                    >
+                      <Icon name="logout" size={15} stroke={2} /> {tr.sign_out}
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <a className="mk-hdr-link mk-account" href="/login">
+                <Icon name="user" size={22} stroke={1.8} />
+                <span className="mk-hdr-link-txt">
+                  <small>{tr.hello_sign_in}</small>
+                  <strong>{tr.account.replace('▾', '').trim()} <Icon name="chevronDown" size={13} /></strong>
+                </span>
+              </a>
+            )}
+
+            <a className="mk-hdr-link" href="/pedidos">
+              <span className="mk-hdr-link-txt right">
+                <small>{tr.my_orders_label}</small>
+                <strong>{tr.my_orders}</strong>
+              </span>
+            </a>
+
+            <a className="mk-cart-btn" href="/carrito">
+              <span className="mk-cart-ico">
+                <Icon name="cart" size={24} stroke={1.8} />
+                {cartCount > 0 && <span className="mk-cart-badge">{cartCount > 99 ? '99+' : cartCount}</span>}
+              </span>
+              <strong>{tr.cart}</strong>
+            </a>
+          </div>
+        </div>
+
+        {arancelInfo && (
+          <div className="mk-arancel">
+            {arancelInfo.bandera} {tr.delivering_from} <strong>{arancelInfo.pais}</strong> —{' '}
+            {lang === 'en' ? 'import duty' : lang === 'pt' ? 'tarifa de importação' : 'arancel de importación'}: <strong>{Math.round(arancelInfo.tasa * 100)}%</strong>
+            <button onClick={() => setPais('PE')}>{tr.change_to_peru}</button>
+          </div>
+        )}
+
+        <nav className="mk-hdr-nav">
+          <div className="mk-hdr-inner">
+            <a className="mk-nav-all" href="/categorias">
+              <Icon name="menu" size={18} />
+              {lang === 'en' ? 'All categories' : lang === 'pt' ? 'Todas as categorias' : 'Todas las categorías'}
+            </a>
+            <div className="mk-nav-cats">
+              <button onClick={() => goToShop(0)} className="mk-nav-cat accent">
+                <Icon name="flame" size={16} stroke={1.8} />
+                {lang === 'en' ? 'Daily deals' : lang === 'pt' ? 'Ofertas do dia' : 'Ofertas del día'}
+              </button>
+              {CATEGORIAS.map((c) => (
+                <a key={c.id} href={`/categorias/${CAT_SLUG[c.id]}`} className="mk-nav-cat">
+                  <Icon name={c.icon} size={16} stroke={1.8} /> {catNames[c.id]}
+                </a>
+              ))}
+            </div>
+            <a className="mk-nav-sell" href="/register?role=vendedor">
+              <Icon name="store" size={17} stroke={1.8} />
+              {lang === 'en' ? 'Sell on Merkao' : lang === 'pt' ? 'Vender no Merkao' : 'Vende en Merkao'}
+            </a>
+          </div>
+        </nav>
+      </header>
+
+      {/* ══════════════════ MAIN ══════════════════ */}
+      <main className="mk-main">
+
+        {/* HERO carousel */}
+        <section
+          className="mk-hero"
+          onMouseEnter={() => setSlideLocked(true)}
+          onMouseLeave={() => setSlideLocked(false)}
+        >
+          {slides.map((sl, k) => (
+            <div key={sl.id} className={`mk-hslide mk-theme-${sl.theme}${k === slideIdx ? ' on' : ''}`}>
+              <div className="mk-hslide-copy">
+                <span className="mk-hero-tag"><Icon name="zap" size={13} /> {sl.tag[lang]}</span>
+                <h1 className="mk-hero-title">
+                  {sl.title[lang].map((line, j) => <span key={j}>{line}</span>)}
+                </h1>
+                <p className="mk-hero-sub">{sl.sub[lang]}</p>
+                <p className="mk-hero-body">{sl.body[lang]}</p>
+                {sl.ctaHref ? (
+                  <a className="mk-hero-cta" href={sl.ctaHref}>
+                    {sl.cta[lang]} <Icon name="arrowRight" size={18} />
+                  </a>
+                ) : (
+                  <button className="mk-hero-cta" onClick={() => goToShop(sl.categoriaId)}>
+                    {sl.cta[lang]} <Icon name="arrowRight" size={18} />
+                  </button>
+                )}
+              </div>
+              <div className="mk-hslide-media">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={sl.img} alt={sl.region} loading={k <= 2 ? 'eager' : 'lazy'} style={sl.imgContain ? { objectFit: 'contain' } : undefined} />
+                <span className="mk-hslide-region">
+                  <Icon name="mapPin" size={13} stroke={2} /> {sl.region}
+                </span>
+              </div>
+            </div>
+          ))}
+          <button className="mk-hero-arrow left" onClick={anterior} aria-label="Anterior"><Icon name="chevronLeft" size={26} /></button>
+          <button className="mk-hero-arrow right" onClick={siguiente} aria-label="Siguiente"><Icon name="chevronRight" size={26} /></button>
+          <div className="mk-hero-dots">
+            {slides.map((s, k) => (
+              <button
+                key={s.id}
+                className={'mk-dot' + (k === slideIdx ? ' on' : '')}
+                onClick={() => setSlideIdx(k)}
+                aria-label={`Slide ${k + 1}`}
+              />
+            ))}
+          </div>
+        </section>
+
+        {/* ESCROW strip */}
+        <a className="mk-escrow" href="#escrow-info">
+          <div className="mk-escrow-lead">
+            <span className="mk-escrow-ico"><Icon name="shield" size={26} stroke={1.7} /></span>
+            <div>
+              <h3>{tr.escrow_title}</h3>
+              <p>{tr.escrow_desc}</p>
+            </div>
+          </div>
+          <div className="mk-escrow-steps">
+            {ESCROW_STEPS.map((s, k) => (
+              <span key={s.labelKey} style={{ display: 'contents' }}>
+                <div className="mk-escrow-step">
+                  <span className="mk-escrow-step-ico"><Icon name={s.icon} size={20} stroke={1.8} /></span>
+                  <span className="mk-escrow-step-label">{tr[s.labelKey]}</span>
+                </div>
+                {k < ESCROW_STEPS.length - 1 && (
+                  <span className="mk-escrow-sep"><Icon name="chevronRight" size={14} /></span>
+                )}
+              </span>
+            ))}
+          </div>
+        </a>
+
+        {/* CONVOCATORIA DE VENDEDORES */}
+        <div className="mk-vendor-strip">
+          <div className="mk-vendor-strip-copy">
+            <span className="mk-vendor-strip-ico"><Icon name="store" size={22} stroke={1.8} /></span>
+            <div>
+              <strong>Estamos sumando vendedores</strong>
+              <span>Si tienes un negocio y quieres vender en Merkao, regístrate — sin comisión los primeros meses.</span>
+            </div>
+          </div>
+          <a href="/register?role=vendedor" className="mk-vendor-strip-cta">
+            Registrarme como vendedor <Icon name="arrowRight" size={16} />
+          </a>
+        </div>
+
+        {/* CATEGORÍAS */}
+        <section className="mk-block">
+          <div className="mk-block-head">
+            <h2>{tr.buy_by_category}</h2>
+          </div>
+          <div className="mk-cat-grid">
+            {CATEGORIAS.map((c) => (
+              <a key={c.id} href={`/categorias/${CAT_SLUG[c.id]}`} className="mk-cat-tile">
+                <span className="mk-cat-tile-ico"><Icon name={c.icon} size={26} stroke={1.6} /></span>
+                <span className="mk-cat-tile-label">{catNames[c.id]}</span>
+              </a>
+            ))}
+          </div>
+        </section>
+
+        {/* FILTROS DE CIUDAD */}
+        <div className="mk-city-row" role="tablist" aria-label={tr.filter_by_city}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12.5, fontWeight: 700, color: 'var(--muted)', flexShrink: 0 }}>
+            <Icon name="mapPin" size={14} stroke={2} /> {tr.filter_by_city}:
+          </span>
+          <button
+            onClick={() => setCiudadFiltro('')}
+            className={'mk-city-chip' + (!ciudadFiltro ? ' on' : '')}
+          >
+            {tr.all_cities}
+          </button>
+          {DEPARTAMENTOS_PERU.map((dep) => (
+            <button
+              key={dep}
+              onClick={() => setCiudadFiltro(dep === ciudadFiltro ? '' : dep)}
+              className={'mk-city-chip' + (ciudadFiltro === dep ? ' on' : '')}
+            >
+              {dep}
+            </button>
+          ))}
+        </div>
+
+        {/* SHOP: products grid + AdRail */}
+        <section id="mk-shop" className="mk-shop">
+          <div className="mk-shop-main">
+            <div className="mk-block-head">
+              <h2>
+                {categoriaFiltro === 0
+                  ? tr.all_products
+                  : catNames[categoriaFiltro]}
+                {ciudadFiltro && (
+                  <span style={{ marginLeft: 12, fontSize: 14, fontWeight: 600, color: 'var(--brand-700)' }}>
+                    · {ciudadFiltro}
+                  </span>
+                )}
+              </h2>
+              {(categoriaFiltro !== 0 || ciudadFiltro || busqueda) && (
+                <button
+                  className="mk-block-link"
+                  onClick={() => { setCategoriaFiltro(0); setCiudadFiltro(''); setBusqueda('') }}
+                >
+                  {tr.see_all}
+                </button>
+              )}
+            </div>
+
+            {busqueda && (
+              <p style={{ fontSize: 13, color: 'var(--muted)', margin: 0 }}>
+                {productosFiltrados.length} {tr.results_for} &ldquo;<strong>{busqueda}</strong>&rdquo;
+              </p>
+            )}
+
+            {error && (
+              <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 12, padding: 14, color: '#B91C1C', fontSize: 14 }}>
+                ⚠️ {error}
+              </div>
+            )}
+
+            <div className="mk-prod-grid">
+              {loading && Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
+
+              {!loading && productosFiltrados.filter(prod => prod.imagenes?.[0]).map((prod) => {
+                const imagen  = prod.imagenes![0]
+                const enCarrito = agregarAnim === prod.id
+                const p = calcularPrecios(prod.precio, pais)
+                const tieneMayoreo = prod.precio_mayoreo && prod.cantidad_minima_mayoreo
+                const fav = favoritos.has(prod.id)
+                const esReal = esVendedorReal(prod.vendedor_id, tiendasMap)
+                const esDemo = !esReal
+                const nombreTienda = esReal && prod.vendedor_id
+                  ? (tiendasMap.get(String(prod.vendedor_id)) || null)
+                  : null
+
+                return (
+                  <article key={prod.id} className="mk-card">
+                    <a href={`/productos/${prod.id}`} className="mk-card-media">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={imagen} alt={prod.nombre} loading="lazy" />
+                      {esDemo
+                        ? <span className="mk-card-muestra">MUESTRA</span>
+                        : nombreTienda
+                          ? <span className="mk-card-tienda">🏪 {nombreTienda}</span>
+                          : <span className="mk-card-tienda">✔ Vendedor verificado</span>
+                      }
+                      {prod.stock > 0 && prod.stock <= 5 && (
+                        <span className="mk-card-stock">
+                          {lang === 'en' ? `Only ${prod.stock} left` : lang === 'pt' ? `Restam ${prod.stock}` : `¡Últimas ${prod.stock}!`}
+                        </span>
+                      )}
+                      {prod.ciudad && (
+                        <span className="mk-card-loc">
+                          <Icon name="mapPin" size={12} stroke={2} /> {prod.ciudad}
+                        </span>
+                      )}
+                      <button
+                        className={'mk-card-fav' + (fav ? ' on' : '')}
+                        onClick={(e) => { e.preventDefault(); toggleFav(prod.id) }}
+                        aria-label="Guardar"
+                        aria-pressed={fav}
+                      >
+                        <Icon name="heart" size={17} stroke={2} />
+                      </button>
+                    </a>
+
+                    <div className="mk-card-body">
+                      <span className="mk-card-cat">{catNames[prod.categoria_id] ?? ''}</span>
+                      <a href={`/productos/${prod.id}`} className="mk-card-title-link">
+                        <h3 className="mk-card-title">{prod.nombre}</h3>
+                      </a>
+                      <div className="mk-card-price">{fmt(p.total)}</div>
+                      <div className="mk-card-breakdown">
+                        <div className="mk-bd-row"><span>{lang === 'en' ? 'Base price' : lang === 'pt' ? 'Preço base' : 'Base'}</span><span>{fmt(p.base)}</span></div>
+                        <div className="mk-bd-row"><span>+ IGV 18%</span><span>{fmt(p.igv)}</span></div>
+                        {p.arancel > 0 && p.paisInfo && (
+                          <div className="mk-bd-row amber">
+                            <span>+ {p.paisInfo.bandera} {Math.round(p.tasaArancel * 100)}%</span>
+                            <span>{fmt(p.arancel)}</span>
+                          </div>
+                        )}
+                        <div className="mk-bd-row">
+                          <span>+ {lang === 'en' ? 'Merkao service 3%' : lang === 'pt' ? 'Taxa Merkao 3%' : 'Tarifa Merkao 3%'}</span>
+                          <span>{fmt(p.tarifaServicio)}</span>
+                        </div>
+                      </div>
+                      <div className="mk-card-ship">
+                        <Icon name="truck" size={14} stroke={1.8} />
+                        {prod.costo_envio === 0 || prod.costo_envio == null
+                          ? tr.agree_shipping
+                          : `${tr.shipping_prefix}${fmt(prod.costo_envio)}`}
+                      </div>
+                      {tieneMayoreo && (
+                        <div style={{ fontSize: 11.5, color: 'var(--green)', background: 'var(--green-tint)', borderRadius: 8, padding: '6px 10px', fontWeight: 700 }}>
+                          {tr.wholesale_from} {prod.cantidad_minima_mayoreo} {tr.units}: {fmt(prod.precio_mayoreo!)}
+                        </div>
+                      )}
+                      <div className="mk-card-actions">
+                        <button
+                          onClick={MODO_APERTURA && esDemo ? abrirMuestra : () => { window.location.href = `/checkout?id=${prod.id}` }}
+                          className="mk-btn mk-btn-primary"
+                        >
+                          {tr.buy_now}
+                        </button>
+                        <button
+                          onClick={MODO_APERTURA && esDemo ? abrirMuestra : () => agregarAlCarrito(prod.id)}
+                          className="mk-btn mk-btn-ghost"
+                          style={enCarrito ? { background: 'var(--green-tint)', borderColor: 'var(--green)', color: 'var(--green)' } : undefined}
+                        >
+                          <Icon name="plus" size={16} /> {enCarrito ? tr.added : tr.add_to_cart}
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                )
+              })}
+
+              {!loading && !error && productosFiltrados.length === 0 && (
+                <div style={{ gridColumn: '1/-1', padding: '64px 16px', textAlign: 'center', background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 14 }}>
+                  <Icon name="search" size={40} stroke={1.5} style={{ color: 'var(--muted-2)', margin: '0 auto 12px' }} />
+                  <p style={{ fontSize: 16, fontWeight: 700, color: 'var(--ink)' }}>{tr.no_products}</p>
+                  <button
+                    onClick={() => { setBusqueda(''); setCategoriaFiltro(0); setCiudadFiltro('') }}
+                    className="mk-btn mk-btn-ghost"
+                    style={{ marginTop: 16 }}
+                  >
+                    {tr.see_all}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* AdRail: PresupIA Web + DevNova + Vende en Merkao */}
+          <aside className="mk-ad-rail">
+            <a href="https://presupia-web.vercel.app" target="_blank" rel="noopener noreferrer" className="mk-ad mk-ad-presupia">
+              <span className="mk-ad-label">Ad</span>
+              <span className="mk-ad-pill"><Icon name="zap" size={12} stroke={2} /> PresupIA</span>
+              <h3 className="mk-ad-head">
+                {lang === 'en' ? 'Build in Peru? Generate your budget with AI' : lang === 'pt' ? 'Constrói no Peru? Gere seu orçamento com IA' : '¿Construyes en Perú? Genera tu presupuesto con IA'}
+              </h3>
+              <p className="mk-ad-sub">
+                {lang === 'en' ? 'Upload your plan and get a budget in seconds.' : lang === 'pt' ? 'Envie seu projeto e obtenha um orçamento em segundos.' : 'Sube tu plano y obtén presupuesto en segundos.'}
+              </p>
+              <span className="mk-ad-cta mk-ad-cta-blue">
+                {lang === 'en' ? 'Try free' : lang === 'pt' ? 'Testar grátis' : 'Probar gratis'} <Icon name="arrowRight" size={14} />
+              </span>
+            </a>
+
+            <a href="https://devnovaai.com" target="_blank" rel="noopener noreferrer" className="mk-ad mk-ad-devnova">
+              <span className="mk-ad-label">Ad</span>
+              <span className="mk-ad-pill"><Icon name="zap" size={12} stroke={2} /> DevNova AI</span>
+              <h3 className="mk-ad-head">
+                {lang === 'en' ? 'Got an app or web idea? We build it' : lang === 'pt' ? 'Tem uma ideia de app ou web? A gente faz' : '¿Tienes una idea de app o web? Te la construimos'}
+              </h3>
+              <p className="mk-ad-sub">
+                {lang === 'en' ? 'Mobile apps, websites and software with AI · devnovaai.com' : lang === 'pt' ? 'Apps, sites e software com IA · devnovaai.com' : 'Apps móviles, webs y software con IA · devnovaai.com'}
+              </p>
+              <span className="mk-ad-cta mk-ad-cta-mint">
+                {lang === 'en' ? 'Get a quote' : lang === 'pt' ? 'Solicitar orçamento' : 'Cotizar proyecto'} <Icon name="arrowRight" size={14} />
+              </span>
+            </a>
+
+            <a href="/register?role=vendedor" className="mk-ad mk-ad-sell">
+              <span className="mk-ad-pill"><Icon name="store" size={12} stroke={2} /> {tr.want_to_sell.replace('¿', '').replace('?', '').replace('¡', '')}</span>
+              <h3 className="mk-ad-head">{tr.start_store}</h3>
+              <p className="mk-ad-sub">
+                {lang === 'en'
+                  ? 'Seller keeps 100% of the price. Merkao charges 3% to the buyer.'
+                  : lang === 'pt'
+                  ? 'O vendedor recebe 100%. Merkao cobra 3% ao comprador.'
+                  : 'El vendedor recibe el 100% de su precio. Merkao cobra 3% al comprador.'}
+              </p>
+              <span className="mk-ad-cta mk-ad-cta-orange">
+                {tr.create_store} <Icon name="arrowRight" size={14} />
+              </span>
+            </a>
+          </aside>
+        </section>
+      </main>
+
+      {/* ══════════════════ FOOTER ══════════════════ */}
+      <footer className="mk-footer">
+        <div className="mk-footer-inner">
+          <div className="mk-footer-brand">
+            <a className="mk-logo mk-logo-foot" href="/">merkao<span className="mk-logo-dot">.pe</span></a>
+            <p>
+              {lang === 'en'
+                ? 'The Peruvian marketplace. Buy and sell across Peru with protected payment.'
+                : lang === 'pt'
+                ? 'O marketplace peruano. Compre e venda em todo o Peru com pagamento protegido.'
+                : 'El marketplace peruano. Compra y vende en todo el Perú con pago protegido.'}
+            </p>
+            <span className="mk-footer-trust"><Icon name="shield" size={16} /> {tr.escrow_title}</span>
+          </div>
+
+          {([
+            {
+              h: lang === 'en' ? 'Buy' : lang === 'pt' ? 'Comprar' : 'Comprar',
+              items: [
+                { label: lang === 'en' ? 'Daily deals' : lang === 'pt' ? 'Ofertas do dia' : 'Ofertas del día', href: '#' },
+                { label: tr.buy_by_category, href: '#' },
+                { label: lang === 'en' ? 'How to buy' : lang === 'pt' ? 'Como comprar' : 'Cómo comprar', href: '#' },
+                { label: tr.escrow_title, href: '#' },
+              ],
+            },
+            {
+              h: lang === 'en' ? 'Sell' : lang === 'pt' ? 'Vender' : 'Vender',
+              items: [
+                { label: lang === 'en' ? 'Sell on Merkao' : lang === 'pt' ? 'Vender no Merkao' : 'Vende en Merkao', href: '/vendedor' },
+                { label: lang === 'en' ? 'Publish product' : lang === 'pt' ? 'Publicar produto' : 'Publicar producto', href: '/vendedor/publicar' },
+                { label: lang === 'en' ? 'Fees & commissions' : lang === 'pt' ? 'Tarifas e comissões' : 'Tarifas y comisiones', href: '#' },
+                { label: lang === 'en' ? 'Seller center' : lang === 'pt' ? 'Centro de vendedores' : 'Centro de vendedores', href: '/vendedor' },
+              ],
+            },
+            {
+              h: lang === 'en' ? 'Help' : lang === 'pt' ? 'Ajuda' : 'Ayuda',
+              items: [
+                { label: lang === 'en' ? 'Help center' : lang === 'pt' ? 'Central de ajuda' : 'Centro de ayuda', href: '#' },
+                { label: lang === 'en' ? 'Shipping & delivery' : lang === 'pt' ? 'Envios e entregas' : 'Envíos y entregas', href: '#' },
+                { label: lang === 'en' ? 'Returns' : lang === 'pt' ? 'Devoluções' : 'Devoluciones', href: '#' },
+                { label: lang === 'en' ? 'Contact' : lang === 'pt' ? 'Contato' : 'Contacto', href: '/contacto' },
+                { label: lang === 'en' ? 'Complaints Book' : lang === 'pt' ? 'Livro de Reclamações' : 'Libro de Reclamaciones', href: '/libro-de-reclamaciones' },
+              ],
+            },
+            {
+              h: 'Merkao',
+              items: [
+                { label: lang === 'en' ? 'About us' : lang === 'pt' ? 'Sobre nós' : 'Sobre nosotros', href: '#' },
+                { label: lang === 'en' ? 'Made in Peru' : lang === 'pt' ? 'Feito no Peru' : 'Hecho en Perú', href: '#' },
+                { label: lang === 'en' ? 'Careers' : lang === 'pt' ? 'Trabalhe conosco' : 'Trabaja con nosotros', href: '#' },
+                { label: lang === 'en' ? 'Terms & privacy' : lang === 'pt' ? 'Termos e privacidade' : 'Términos y privacidad', href: '#' },
+              ],
+            },
+          ] as const).map((col) => (
+            <div key={col.h} className="mk-footer-col">
+              <h4>{col.h}</h4>
+              <ul>
+                {col.items.map((it) => (
+                  <li key={it.label}><a href={it.href}>{it.label}</a></li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        <div className="mk-footer-bar">
+          <span>© 2026 Merkao · {lang === 'en' ? 'Made in Peru' : lang === 'pt' ? 'Feito no Peru' : 'Hecho en Perú'}</span>
+          <span>
+            {lang === 'en' ? 'We accept' : lang === 'pt' ? 'Aceitamos' : 'Aceptamos'}: Yape · Plin · Visa · Mastercard · {lang === 'en' ? 'Transfer' : lang === 'pt' ? 'Transferência' : 'Transferencia'}
+          </span>
+        </div>
+      </footer>
+
+      {/* TOAST */}
+      {toast && (
+        <div className="mk-toast">
+          <Icon name="checkCircle" size={18} /> {toast}
+        </div>
+      )}
+
+      {/* signOut helper invisible para no romper hooks anteriores */}
+      <button onClick={handleSignOut} style={{ display: 'none' }} aria-hidden tabIndex={-1} />
+
+      {/* MODAL APERTURA */}
+      {muestraModal && (
+        <div className="mk-muestra-overlay" onClick={() => setMuestraModal(false)}>
+          <div className="mk-muestra-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="mk-muestra-close" onClick={() => setMuestraModal(false)} aria-label="Cerrar">×</button>
+            <div className="mk-muestra-emoji">🚀</div>
+            <h2 className="mk-muestra-title">Merkao está en apertura</h2>
+            <p className="mk-muestra-body">
+              Los productos que ves son de muestra. Estamos sumando vendedores para que muy pronto puedas comprar productos reales.
+            </p>
+            <a href="/register?role=vendedor" className="mk-btn mk-btn-primary mk-muestra-cta">
+              ¿Tenés un negocio? Registrate como vendedor →
+            </a>
+            <button className="mk-muestra-dismiss" onClick={() => setMuestraModal(false)}>
+              Volver al catálogo
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  )
+}

@@ -9,6 +9,7 @@ import { SiteTopnav, SiteFootnav } from '@/components/SiteShell'
 import { PROVEEDOR, formatLegalDate } from '@/lib/legal'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/cookies' },
   title: 'Merkao — Aviso de cookies',
   description:
     'Información sobre el uso de cookies y tecnologías similares en el marketplace Merkao, conforme a la Ley 29733 de Protección de Datos Personales.',

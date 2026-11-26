@@ -12,6 +12,7 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://merkao.org'),
   title: "Merkao — El marketplace peruano",
   description: "Compra y vende en Perú. Millones de productos con envío a todo el país.",
   icons: {

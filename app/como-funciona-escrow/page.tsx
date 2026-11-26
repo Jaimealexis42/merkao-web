@@ -4,6 +4,7 @@ import { Icon, type IconName } from '@/lib/icons'
 import { SiteTopnav, SiteFootnav } from '@/components/SiteShell'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/como-funciona-escrow' },
   title: 'Merkao — Cómo funciona el Pago Escrow',
   description:
     'Con el Pago Escrow de Merkao, retenemos el dinero del comprador hasta que confirme que recibió su producto. Compra y vende sin miedo.',

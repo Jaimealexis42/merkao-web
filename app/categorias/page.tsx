@@ -19,6 +19,7 @@ const CATEGORIAS: CatDef[] = [
 ]
 
 export const metadata = {
+  alternates: { canonical: '/categorias' },
   title: 'Categorías | Merkao',
   description: 'Explora todas las categorías del marketplace peruano: ropa, electrónicos, alimentos, artesanías y más.',
 }

@@ -9,6 +9,7 @@ import { SiteTopnav, SiteFootnav } from '@/components/SiteShell'
 import { PROVEEDOR, formatLegalDate } from '@/lib/legal'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/terminos' },
   title: 'Merkao — Términos y Condiciones',
   description:
     'Términos y Condiciones del marketplace Merkao. Rol de intermediario, responsabilidades de vendedores y compradores, comisiones, envíos, devoluciones y derecho de retracto del consumidor.',

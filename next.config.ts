@@ -31,6 +31,17 @@ const securityHeaders = [
 ]
 
 const nextConfig: NextConfig = {
+  // www.merkao.org duplicaba el sitio: todo va con 301 al dominio sin www.
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'www.merkao.org' }],
+        destination: 'https://merkao.org/:path*',
+        statusCode: 301,
+      },
+    ]
+  },
   async headers() {
     return [
       {

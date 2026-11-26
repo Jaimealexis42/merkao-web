@@ -9,6 +9,7 @@ import { SiteTopnav, SiteFootnav } from '@/components/SiteShell'
 import { PROVEEDOR, formatLegalDate } from '@/lib/legal'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/privacidad' },
   title: 'Merkao — Política de Privacidad',
   description:
     'Política de Privacidad de Merkao conforme a la Ley 29733 y su Reglamento (DS 016-2024-JUS). Cómo recolectamos, usamos y protegemos tus datos personales.',
