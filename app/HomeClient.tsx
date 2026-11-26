@@ -1545,8 +1545,7 @@ export default function Home() {
                       </a>
                       <div className="mk-card-price">{fmt(p.total)}</div>
                       <div className="mk-card-breakdown">
-                        <div className="mk-bd-row"><span>{lang === 'en' ? 'Base price' : lang === 'pt' ? 'Preço base' : 'Base'}</span><span>{fmt(p.base)}</span></div>
-                        <div className="mk-bd-row"><span>+ IGV 18%</span><span>{fmt(p.igv)}</span></div>
+                        <div className="mk-bd-row"><span>{lang === 'en' ? 'Price' : lang === 'pt' ? 'Preço' : 'Precio'}</span><span>{fmt(p.subtotal)}</span></div>
                         {p.arancel > 0 && p.paisInfo && (
                           <div className="mk-bd-row amber">
                             <span>+ {p.paisInfo.bandera} {Math.round(p.tasaArancel * 100)}%</span>
@@ -1557,6 +1556,7 @@ export default function Home() {
                           <span>+ {lang === 'en' ? 'Merkao service 3%' : lang === 'pt' ? 'Taxa Merkao 3%' : 'Tarifa Merkao 3%'}</span>
                           <span>{fmt(p.tarifaServicio)}</span>
                         </div>
+                        <div className="mk-bd-row"><span>{lang === 'en' ? 'VAT included' : lang === 'pt' ? 'IGV incluído' : 'IGV incluido'}</span><span>{fmt(p.igv)}</span></div>
                       </div>
                       <div className="mk-card-ship">
                         <Icon name="truck" size={14} stroke={1.8} />

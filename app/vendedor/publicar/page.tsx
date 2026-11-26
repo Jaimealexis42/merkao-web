@@ -3,6 +3,7 @@ import { useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/useAuth'
 import { getPct } from '@/lib/comisiones'
+import { calcularPrecios } from '@/lib/precios'
 import { Icon } from '@/lib/icons'
 
 const CATEGORIAS_MAP: { nombre: string; id: number }[] = [
@@ -26,7 +27,6 @@ const CIUDADES_PERU = [
   'Ayacucho', 'Juliaca', 'Ica', 'Puno', 'Huánuco', 'Tarapoto',
 ]
 
-const IGV = 0.18
 const MAX_FOTOS = 4
 const MAX_MB = 5
 
@@ -174,9 +174,8 @@ export default function PublicarProducto() {
     }
   }
 
-  const base  = parseFloat(form.precio) || 0
-  const igv   = base * IGV
-  const total = base + igv
+  const precioPublicado = parseFloat(form.precio) || 0
+  const { igv, tarifaServicio, total } = calcularPrecios(precioPublicado)
 
   return (
     <>
@@ -309,6 +308,9 @@ export default function PublicarProducto() {
                   <span className="mk-vfield-cur">S/</span>
                   <input type="number" name="precio" value={form.precio} onChange={handleChange} placeholder="0.00" required min="0.01" step="0.01" />
                 </div>
+                <span style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4 }}>
+                  El precio que pongas debe incluir el IGV, si corresponde
+                </span>
               </div>
               <div className="mk-vfield">
                 <label>Stock disponible <span className="req">*</span></label>
@@ -316,17 +318,18 @@ export default function PublicarProducto() {
               </div>
             </div>
 
-            {base > 0 && (
+            {precioPublicado > 0 && (
               <div style={{ background: 'var(--bg)', border: '1px solid var(--line)', borderRadius: 11, padding: 14 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--muted)', padding: '4px 0' }}>
-                  <span>Precio base</span><span>S/ {base.toFixed(2)}</span>
+                  <span>Tu precio (IGV incluido)</span><span>S/ {precioPublicado.toFixed(2)}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: 'var(--muted)', padding: '4px 0' }}>
-                  <span>+ IGV 18%</span><span>S/ {igv.toFixed(2)}</span>
+                  <span>+ Tarifa Merkao 3% (la paga el comprador)</span><span>S/ {tarifaServicio.toFixed(2)}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, fontWeight: 800, color: 'var(--ink)', padding: '8px 0 4px', borderTop: '1px dashed var(--line)', marginTop: 4 }}>
                   <span>Total al comprador</span><span>S/ {total.toFixed(2)}</span>
                 </div>
+                <div style={{ fontSize: 12, color: 'var(--muted-2)' }}>IGV incluido: S/ {igv.toFixed(2)}</div>
               </div>
             )}
           </div>

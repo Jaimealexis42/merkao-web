@@ -115,11 +115,7 @@ export default function CarritoPage() {
               <div className="mk-summary-rows">
                 <div className="mk-sm-row">
                   <span>Productos ({totalUnidades})</span>
-                  <span>{fmt(subtotalBase)}</span>
-                </div>
-                <div className="mk-sm-row">
-                  <span>IGV (18%)</span>
-                  <span>{fmt(montoIGV)}</span>
+                  <span>{fmt(totalConIGV)}</span>
                 </div>
                 <div className="mk-sm-row">
                   <span>Tarifa Merkao (3%)</span>
@@ -144,7 +140,7 @@ export default function CarritoPage() {
               >
                 <Icon name="lock" size={16} stroke={2} /> Proceder al pago
               </button>
-              <p className="mk-sm-footer-note">Próximamente · IGV incluido · Tarifa Merkao 3%</p>
+              <p className="mk-sm-footer-note">Próximamente · IGV incluido: {fmt(montoIGV)} · Tarifa Merkao 3%</p>
 
               <a href="/" className="mk-sm-back">
                 <Icon name="chevronLeft" size={15} /> Seguir comprando

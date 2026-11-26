@@ -38,7 +38,7 @@ const BENEFITS = [
 
 const STEPS = [
   { n: 1, h: 'Crea tu cuenta', p: 'Regístrate gratis como vendedor en minutos.' },
-  { n: 2, h: 'Publica tus productos', p: 'Sube fotos, precio y stock. Calculamos el IGV por ti.' },
+  { n: 2, h: 'Publica tus productos', p: 'Sube fotos, precio y stock. El precio que pongas debe incluir el IGV, si corresponde.' },
   { n: 3, h: 'Recibe pedidos', p: 'Te avisamos de cada venta con el pago ya garantizado.' },
   { n: 4, h: 'Despacha y cobra', p: 'Envías, el cliente confirma y recibes tu dinero.' },
 ]
