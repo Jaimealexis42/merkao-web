@@ -33,14 +33,16 @@ export function comisionEfectiva(categoriaId: number, mesesActivo: number): numb
 
 /**
  * Reparto de un cobro. La tarifa de servicio que paga el comprador es de Merkao;
- * la comisión del vendedor se calcula sobre el resto del cobro.
+ * la comisión del vendedor se calcula solo sobre el precio del producto con IGV
+ * (ni la tarifa, ni el envío, ni el arancel).
  */
-export function repartirPago({ montoTotal, tarifaServicio, tasa }: {
+export function repartirPago({ montoTotal, subtotalProducto, tarifaServicio, tasa }: {
   montoTotal: number
+  subtotalProducto: number
   tarifaServicio: number
   tasa: number
 }): { montoMerkao: number; montoVendedor: number } {
-  const comision      = +((montoTotal - tarifaServicio) * tasa).toFixed(2)
+  const comision      = +(subtotalProducto * tasa).toFixed(2)
   const montoMerkao   = +(tarifaServicio + comision).toFixed(2)
   const montoVendedor = +(montoTotal - montoMerkao).toFixed(2)
   return { montoMerkao, montoVendedor }

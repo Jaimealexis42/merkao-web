@@ -3,6 +3,7 @@
 --  Ejecutar en: Supabase > SQL Editor > New query
 --
 --  monto_merkao   = tarifa de servicio del comprador (3%) + comisión del vendedor.
+--  La comisión se calcula solo sobre el precio del producto con IGV.
 --  monto_vendedor = monto_total - monto_merkao.
 --
 --  Flujo:

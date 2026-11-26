@@ -194,7 +194,7 @@ export async function POST(req: NextRequest) {
   const precioUnitario = esMayoreo ? (producto.precio_mayoreo as number) : (producto.precio as number)
   const costoEnvio     = +(producto.costo_envio ?? 0)
 
-  const { total: totalCalc, igv: igvCalc, arancel: arancelCalc, tarifaServicio } =
+  const { total: totalCalc, igv: igvCalc, arancel: arancelCalc, tarifaServicio, subtotal: subtotalProducto } =
     calcularPrecios(precioUnitario * cantidadNum, paisNorm)
 
   const totalSoles    = +(totalCalc + costoEnvio).toFixed(2)
@@ -362,7 +362,7 @@ export async function POST(req: NextRequest) {
         : 0
       const tasa = comisionEfectiva(categoriaId, mesesActivo)
       // monto_merkao = tarifa del comprador + comisión del vendedor
-      const { montoMerkao, montoVendedor } = repartirPago({ montoTotal, tarifaServicio, tasa })
+      const { montoMerkao, montoVendedor } = repartirPago({ montoTotal, subtotalProducto, tarifaServicio, tasa })
       return admin.from('comisiones_merkao').insert([{
         pedido_id:      pedidoId,
         monto_total:    montoTotal,
