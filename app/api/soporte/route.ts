@@ -104,8 +104,8 @@ export async function POST(req: NextRequest) {
   sendEmail({
     to: ADMIN_NOTIFY_EMAIL,
     subject: `Soporte Merkao — mensaje de ${nombre}`,
-    text: `${nombre} escribió:\n\n${texto}\n\nResponder en: https://merkao.pe/admin/soporte`,
-    html: `<p><strong>${nombre}</strong> te escribió desde el panel de vendedor:</p><blockquote style="border-left:3px solid #e5e7eb;margin:0;padding:0 12px;color:#374151">${texto}</blockquote><p><a href="https://merkao.pe/admin/soporte">Ver conversación →</a></p>`,
+    text: `${nombre} escribió:\n\n${texto}\n\nResponder en: https://merkao.org/admin/soporte`,
+    html: `<p><strong>${nombre}</strong> te escribió desde el panel de vendedor:</p><blockquote style="border-left:3px solid #e5e7eb;margin:0;padding:0 12px;color:#374151">${texto}</blockquote><p><a href="https://merkao.org/admin/soporte">Ver conversación →</a></p>`,
   }).catch(() => {})
 
   return NextResponse.json({ mensaje: msg })

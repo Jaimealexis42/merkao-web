@@ -110,7 +110,7 @@ export default function TrackingPage() {
       <header className="sticky top-0 z-50 px-4 py-2.5 flex items-center gap-3" style={{ backgroundColor: '#131921' }}>
         <a href="/" className="flex items-center gap-0.5 shrink-0">
           <span className="text-white text-2xl font-black tracking-tight">merkao</span>
-          <span className="text-2xl font-black" style={{ color: '#FF9900' }}>.pe</span>
+          <span className="text-2xl font-black" style={{ color: '#FF9900' }}>.org</span>
         </a>
         <div className="flex-1" />
         <a href="/" className="text-gray-400 text-xs hover:text-white transition">← Inicio</a>

@@ -88,7 +88,7 @@ export default function VendedorLayout({ children }: { children: React.ReactNode
           >
             <Icon name="menu" size={20} />
           </button>
-          <a href="/" className="mk-logo">merkao<span className="mk-logo-dot">.pe</span></a>
+          <a href="/" className="mk-logo">merkao<span className="mk-logo-dot">.org</span></a>
           <span className="mk-vhdr-tag">Panel de Vendedor</span>
         </div>
 

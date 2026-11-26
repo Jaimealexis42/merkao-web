@@ -106,7 +106,7 @@ export default function ContactoPage() {
         <div className="mk-auth-brand-bg" aria-hidden />
 
         <Link href="/" className="mk-auth-logo">
-          merkao<span>.pe</span>
+          merkao<span>.org</span>
         </Link>
 
         <div className="mk-auth-brand-mid">

@@ -85,14 +85,14 @@ export function mensajeWhatsApp(args: {
   estado: EstadoTracking
   trackingCode: string
   notas?: string | null
-  origen?: string // p.ej "https://merkao.pe"
+  origen?: string // p.ej "https://merkao.org"
 }): string {
-  const { nombreComprador, estado, trackingCode, notas, origen = 'https://merkao.pe' } = args
+  const { nombreComprador, estado, trackingCode, notas, origen = 'https://merkao.org' } = args
   const meta = ESTADO_META[estado]
   const saludo = `Hola ${nombreComprador.split(' ')[0] || ''}`.trim()
   const linkTracking = `${origen}/tracking/${trackingCode}`
   const lineas: string[] = [
-    `${saludo}, te escribo desde Merkao.pe 🇵🇪`,
+    `${saludo}, te escribo desde Merkao.org 🇵🇪`,
     `Actualización de tu pedido: ${meta.icono} ${meta.label}.`,
     `${meta.desc}`,
   ]

@@ -31,6 +31,8 @@ const securityHeaders = [
 ]
 
 const nextConfig: NextConfig = {
+  // Sin streaming de metadatos: title y canonical salen siempre dentro de <head>.
+  htmlLimitedBots: /.*/,
   // www.merkao.org duplicaba el sitio: todo va con 301 al dominio sin www.
   async redirects() {
     return [

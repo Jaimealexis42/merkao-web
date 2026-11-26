@@ -57,7 +57,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           href="/"
           style={{ fontWeight: 900, fontSize: 18, color: '#fff', textDecoration: 'none', letterSpacing: '-.02em', marginRight: 32 }}
         >
-          merkao<span style={{ color: '#3b82f6' }}>.pe</span>
+          merkao<span style={{ color: '#3b82f6' }}>.org</span>
         </a>
 
         <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.1em', color: '#64748b', marginRight: 24, textTransform: 'uppercase' }}>

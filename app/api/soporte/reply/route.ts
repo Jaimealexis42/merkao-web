@@ -69,8 +69,8 @@ export async function POST(req: NextRequest) {
       sendEmail({
         to: vendorEmail,
         subject: 'Tienes un mensaje del equipo Merkao',
-        text: `El equipo de Merkao te escribió:\n\n${texto}\n\nVer en: https://merkao.pe/vendedor/soporte`,
-        html: `<p>El equipo de <strong>Merkao</strong> te envió un mensaje:</p><blockquote style="border-left:3px solid #2563eb;margin:0;padding:0 12px;color:#374151">${texto}</blockquote><p><a href="https://merkao.pe/vendedor/soporte">Ver mensaje en tu panel →</a></p>`,
+        text: `El equipo de Merkao te escribió:\n\n${texto}\n\nVer en: https://merkao.org/vendedor/soporte`,
+        html: `<p>El equipo de <strong>Merkao</strong> te envió un mensaje:</p><blockquote style="border-left:3px solid #2563eb;margin:0;padding:0 12px;color:#374151">${texto}</blockquote><p><a href="https://merkao.org/vendedor/soporte">Ver mensaje en tu panel →</a></p>`,
       }).catch(() => {})
     }
   } catch {}

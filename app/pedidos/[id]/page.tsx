@@ -232,7 +232,7 @@ export default function PedidoPage() {
       <header className="mk-chdr">
         <div className="mk-chdr-inner">
           <Link href="/" className="mk-logo">
-            merkao<span className="mk-logo-dot">.pe</span>
+            merkao<span className="mk-logo-dot">.org</span>
           </Link>
           <span className="mk-chdr-secure">
             <Icon name="shield" size={15} stroke={1.9} /> Pago Escrow protegido

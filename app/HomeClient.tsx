@@ -1171,7 +1171,7 @@ export default function Home() {
       <header className="mk-hdr">
         <div className="mk-hdr-top">
           <div className="mk-hdr-inner">
-            <a className="mk-logo" href="/">merkao<span className="mk-logo-dot">.pe</span></a>
+            <a className="mk-logo" href="/">merkao<span className="mk-logo-dot">.org</span></a>
             {FASE === 'feriado6ago' && (
               <span className="mk-fiestas" aria-label="Batalla de Junín 6 de Agosto">
                 <span className="mk-fiestas-red">¡Batalla de Junín!</span>
@@ -1657,7 +1657,7 @@ export default function Home() {
       <footer className="mk-footer">
         <div className="mk-footer-inner">
           <div className="mk-footer-brand">
-            <a className="mk-logo mk-logo-foot" href="/">merkao<span className="mk-logo-dot">.pe</span></a>
+            <a className="mk-logo mk-logo-foot" href="/">merkao<span className="mk-logo-dot">.org</span></a>
             <p>
               {lang === 'en'
                 ? 'The Peruvian marketplace. Buy and sell across Peru with protected payment.'

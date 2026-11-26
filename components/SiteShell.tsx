@@ -11,7 +11,7 @@ export function SiteTopnav({ active = null, showTrust = false }: { active?: Acti
     <header className="mk-tnav">
       <div className="mk-tnav-inner">
         <Link className="mk-logo" href="/">
-          merkao<span className="mk-logo-dot">.pe</span>
+          merkao<span className="mk-logo-dot">.org</span>
         </Link>
         <nav className="mk-tnav-links">
           <Link className={'mk-tnav-link' + (active === 'inicio' ? ' on' : '')} href="/">Inicio</Link>
@@ -41,7 +41,7 @@ export function SiteFootnav() {
     <footer className="mk-foot">
       <div className="mk-foot-inner">
         <Link className="mk-logo" href="/">
-          merkao<span className="mk-logo-dot">.pe</span>
+          merkao<span className="mk-logo-dot">.org</span>
         </Link>
         <nav className="mk-foot-links">
           <Link href="/">Inicio</Link>

@@ -271,7 +271,7 @@ export default function ProductoDetalle() {
       <header className="mk-phdr">
         <div className="mk-phdr-inner">
           <Link href="/" className="mk-logo">
-            merkao<span className="mk-logo-dot">.pe</span>
+            merkao<span className="mk-logo-dot">.org</span>
           </Link>
           <div className="mk-phdr-search">
             <input placeholder="Buscar productos, marcas y categorías…" />

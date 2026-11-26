@@ -27,7 +27,7 @@ export default function CarritoPage() {
       {/* ── Header ── */}
       <header className="mk-chdr">
         <div className="mk-chdr-inner">
-          <a href="/" className="mk-logo">merkao<span className="mk-logo-dot">.pe</span></a>
+          <a href="/" className="mk-logo">merkao<span className="mk-logo-dot">.org</span></a>
           <div className="mk-chdr-secure">
             <Icon name="lock" size={15} stroke={1.9} /> Compra segura · Pago protegido con Escrow
           </div>

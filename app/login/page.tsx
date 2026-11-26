@@ -51,7 +51,7 @@ export default function LoginPage() {
         <div className="mk-auth-brand-bg" aria-hidden />
 
         <a href="/" className="mk-auth-logo">
-          merkao<span>.pe</span>
+          merkao<span>.org</span>
         </a>
 
         <div className="mk-auth-brand-mid">
