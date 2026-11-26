@@ -53,7 +53,7 @@ const FAQ = [
   {
     open: false,
     q: '¿Tiene algún costo el Pago Escrow?',
-    a: 'Para el comprador es totalmente gratis. Para el vendedor, la comisión es de 0% durante los primeros 12 meses.',
+    a: 'El comprador paga una tarifa de servicio Merkao del 3% (sobre el precio con IGV), que ve antes de pagar. Para el vendedor, la comisión es de 0% durante los primeros 12 meses; después, de 3% a 7% según la categoría.',
   },
   {
     open: false,

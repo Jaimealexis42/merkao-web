@@ -34,6 +34,7 @@
 import { readFileSync, writeFileSync, existsSync, appendFileSync } from 'node:fs'
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { textosDeTemporada } from './temporada.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ENV_PATH = resolve(__dirname, '.env')
@@ -75,7 +76,7 @@ const THEMES = {
 // ── Instagram ─────────────────────────────────────────────────
 // Hashtags peruanos que se append-ean SOLO al caption de Instagram (no
 // se ensucia el copy de Facebook). Si querés cambiarlos, editá acá.
-const IG_HASHTAGS = '#merkao #marketplaceperuano #hechoenperu #emprendedoresperuanos #peruano'
+const IG_HASHTAGS = '#merkao #marketplaceperuano #emprendedoresperuanos #peruano'
 
 // ── 1. Parse args ─────────────────────────────────────────────
 const args = process.argv.slice(2)
@@ -111,8 +112,9 @@ if (!existsSync(VARIANTS_PATH)) {
   bail(`No existe variants.json en ${VARIANTS_PATH}. Corré primero el generador en posts/.`)
 }
 const variantsFile = JSON.parse(readFileSync(VARIANTS_PATH, 'utf8'))
-const variantes = Array.isArray(variantsFile.variantes) ? variantsFile.variantes : []
+const { temporada, variantes = [] } = textosDeTemporada(variantsFile, dateInTz(new Date(), TIMEZONE))
 if (variantes.length === 0) bail('variants.json no tiene variantes válidas.')
+console.log(`[fb] temporada de textos: ${temporada}`)
 
 // ── 4. Load / init state ──────────────────────────────────────
 const state = existsSync(STATE_PATH)

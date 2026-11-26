@@ -40,6 +40,8 @@ import {
   unlinkSync,
   readdirSync,
 } from 'node:fs'
+import { textosDeTemporada } from './temporada.mjs'
+import { precioReel } from './precio.mjs'
 import { resolve, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { spawn, spawnSync } from 'node:child_process'
@@ -61,7 +63,7 @@ const VIDEO_H = 1920
 const VIDEO_FPS = 30
 const VIDEO_DURATION = 15
 
-const IG_HASHTAGS = '#merkao #marketplaceperuano #hechoenperu #emprendedoresperuanos #peruano'
+const IG_HASHTAGS = '#merkao #marketplaceperuano #emprendedoresperuanos #peruano'
 const MAX_IMAGES_PER_REEL = 4 // 4 × 3.75s = 15s con xfade 0.5s
 const XFADE_DUR = 0.5
 // Constants para cleanProductName/buildUnsplashQueryChain — declaradas acá
@@ -381,7 +383,7 @@ if (preExistingVideo) {
   console.log(
     `[reel]     ✓ producto final: "${product.nombre}"` +
       (product.ciudad ? ` · ${product.ciudad}` : '') +
-      ` · S/ ${product.precio?.toFixed(2) ?? '?'}` +
+      ` · total ${precioReel(product)?.total ?? '?'}` +
       ` · ${imagePaths.length} imagen(es)`,
   )
 
@@ -620,7 +622,7 @@ function isPlaceholderUrl(url) {
 // "Vendedor real" = registrado en la tabla tiendas, igual que post-facebook.mjs.
 async function fetchProductCandidates(supabaseUrl, anonKey) {
   const prodUrl = new URL(supabaseUrl.replace(/\/+$/, '') + '/rest/v1/productos')
-  prodUrl.searchParams.set('select', 'id,nombre,ciudad,precio,imagenes,vendedor_id')
+  prodUrl.searchParams.set('select', 'id,nombre,ciudad,precio,costo_envio,imagenes,vendedor_id')
   prodUrl.searchParams.set('estado', 'eq.activo')
   prodUrl.searchParams.set('imagenes', 'not.is.null')
   prodUrl.searchParams.set('limit', '20')
@@ -694,6 +696,7 @@ async function fetchProductCandidates(supabaseUrl, anonKey) {
     nombre: p.nombre,
     ciudad: p.ciudad,
     precio: typeof p.precio === 'number' ? p.precio : Number(p.precio) || null,
+    costoEnvio: Number(p.costo_envio) || 0,
     imagenes: p.imagenes.slice(0, MAX_IMAGES_PER_REEL),
     realImageUrls: p.imagenes.filter((url) => !isPlaceholderUrl(url)).slice(0, MAX_IMAGES_PER_REEL),
   }))
@@ -747,12 +750,10 @@ async function generateReel({ imagePaths, voicePath, videoPath, product, tmpDir 
   const cityTxt = join(tmpDir, 'city.txt')
   const priceTxt = join(tmpDir, 'price.txt')
   writeFileSync(titleTxt, wrapText(product.nombre, 22), 'utf8')
-  writeFileSync(cityTxt, product.ciudad || 'merkao.org', 'utf8')
-  writeFileSync(
-    priceTxt,
-    product.precio != null ? `S/ ${product.precio.toFixed(2)}` : 'Disponible',
-    'utf8',
-  )
+  const precio = precioReel(product)
+  const lugar = product.ciudad || 'merkao.org'
+  writeFileSync(cityTxt, precio ? `${lugar} · envío aparte` : lugar, 'utf8')
+  writeFileSync(priceTxt, precio ? precio.total : 'Disponible', 'utf8')
 
   const N = imagePaths.length
   if (N === 0) throw new Error('imagePaths vacío')
@@ -1009,10 +1010,11 @@ function runFfmpeg(bin, args) {
 function buildCaption(p, { hashtags }) {
   const lines = []
   lines.push(`🛍️ ${p.nombre}${p.ciudad ? ` · ${p.ciudad}` : ''}`)
-  if (p.precio != null) lines.push(`💰 S/ ${p.precio.toFixed(2)}`)
+  const precio = precioReel(p)
+  if (precio) lines.push(precio.caption)
   lines.push('')
-  lines.push('✨ Descubrilo en merkao.org')
-  lines.push('Marketplace 100% peruano · Sin comisión los 3 primeros meses')
+  const archivo = JSON.parse(readFileSync(resolve(__dirname, '..', 'posts', 'variants.json'), 'utf8'))
+  lines.push(textosDeTemporada(archivo, dateInTz(new Date(), TIMEZONE)).pieReel)
   if (hashtags) {
     lines.push('')
     lines.push(IG_HASHTAGS)
@@ -1460,16 +1462,14 @@ function buildVoiceoverText(product) {
     .replace(/"/g, '')
     .replace(/\s+/g, ' ')
     .trim()
+    // Nombre hablado de 40 caracteres como máximo: primero se quita lo que va
+    // después de un guion y, si aún sobra, se corta entre palabras.
+    .replace(/^(?=.{41})(.+?)\s[–-]\s.*$/, '$1')
+    .replace(/^(.{1,40})(?:\s.*)?$/, '$1')
   const ciudad = product.ciudad || 'el Perú'
-  const precio = product.precio != null ? Math.round(product.precio) : null
-  const precioFrase = precio != null
-    ? `Solo ${precio} soles con envío a todo el Perú. `
-    : ''
-  return (
-    `¡Hola! Encuentra ${nombreLimpio} directo de ${ciudad} en Merkao punto org. ` +
-    `${precioFrase}` +
-    `¡Compra seguro con pago Escrow! Entra ya a Merkao punto org.`
-  )
+  const precioFrase = precioReel(product)?.voz ?? ''
+  // Corto a propósito: el video dura 15 s y lo que sobra se corta.
+  return `${nombreLimpio}, de ${ciudad}. ${precioFrase}Compra protegida en Merkao.`
 }
 
 async function generateVoiceover(text, outPath) {

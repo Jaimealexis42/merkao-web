@@ -1,53 +1,81 @@
 {
-  "generatedAt": "2026-06-06T20:49:16.290Z",
-  "model": "claude-sonnet-4-6",
-  "elapsedMs": 19924,
-  "tokens": {
-    "input": 1310,
-    "output": 947
-  },
   "variantes": [
     {
       "id": 1,
-      "enfoque": "Comparativa con números",
-      "texto": "Una cosa que me hizo pensar: si vendés algo a S/100 en Mercado Libre, después de comisiones te quedan como S/85 o menos. En Merkao.org la comisión es 0%, así que lo que ponés es lo que cobrás, sin descuentos raros al final. No es que ML sea malo, pero pa' márgenes ajustados sí se siente la diferencia. Por si le quieren dar una mirada: Merkao.org",
-      "chars": 347
+      "enfoque": "Quiénes somos",
+      "texto": "Somos Merkao, un marketplace peruano para comprar y vender en línea con Pago Escrow. Mira lo que nuestros vendedores tienen para ti en merkao.org 🇵🇪\n\n💰 Vendedores: 0% de comisión los primeros 12 meses de tu tienda; después, de 3% a 7% según la categoría.\n🛒 Compradores: tarifa de servicio Merkao de 3%, que ves antes de pagar."
     },
     {
       "id": 2,
-      "enfoque": "Para la que recién empieza",
-      "texto": "Si recién estás arrancando y Mercado Libre te da susto por lo que se llevan de comisión, hay una opción que no te cobra nada por publicar ni por vender. Se llama Merkao.org, es peruano y sin suscripción. Probar no cuesta nada, y si no funciona, no perdiste un sol. Te dejo el link para que lo veas con calma: Merkao.org ✨",
-      "chars": 321
+      "enfoque": "Abre tu tienda",
+      "texto": "¿Tienes un negocio? En Merkao puedes abrir tu tienda gratis, sin cuota mensual, y mostrar tus productos a compradores de todo el Perú. Empieza en merkao.org/vende ✨\n\n💰 Vendedores: 0% de comisión los primeros 12 meses de tu tienda; después, de 3% a 7% según la categoría.\n🛒 Compradores: tarifa de servicio Merkao de 3%, que ves antes de pagar."
     },
     {
       "id": 3,
-      "enfoque": "Artesana / productora regional",
-      "texto": "Para las chicas que venden en feria en Cusco, Ayacucho, Cajamarca o Puno y quieren llegar a más gente sin intermediarios: encontré un marketplace peruano que no cobra comisión al vendedor. Así el precio que ponés por tu tejido o tu café es exactamente lo que recibes, sin que nadie se lleve su parte. 🇵🇪 Si les interesa: Merkao.org",
-      "chars": 333
+      "enfoque": "Artesanos y productores",
+      "texto": "¿Haces artesanías, tejes o produces café, cacao u otros alimentos? En Merkao tenemos categorías para que tus productos lleguen a más personas. Publica en merkao.org/vende 🌿\n\n💰 Vendedores: 0% de comisión los primeros 12 meses de tu tienda; después, de 3% a 7% según la categoría.\n🛒 Compradores: tarifa de servicio Merkao de 3%, que ves antes de pagar."
     },
     {
       "id": 4,
-      "enfoque": "Pregunta abierta a la comunidad",
-      "texto": "¿Alguien del grupo ya probó Merkao.org? Es un marketplace peruano que dice cobrar 0% de comisión al vendedor, sin costo de publicación. Yo lo estoy revisando y la propuesta se ve interesante, sobre todo para las que venden por WhatsApp o feria y no quieren perder margen. Curiosa de saber si alguien tiene experiencia, cuéntenme acá 💚",
-      "chars": 335
+      "enfoque": "Compra protegida",
+      "texto": "En Merkao tu compra está protegida con Pago Escrow: retenemos tu pago hasta que confirmes que recibiste el producto, o hasta 7 días después de la entrega registrada si no reportas un problema. Conoce más en merkao.org/como-funciona-escrow 🔒\n\n💰 Vendedores: 0% de comisión los primeros 12 meses de tu tienda; después, de 3% a 7% según la categoría.\n🛒 Compradores: tarifa de servicio Merkao de 3%, que ves antes de pagar."
     },
     {
       "id": 5,
-      "enfoque": "Testimonio en primera persona",
-      "texto": "Llevo dos semanas probando Merkao.org para mis productos y lo que más me gustó es que lo que pongo de precio es lo que me llega, sin sorpresas al cobrar. Todavía es nuevo y le falta más tráfico, pero para empezar sin pagar comisión está bien pe. Si están buscando una alternativa tranquila, le dan una miradita: Merkao.org",
-      "chars": 322
+      "enfoque": "Pregunta a la comunidad",
+      "texto": "Queremos conocerte: ¿qué producto peruano te gustaría encontrar en Merkao? Cuéntanos en los comentarios y date una vuelta por merkao.org 💬\n\n💰 Vendedores: 0% de comisión los primeros 12 meses de tu tienda; después, de 3% a 7% según la categoría.\n🛒 Compradores: tarifa de servicio Merkao de 3%, que ves antes de pagar."
     },
     {
       "id": 6,
-      "enfoque": "Tip de venta + mención natural",
-      "texto": "Tip para vender más en cualquier plataforma: la foto de tu producto con buena luz natural vale más que cualquier descripción larga. Fondo claro, producto bien centrado, una sola toma limpia. Y ya que andan buscando dónde publicar sin perder en comisiones, Merkao.org es una opción peruana que no cobra nada al vendedor. ✨",
-      "chars": 321
+      "enfoque": "Consejo para vender",
+      "texto": "Consejo de Merkao para vender mejor: toma tus fotos con luz natural, sobre un fondo claro y con el producto centrado. Cuando las tengas, publícalas en merkao.org/vende 📸\n\n💰 Vendedores: 0% de comisión los primeros 12 meses de tu tienda; después, de 3% a 7% según la categoría.\n🛒 Compradores: tarifa de servicio Merkao de 3%, que ves antes de pagar."
     },
     {
       "id": 7,
-      "enfoque": "Invitación corta y cálida",
-      "texto": "Si vendés algo, sea artesanía, alimentos, ropa o lo que sea, y querés tener una vitrina online sin pagar comisión, te dejo esto: Merkao.org. Es peruano, sin costo de publicación y lo que ponés de precio es lo que cobrás. Solo por si les sirve 💚",
-      "chars": 245
+      "enfoque": "Invitación a vendedores",
+      "texto": "Artesanía, alimentos, ropa, cosas para el hogar y más: si lo vendes, en Merkao hay una vitrina para ti. Crea tu tienda en merkao.org/vende 🛍️\n\n💰 Vendedores: 0% de comisión los primeros 12 meses de tu tienda; después, de 3% a 7% según la categoría.\n🛒 Compradores: tarifa de servicio Merkao de 3%, que ves antes de pagar."
     }
-  ]
+  ],
+  "pieReel": "✨ Descúbrelo en merkao.org\n💰 Vendedores: 0% de comisión los primeros 12 meses de tu tienda; después, de 3% a 7% según la categoría.\n🛒 Compradores: tarifa de servicio Merkao de 3%, que ves antes de pagar.",
+  "navidad": {
+    "hasta": "2026-12-31",
+    "variantes": [
+      {
+        "id": 1,
+        "enfoque": "Regalos de emprendedores peruanos",
+        "texto": "🎄 Esta Navidad, regala algo de emprendedores peruanos. En Merkao puedes apoyar sus negocios. Busca tu regalo en merkao.org 🎁\n\n💰 Vendedores: 0% de comisión los primeros 12 meses de tu tienda; después, de 3% a 7% según la categoría.\n🛒 Compradores: tarifa de servicio Merkao de 3%, que ves antes de pagar."
+      },
+      {
+        "id": 2,
+        "enfoque": "Compra protegida para Navidad",
+        "texto": "🎅 Compra tus regalos de Navidad con protección: en Merkao retenemos tu pago con Pago Escrow hasta que confirmes que recibiste el producto, o hasta 7 días después de la entrega registrada si no reportas un problema. merkao.org 🔒\n\n💰 Vendedores: 0% de comisión los primeros 12 meses de tu tienda; después, de 3% a 7% según la categoría.\n🛒 Compradores: tarifa de servicio Merkao de 3%, que ves antes de pagar."
+      },
+      {
+        "id": 3,
+        "enfoque": "Adornos y detalles",
+        "texto": "✨ Nacimientos, adornos y detalles para la casa: encuentra ideas para esta Navidad en Merkao y conoce a los vendedores que están detrás. merkao.org 🎄\n\n💰 Vendedores: 0% de comisión los primeros 12 meses de tu tienda; después, de 3% a 7% según la categoría.\n🛒 Compradores: tarifa de servicio Merkao de 3%, que ves antes de pagar."
+      },
+      {
+        "id": 4,
+        "enfoque": "Vende en la campaña",
+        "texto": "🎁 ¿Preparas productos para Navidad? Abre tu tienda gratis en Merkao y publícalos antes de que termine la campaña. Empieza en merkao.org/vende\n\n💰 Vendedores: 0% de comisión los primeros 12 meses de tu tienda; después, de 3% a 7% según la categoría.\n🛒 Compradores: tarifa de servicio Merkao de 3%, que ves antes de pagar."
+      },
+      {
+        "id": 5,
+        "enfoque": "Pregunta navideña",
+        "texto": "🎄 Queremos saber: ¿a quién le vas a regalar algo de emprendedores peruanos esta Navidad? Cuéntanos en los comentarios y busca ideas en merkao.org 💬\n\n💰 Vendedores: 0% de comisión los primeros 12 meses de tu tienda; después, de 3% a 7% según la categoría.\n🛒 Compradores: tarifa de servicio Merkao de 3%, que ves antes de pagar."
+      },
+      {
+        "id": 6,
+        "enfoque": "Compra con tiempo",
+        "texto": "⏰ Consejo de Merkao: haz tus compras navideñas con tiempo. Revisa desde qué ciudad se envía el producto y los plazos antes de pagar, y compra con Pago Escrow en merkao.org 📦\n\n💰 Vendedores: 0% de comisión los primeros 12 meses de tu tienda; después, de 3% a 7% según la categoría.\n🛒 Compradores: tarifa de servicio Merkao de 3%, que ves antes de pagar."
+      },
+      {
+        "id": 7,
+        "enfoque": "Apoya a emprendedores",
+        "texto": "❤️ Cada regalo comprado a un emprendedor peruano es un impulso para su negocio. Esta Navidad, date una vuelta por Merkao: merkao.org 🇵🇪\n\n💰 Vendedores: 0% de comisión los primeros 12 meses de tu tienda; después, de 3% a 7% según la categoría.\n🛒 Compradores: tarifa de servicio Merkao de 3%, que ves antes de pagar."
+      }
+    ],
+    "pieReel": "🎄 Esta Navidad, compra protegida con Pago Escrow en merkao.org\n💰 Vendedores: 0% de comisión los primeros 12 meses de tu tienda; después, de 3% a 7% según la categoría.\n🛒 Compradores: tarifa de servicio Merkao de 3%, que ves antes de pagar."
+  }
 }
