@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit'
-import { comisionEfectiva, MESES_GRATIS } from '@/lib/comisiones'
+import { comisionEfectiva, repartirPago } from '@/lib/comisiones'
 import { calcularPrecios } from '@/lib/precios'
 import { urlsEscrow } from '@/lib/escrow-token'
 import { sendEmail } from '@/lib/email'
@@ -194,7 +194,7 @@ export async function POST(req: NextRequest) {
   const precioUnitario = esMayoreo ? (producto.precio_mayoreo as number) : (producto.precio as number)
   const costoEnvio     = +(producto.costo_envio ?? 0)
 
-  const { total: totalCalc, igv: igvCalc, arancel: arancelCalc } =
+  const { total: totalCalc, igv: igvCalc, arancel: arancelCalc, tarifaServicio } =
     calcularPrecios(precioUnitario * cantidadNum, paisNorm)
 
   const totalSoles    = +(totalCalc + costoEnvio).toFixed(2)
@@ -360,10 +360,9 @@ export async function POST(req: NextRequest) {
       const mesesActivo = tienda?.created_at
         ? Math.floor((Date.now() - new Date(tienda.created_at as string).getTime()) / (1000 * 60 * 60 * 24 * 30))
         : 0
-      void MESES_GRATIS
-      const tasa         = comisionEfectiva(categoriaId, mesesActivo)
-      const montoMerkao  = +(montoTotal * tasa).toFixed(2)
-      const montoVendedor = +(montoTotal - montoMerkao).toFixed(2)
+      const tasa = comisionEfectiva(categoriaId, mesesActivo)
+      // monto_merkao = tarifa del comprador + comisión del vendedor
+      const { montoMerkao, montoVendedor } = repartirPago({ montoTotal, tarifaServicio, tasa })
       return admin.from('comisiones_merkao').insert([{
         pedido_id:      pedidoId,
         monto_total:    montoTotal,

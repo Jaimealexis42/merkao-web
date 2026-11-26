@@ -2,6 +2,9 @@
 --  MERKAO — Ledger de split de pagos (3/5/7% por categoría)
 --  Ejecutar en: Supabase > SQL Editor > New query
 --
+--  monto_merkao   = tarifa de servicio del comprador (3%) + comisión del vendedor.
+--  monto_vendedor = monto_total - monto_merkao.
+--
 --  Flujo:
 --    1. Comprador paga total con Culqi (100% va a cuenta Merkao).
 --    2. /api/culqi-charge INSERTa fila con estado='pendiente'.

@@ -31,6 +31,21 @@ export function comisionEfectiva(categoriaId: number, mesesActivo: number): numb
   return COMISIONES[categoriaId] ?? 0.05
 }
 
+/**
+ * Reparto de un cobro. La tarifa de servicio que paga el comprador es de Merkao;
+ * la comisión del vendedor se calcula sobre el resto del cobro.
+ */
+export function repartirPago({ montoTotal, tarifaServicio, tasa }: {
+  montoTotal: number
+  tarifaServicio: number
+  tasa: number
+}): { montoMerkao: number; montoVendedor: number } {
+  const comision      = +((montoTotal - tarifaServicio) * tasa).toFixed(2)
+  const montoMerkao   = +(tarifaServicio + comision).toFixed(2)
+  const montoVendedor = +(montoTotal - montoMerkao).toFixed(2)
+  return { montoMerkao, montoVendedor }
+}
+
 /** Resumen legible: "3 %" o "Gratis (primeros 12 meses)". */
 export function labelComision(pct: number, esGratis = false): string {
   if (esGratis) return `0 % (primeros ${MESES_GRATIS} meses gratis)`
