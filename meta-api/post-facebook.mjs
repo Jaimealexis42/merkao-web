@@ -28,8 +28,8 @@
 // Instagram: si META_IG_USER_ID + META_IG_ACCESS_TOKEN están seteadas Y hay
 // imagen, publica también en @merkao_marketplace (texto + sufijo producto +
 // hashtags peruanos). IG no permite posts text-only por API → si no hay
-// imagen, IG se salta. Falla en IG NO interrumpe el flujo: FB ya quedó
-// publicado y mañana se rota igual.
+// imagen, IG se salta. Si IG falla, se guarda el estado (FB ya quedó
+// publicado) y el script termina con código 1 para que la tarea falle.
 
 import { readFileSync, writeFileSync, existsSync, appendFileSync } from 'node:fs'
 import { resolve, dirname } from 'node:path'
@@ -117,7 +117,7 @@ if (variantes.length === 0) bail('variants.json no tiene variantes válidas.')
 // ── 4. Load / init state ──────────────────────────────────────
 const state = existsSync(STATE_PATH)
   ? JSON.parse(readFileSync(STATE_PATH, 'utf8'))
-  : { lastIndex: -1, lastPostedDate: null, totalPosts: 0, history: [] }
+  : { lastIndex: -1, lastPostedDate: null, totalPosts: 0, history: [], postedProductIds: [] }
 
 const todayPeru = dateInTz(new Date(), TIMEZONE) // YYYY-MM-DD
 const yaPosteóHoy = state.lastPostedDate === todayPeru
@@ -170,7 +170,7 @@ if (noImage) {
   // (1) Intentar producto real de Merkao
   if (supabaseUrl && supabaseKey) {
     try {
-      const product = await fetchRandomMerkaoProduct(supabaseUrl, supabaseKey)
+      const product = await fetchRandomMerkaoProduct(supabaseUrl, supabaseKey, state.postedProductIds || [])
       if (!product) {
         console.log('[img] sin productos activos con imágenes en Supabase → fallback Unsplash')
         log('WARN supabase_no_products')
@@ -275,6 +275,7 @@ if (!res.ok || !postIdRaw) {
   const errMsg = data?.error?.message || JSON.stringify(data).slice(0, 300)
   log(`ERROR api endpoint=${endpoint} status=${res.status} index=${nextIndex} msg="${errMsg}"`)
   console.error(`[fb] ✗ Graph API ${res.status} (${endpoint}):`, errMsg)
+  console.log(`::error title=Facebook (post)::${res.status} ${errMsg}`)
   if (data?.error?.code === 190) {
     console.error('   → Code 190 = token expirado o inválido. Volvé a correr get-token.mjs')
   }
@@ -290,8 +291,8 @@ console.log(`[fb]   url: ${postUrl}`)
 
 // ── 8. Publicar en Instagram (si está configurada y hay imagen) ─
 // IG no acepta posts text-only por API. Si no hay imageMeta (Unsplash falló
-// o --no-image), se salta IG sin marcarlo como error. La falla en IG NO
-// detiene el flujo: el post de FB ya está publicado.
+// o --no-image), se salta IG sin marcarlo como error. Si falla, se sigue
+// hasta guardar el estado y luego se sale con código 1.
 let igResult = null
 if (noInstagram) {
   console.log('[ig] --no-instagram activo → skip')
@@ -321,7 +322,9 @@ if (noInstagram) {
     igResult = { error: e.message }
     console.warn(`[ig] ✗ falló: ${e.message}`)
     log(`ERROR_IG msg="${e.message}"`)
-    // No salimos: FB ya quedó publicado y mañana rota igual.
+    // No salimos aquí: hay que guardar el estado porque FB ya quedó publicado.
+    console.log(`::error title=Instagram (post)::${e.message}`)
+    process.exitCode = 1
   }
 }
 
@@ -339,10 +342,17 @@ const histEntry = {
   image: imageMeta, // null si fue text-only
   ig: igResult, // { mediaId, containerId, permalink, elapsedMs } | { error } | null si skip
 }
+const prevPostedIds = state.postedProductIds || []
+let newPostedProductIds = prevPostedIds
+if (imageMeta?.source === 'merkao_product' && imageMeta.product_id) {
+  newPostedProductIds = [...prevPostedIds, imageMeta.product_id]
+  if (newPostedProductIds.length > 200) newPostedProductIds = newPostedProductIds.slice(-200)
+}
 const newState = {
   lastIndex: nextIndex,
   lastPostedDate: todayPeru,
   totalPosts: (state.totalPosts || 0) + 1,
+  postedProductIds: newPostedProductIds,
   history: [...(state.history || []), histEntry].slice(-50),
 }
 writeFileSync(STATE_PATH, JSON.stringify(newState, null, 2), 'utf8')
@@ -353,6 +363,13 @@ log(
 console.log(`[fb] state.json actualizado. Total publicaciones: ${newState.totalPosts}`)
 
 // ──────────────────────────────────────────────────────────────
+// Token de página de Facebook (EAA…) → graph.facebook.com.
+// Token de "Instagram Login" (IG…) → graph.instagram.com.
+function igApiBase(token) {
+  const host = token.startsWith('IG') ? 'graph.instagram.com' : 'graph.facebook.com'
+  return `https://${host}/${IG_API_VERSION}`
+}
+
 function parseEnv(text) {
   const out = {}
   for (const line of text.split(/\r?\n/)) {
@@ -426,28 +443,67 @@ async function downloadImage(url) {
   return Buffer.from(ab)
 }
 
-// Trae hasta 20 productos activos con imágenes desde Supabase REST y elige
-// uno al azar; después elige una imagen al azar de su array `imagenes`.
+// Trae hasta 200 productos activos con imágenes desde Supabase REST.
+// Prioriza productos de vendedores con tienda registrada en la tabla tiendas.
+// La fuente de verdad es tiendas (no una comparación de vendedor_id hardcodeado),
+// por lo que funciona con cualquier formato de ID (UUID, número, texto).
+// Si todos los productos reales fueron posteados, reinicia el ciclo.
 // Devuelve { id, nombre, ciudad, imageUrl } o null si no hay matches.
 // Throws si la API responde !ok (red, key inválida, RLS bloqueando).
-async function fetchRandomMerkaoProduct(supabaseUrl, anonKey) {
-  const u = new URL(supabaseUrl.replace(/\/+$/, '') + '/rest/v1/productos')
-  u.searchParams.set('select', 'id,nombre,ciudad,imagenes')
-  u.searchParams.set('estado', 'eq.activo')
-  u.searchParams.set('imagenes', 'not.is.null')
-  u.searchParams.set('limit', '20')
-  const r = await fetch(u, {
-    headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` },
-  })
-  if (!r.ok) {
-    const body = await r.text().catch(() => '')
-    throw new Error(`supabase ${r.status}: ${body.slice(0, 200)}`)
+async function fetchRandomMerkaoProduct(supabaseUrl, anonKey, excludeIds = []) {
+  // Cargar tiendas y productos en paralelo
+  const tiendasUrl = new URL(supabaseUrl.replace(/\/+$/, '') + '/rest/v1/tiendas')
+  tiendasUrl.searchParams.set('select', 'id')
+  const productosUrl = new URL(supabaseUrl.replace(/\/+$/, '') + '/rest/v1/productos')
+  productosUrl.searchParams.set('select', 'id,nombre,ciudad,imagenes,vendedor_id')
+  productosUrl.searchParams.set('estado', 'eq.activo')
+  productosUrl.searchParams.set('imagenes', 'not.is.null')
+  productosUrl.searchParams.set('limit', '200')
+
+  const headers = { apikey: anonKey, Authorization: `Bearer ${anonKey}` }
+  const [rP, rT] = await Promise.all([
+    fetch(productosUrl, { headers }),
+    fetch(tiendasUrl, { headers }),
+  ])
+  if (!rP.ok) {
+    const body = await rP.text().catch(() => '')
+    throw new Error(`supabase productos ${rP.status}: ${body.slice(0, 200)}`)
   }
-  const rows = await r.json()
+  const rows = await rP.json()
   if (!Array.isArray(rows) || rows.length === 0) return null
   const withImgs = rows.filter((p) => Array.isArray(p.imagenes) && p.imagenes.length > 0)
   if (withImgs.length === 0) return null
-  const product = withImgs[Math.floor(Math.random() * withImgs.length)]
+
+  // Construir set de IDs de tiendas registradas (vendedores reales)
+  const realVendorIds = new Set()
+  if (rT.ok) {
+    const tiendasRows = await rT.json().catch(() => [])
+    for (const t of tiendasRows) realVendorIds.add(String(t.id))
+  }
+
+  // Prioridad absoluta: vendedores registrados en tabla tiendas (tienen tienda = reales).
+  // Si ninguno tiene foto todavía, fallback a todos los productos con imagen (muestras).
+  const realProducts = withImgs.filter(
+    (p) => p.vendedor_id && realVendorIds.has(String(p.vendedor_id)),
+  )
+  const pool = realProducts.length > 0 ? realProducts : withImgs
+  console.log(
+    realProducts.length > 0
+      ? `[img] ${realProducts.length} productos de vendedores reales con foto → prioridad absoluta`
+      : `[img] vendedores reales sin foto todavía → publicando ${withImgs.length} productos de muestra`,
+  )
+
+  const excludeSet = new Set(excludeIds)
+  let candidates = pool.filter((p) => !excludeSet.has(p.id))
+  if (candidates.length === 0) {
+    console.log('[img] todos los productos fueron posteados — reiniciando ciclo')
+    log('INFO product_cycle_reset total=' + pool.length)
+    candidates = pool
+  } else {
+    console.log(`[img] ${candidates.length}/${pool.length} productos disponibles (${pool.length - candidates.length} ya posteados)`)
+  }
+
+  const product = candidates[Math.floor(Math.random() * candidates.length)]
   const imageUrl = product.imagenes[Math.floor(Math.random() * product.imagenes.length)]
   return {
     id: product.id,
@@ -467,7 +523,7 @@ async function fetchRandomMerkaoProduct(supabaseUrl, anonKey) {
 // Docs: https://developers.facebook.com/docs/instagram-platform/instagram-api-with-instagram-login/content-publishing
 async function postToInstagram({ igUserId, accessToken, imageUrl, caption }) {
   const t0 = Date.now()
-  const IG_BASE = `https://graph.instagram.com/${IG_API_VERSION}`
+  const IG_BASE = igApiBase(accessToken)
 
   // (1) Crear container
   const containerUrl = new URL(`${IG_BASE}/${igUserId}/media`)
@@ -518,7 +574,7 @@ async function postToInstagram({ igUserId, accessToken, imageUrl, caption }) {
 // Docs recomiendan no más de 5 polls/min — usamos 5 intentos con backoff
 // progresivo (1s, 2s, 3s, 4s, 5s) = ~15s máx.
 async function waitForIgContainerReady(containerId, accessToken, maxAttempts = 5) {
-  const IG_BASE = `https://graph.instagram.com/${IG_API_VERSION}`
+  const IG_BASE = igApiBase(accessToken)
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     const u = new URL(`${IG_BASE}/${containerId}`)
     u.searchParams.set('fields', 'status_code,status')

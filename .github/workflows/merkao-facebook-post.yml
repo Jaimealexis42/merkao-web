@@ -111,7 +111,8 @@ jobs:
           node post-facebook.mjs $ARGS
 
       - name: Generar y publicar Reel diario en IG + FB
-        if: github.event.inputs.skip_reel != 'true'
+        # !cancelled(): corre aunque el post anterior haya fallado.
+        if: ${{ !cancelled() && github.event.inputs.skip_reel != 'true' }}
         working-directory: meta-api
         env:
           META_PAGE_ID: ${{ secrets.META_PAGE_ID }}
@@ -130,6 +131,8 @@ jobs:
           node create-reel.mjs $ARGS
 
       - name: Commitear states si cambiaron
+        # También tras un fallo: lo ya publicado no debe repetirse.
+        if: ${{ !cancelled() }}
         # state.json + reel-state.json están en .gitignore (porque local también
         # escribe). En CI usamos `git add -f` para forzarlos al repo y persistir
         # rotación + idempotencia diaria.

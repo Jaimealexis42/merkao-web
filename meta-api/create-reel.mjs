@@ -436,6 +436,7 @@ if (noIg) {
     igResult = { error: e.message }
     console.warn(`[reel]     ✗ IG falló: ${e.message}`)
     log(`ERROR_IG msg="${e.message}"`)
+    console.log(`::error title=Instagram (reel)::${e.message}`)
   }
 }
 
@@ -464,6 +465,7 @@ if (noFb) {
     fbResult = { error: e.message }
     console.warn(`[reel]     ✗ FB falló: ${e.message}`)
     log(`ERROR_FB msg="${e.message}"`)
+    console.log(`::error title=Facebook (reel)::${e.message}`)
   }
 }
 
@@ -480,9 +482,12 @@ const histEntry = {
   ig: igResult,
   fb: fbResult,
 }
+const intentos = [igResult, fbResult].filter(Boolean)
+const hayError = intentos.some((r) => r.error)
+const todoFallo = hayError && intentos.every((r) => r.error)
 const newState = {
-  lastReelDate: todayPeru,
-  totalReels: (state.totalReels || 0) + 1,
+  lastReelDate: todoFallo ? state.lastReelDate : todayPeru,
+  totalReels: (state.totalReels || 0) + (todoFallo ? 0 : 1),
   history: [...(state.history || []), histEntry].slice(-50),
 }
 writeFileSync(STATE_PATH, JSON.stringify(newState, null, 2), 'utf8')
@@ -495,10 +500,18 @@ if (!keepVideo && tmpDir) {
   } catch {}
 }
 console.log(`[reel] done. Total reels: ${newState.totalReels}`)
+if (hayError) process.exitCode = 1
 
 // ══════════════════════════════════════════════════════════════
 //                       HELPERS
 // ══════════════════════════════════════════════════════════════
+
+// Token de página de Facebook (EAA…) → graph.facebook.com.
+// Token de "Instagram Login" (IG…) → graph.instagram.com.
+function igApiBase(token) {
+  const host = token.startsWith('IG') ? 'graph.instagram.com' : 'graph.facebook.com'
+  return `https://${host}/${IG_API_VERSION}`
+}
 
 function parseEnv(text) {
   const out = {}
@@ -600,50 +613,83 @@ function isPlaceholderUrl(url) {
   )
 }
 
-// Trae todos los productos activos con imágenes y los devuelve ordenados:
-// PRIMERO los que tienen imágenes reales subidas por el vendedor, DESPUÉS
-// los que solo tienen placeholders (picsum). Esta prioridad implementa la
-// regla del usuario: usar imágenes del vendedor cuando existan, y caer a
-// Unsplash temático solo para productos sin foto real.
+// Trae todos los productos activos con imágenes y los devuelve ordenados por prioridad:
+//   1) Vendedor real (tiene tienda) + foto real subida → prioridad absoluta
+//   2) Si ningún vendedor real tiene foto → muestras con imagen real
+//   3) Último recurso: muestras solo con placeholder (Unsplash fallback)
+// "Vendedor real" = registrado en la tabla tiendas, igual que post-facebook.mjs.
 async function fetchProductCandidates(supabaseUrl, anonKey) {
-  const u = new URL(supabaseUrl.replace(/\/+$/, '') + '/rest/v1/productos')
-  u.searchParams.set('select', 'id,nombre,ciudad,precio,imagenes')
-  u.searchParams.set('estado', 'eq.activo')
-  u.searchParams.set('imagenes', 'not.is.null')
-  u.searchParams.set('limit', '20')
-  const r = await fetch(u, {
-    headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` },
-  })
-  if (!r.ok) {
-    const body = await r.text().catch(() => '')
-    throw new Error(`supabase ${r.status}: ${body.slice(0, 200)}`)
+  const prodUrl = new URL(supabaseUrl.replace(/\/+$/, '') + '/rest/v1/productos')
+  prodUrl.searchParams.set('select', 'id,nombre,ciudad,precio,imagenes,vendedor_id')
+  prodUrl.searchParams.set('estado', 'eq.activo')
+  prodUrl.searchParams.set('imagenes', 'not.is.null')
+  prodUrl.searchParams.set('limit', '20')
+
+  const tiendasUrl = new URL(supabaseUrl.replace(/\/+$/, '') + '/rest/v1/tiendas')
+  tiendasUrl.searchParams.set('select', 'id')
+
+  const headers = { apikey: anonKey, Authorization: `Bearer ${anonKey}` }
+  const [rP, rT] = await Promise.all([
+    fetch(prodUrl, { headers }),
+    fetch(tiendasUrl, { headers }),
+  ])
+  if (!rP.ok) {
+    const body = await rP.text().catch(() => '')
+    throw new Error(`supabase ${rP.status}: ${body.slice(0, 200)}`)
   }
-  const rows = await r.json()
+  const rows = await rP.json()
   const withImgs = (Array.isArray(rows) ? rows : []).filter(
     (p) => Array.isArray(p.imagenes) && p.imagenes.length > 0,
   )
 
-  // Separar por tipo de imagen: reales (subidas por vendedor) vs placeholder.
-  const real = []
-  const placeholderOnly = []
-  for (const p of withImgs) {
-    const hasReal = p.imagenes.some((url) => !isPlaceholderUrl(url))
-    ;(hasReal ? real : placeholderOnly).push(p)
+  // Vendedores reales = registrados en tabla tiendas
+  const realVendorIds = new Set()
+  if (rT.ok) {
+    const tRows = await rT.json().catch(() => [])
+    for (const t of tRows) realVendorIds.add(String(t.id))
   }
-  // Shuffle dentro de cada grupo
+
+  // Clasificar en tres grupos
+  const realVendorConFoto   = []  // vendedor real + foto real (no placeholder)
+  const muestraConFotoReal  = []  // muestra/demo + foto real
+  const soloPlaceholder     = []  // cualquiera + solo placeholder
+
+  for (const p of withImgs) {
+    const isRealVendor = p.vendedor_id && realVendorIds.has(String(p.vendedor_id))
+    const hasRealPhoto = p.imagenes.some((url) => !isPlaceholderUrl(url))
+    if (isRealVendor && hasRealPhoto) {
+      realVendorConFoto.push(p)
+    } else if (hasRealPhoto) {
+      muestraConFotoReal.push(p)
+    } else {
+      soloPlaceholder.push(p)
+    }
+  }
+
   const shuffle = (arr) => {
     for (let i = arr.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1))
       ;[arr[i], arr[j]] = [arr[j], arr[i]]
     }
   }
-  shuffle(real)
-  shuffle(placeholderOnly)
+  shuffle(realVendorConFoto)
+  shuffle(muestraConFotoReal)
+  shuffle(soloPlaceholder)
+
+  // Prioridad absoluta: si hay vendedores reales con foto, SOLO ellos.
+  // Si no, fallback a muestras (con foto real primero, placeholder después).
+  const ordered = realVendorConFoto.length > 0
+    ? realVendorConFoto
+    : [...muestraConFotoReal, ...soloPlaceholder]
 
   console.log(
-    `[reel]     ${real.length} con imagen real, ${placeholderOnly.length} solo placeholder`,
+    `[reel]     real+foto: ${realVendorConFoto.length}, ` +
+    `muestra+foto: ${muestraConFotoReal.length}, ` +
+    `placeholder: ${soloPlaceholder.length}` +
+    (realVendorConFoto.length > 0 ? ' → prioridad absoluta: reales' : ' → fallback: muestras'),
   )
-  return [...real, ...placeholderOnly].map((p) => ({
+
+  return ordered.map((p) => ({
     id: p.id,
     nombre: p.nombre,
     ciudad: p.ciudad,
@@ -990,7 +1036,7 @@ function buildCaption(p, { hashtags }) {
 //   5. (opcional) GET /{media}?fields=permalink
 async function publishIgReel({ userId, token, videoPath, caption }) {
   const t0 = Date.now()
-  const base = `https://graph.instagram.com/${IG_API_VERSION}`
+  const base = igApiBase(token)
 
   // (1) Subir a 0x0.st (anonymous file host, retention basada en tamaño)
   console.log('[reel]     subiendo .mp4 a 0x0.st para obtener URL pública…')
@@ -1048,7 +1094,7 @@ async function publishIgReel({ userId, token, videoPath, caption }) {
 }
 
 async function waitForIgContainer(containerId, token, { maxAttempts, baseDelayMs }) {
-  const base = `https://graph.instagram.com/${IG_API_VERSION}`
+  const base = igApiBase(token)
   for (let i = 1; i <= maxAttempts; i++) {
     const u = new URL(`${base}/${containerId}`)
     u.searchParams.set('fields', 'status_code,status')
