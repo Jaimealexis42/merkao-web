@@ -220,7 +220,7 @@ export async function POST(req: NextRequest) {
       direccion_entrega: direccionSafe,
       notas:             notasSafe,
       pais_comprador:    paisNorm,
-      igv:               +(igvCalc).toFixed(2), // incluido en el precio; no se suma al total
+      igv:               +(igvCalc).toFixed(2),
       arancel:           +(arancelCalc).toFixed(2),
       total:             totalSoles,
       metodo_pago:       metodoNorm,

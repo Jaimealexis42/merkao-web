@@ -1,7 +1,7 @@
 // lib/precios.ts — Cálculo de IGV, aranceles por país y tarifa de servicio Merkao
 
 export const IGV_TASA = 0.18
-export const TARIFA_SERVICIO = 0.03 // la paga el comprador y es de Merkao
+export const TARIFA_SERVICIO = 0.03 // Merkao cobra 3% al comprador (vendedor recibe 100%)
 
 export const ARANCELES: Record<string, { pais: string; bandera: string; tasa: number }> = {
   CO: { pais: 'Colombia', bandera: '🇨🇴', tasa: 0.15 },
@@ -12,11 +12,10 @@ export const ARANCELES: Record<string, { pais: string; bandera: string; tasa: nu
   US: { pais: 'EE.UU.',   bandera: '🇺🇸', tasa: 0.25 },
 }
 
-// Regla: el precio que publica el vendedor YA incluye el IGV (ver Términos).
 export type Precios = {
-  base: number           // precio publicado sin el IGV (solo informativo)
-  igv: number            // IGV contenido en el precio publicado (solo informativo)
-  subtotal: number       // precio publicado, con IGV
+  base: number           // precio sin IGV
+  igv: number            // monto IGV 18%
+  subtotal: number       // base + igv
   arancel: number        // monto arancel del país comprador
   tarifaServicio: number // 3% de tarifa de servicio Merkao (al comprador)
   total: number          // subtotal + arancel + tarifaServicio
@@ -24,10 +23,10 @@ export type Precios = {
   paisInfo: { pais: string; bandera: string; tasa: number } | null
 }
 
-export function calcularPrecios(precioPublicado: number, codigoPais = 'PE'): Precios {
-  const subtotal       = +( precioPublicado ).toFixed(2)
-  const base           = +( subtotal / (1 + IGV_TASA) ).toFixed(2)
-  const igv            = +( subtotal - base ).toFixed(2)
+export function calcularPrecios(precioBase: number, codigoPais = 'PE'): Precios {
+  const base           = precioBase
+  const igv            = +( base * IGV_TASA ).toFixed(2)
+  const subtotal       = +( base + igv ).toFixed(2)
   const paisInfo       = ARANCELES[codigoPais] ?? null
   const tasaArancel    = paisInfo?.tasa ?? 0
   const arancel        = +( subtotal * tasaArancel ).toFixed(2)

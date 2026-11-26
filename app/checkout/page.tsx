@@ -568,6 +568,14 @@ function CheckoutContent() {
                   </div>
                 )}
                 <div className="mk-sm-row">
+                  <span>Subtotal (base)</span>
+                  <span>{fmt(p.base)}</span>
+                </div>
+                <div className="mk-sm-row">
+                  <span>IGV 18%</span>
+                  <span>{fmt(p.igv)}</span>
+                </div>
+                <div className="mk-sm-row">
                   <span>Tarifa Merkao (3%)</span>
                   <span>+{fmt(p.tarifaServicio)}</span>
                 </div>
@@ -591,7 +599,6 @@ function CheckoutContent() {
                 <span>Total a pagar</span>
                 <span>{fmt(totalFinal)}</span>
               </div>
-              <p className="mk-sm-footer-note">IGV incluido: {fmt(p.igv)}</p>
 
               <div className="mk-sm-escrow">
                 <span className="mk-sm-escrow-ico">

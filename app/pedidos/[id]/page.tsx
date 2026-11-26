@@ -218,6 +218,7 @@ export default function PedidoPage() {
 
   const badge = ESTADO_BADGE[pedido.estado] ?? ESTADO_BADGE.pagado
   const arancelInfo = pedido.pais_comprador ? ARANCELES[pedido.pais_comprador] : null
+  const base = +(pedido.total - (pedido.igv ?? 0) - (pedido.arancel ?? 0)).toFixed(2)
   const sellerCiudad = producto?.ciudad ?? null
   const sellerId = producto?.vendedor_id ?? pedido.vendedor_id
   const isCancelOrDispute = pedido.estado === 'cancelado' || pedido.estado === 'disputado'
@@ -475,6 +476,14 @@ export default function PedidoPage() {
             <Icon name="wallet" size={16} stroke={2} /> Resumen del pago
           </div>
           <div className="mk-prof-rows">
+            <div className="mk-prof-row">
+              <span>Precio base</span>
+              <span>{fmt(base)}</span>
+            </div>
+            <div className="mk-prof-row">
+              <span>IGV 18%</span>
+              <span>{fmt(pedido.igv ?? 0)}</span>
+            </div>
             {(pedido.arancel ?? 0) > 0 && arancelInfo && (
               <div className="mk-prof-row">
                 <span>Arancel {arancelInfo.bandera} {Math.round(arancelInfo.tasa * 100)}%</span>
@@ -484,10 +493,6 @@ export default function PedidoPage() {
             <div className="mk-prof-row">
               <span>Total pagado</span>
               <span style={{ fontSize: 16, fontWeight: 800, color: 'var(--ink)' }}>{fmt(pedido.total)}</span>
-            </div>
-            <div className="mk-prof-row">
-              <span>IGV incluido</span>
-              <span>{fmt(pedido.igv ?? 0)}</span>
             </div>
             <div className="mk-prof-row">
               <span>Método de pago</span>

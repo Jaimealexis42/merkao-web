@@ -352,9 +352,9 @@ export default function CategoriaPage() {
                       </Link>
                       <div className="mk-card-price">{fmt(p.total)}</div>
                       <div className="mk-card-breakdown">
-                        <div className="mk-bd-row"><span>Precio</span><span>{fmt(p.subtotal)}</span></div>
+                        <div className="mk-bd-row"><span>Base</span><span>{fmt(p.base)}</span></div>
+                        <div className="mk-bd-row"><span>+ IGV 18%</span><span>{fmt(p.igv)}</span></div>
                         <div className="mk-bd-row"><span>+ Tarifa Merkao 3%</span><span>{fmt(p.tarifaServicio)}</span></div>
-                        <div className="mk-bd-row"><span>IGV incluido</span><span>{fmt(p.igv)}</span></div>
                       </div>
                       <div className="mk-card-ship">
                         <Icon name="truck" size={14} stroke={1.8} />

@@ -367,10 +367,10 @@ export default function ProductoDetalle() {
                 )}
               </div>
               <div className="mk-bb-breakdown">
-                <div className="mk-bb-bd-row"><span>Precio (IGV incluido)</span><span>{fmt(precios.subtotal)}</span></div>
+                <div className="mk-bb-bd-row"><span>Precio base</span><span>{fmt(precios.base)}</span></div>
+                <div className="mk-bb-bd-row"><span>IGV 18%</span><span>{fmt(precios.igv)}</span></div>
                 <div className="mk-bb-bd-row"><span>Tarifa Merkao 3%</span><span>{fmt(precios.tarifaServicio)}</span></div>
                 <div className="mk-bb-bd-row total"><span>Total a pagar</span><span>{fmt(precios.total)}</span></div>
-                <div className="mk-bb-bd-row"><span>IGV incluido</span><span>{fmt(precios.igv)}</span></div>
               </div>
             </div>
 

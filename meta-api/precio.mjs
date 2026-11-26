@@ -10,6 +10,6 @@ export function precioReel({ precio, costoEnvio = 0 }) {
   return {
     total: `S/ ${total.toFixed(2)}`,
     caption: `💰 S/ ${total.toFixed(2)} (incluye IGV y tarifa de servicio de 3%) · ${envio}`,
-    voz: `Precio total: ${soles} soles${centimos === '00' ? '' : ` con ${Number(centimos)} ${Number(centimos) === 1 ? 'céntimo' : 'céntimos'}`}, más el envío. `,
+    voz: `Precio total: ${soles} soles${centimos === '00' ? '' : ` con ${Number(centimos)} céntimos`}, más el envío. `,
   }
 }
