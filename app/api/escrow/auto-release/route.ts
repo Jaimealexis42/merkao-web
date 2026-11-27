@@ -5,9 +5,8 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 // Libera pedidos donde el vendedor marcó entrega hace >7 días y el comprador
 // no confirmó ni reportó problema.
 //
-// Seguridad: Vercel envía Authorization: Bearer ${CRON_SECRET}.
-// Si CRON_SECRET no está configurado, el endpoint igual funciona pero sin
-// protección (solo expone liberación anticipada de pedidos ya listos).
+// Vercel Cron llama con GET y envía Authorization: Bearer ${CRON_SECRET}.
+// Sin CRON_SECRET configurado el endpoint no hace nada (falla cerrado).
 
 let _admin: SupabaseClient | null = null
 function getAdmin(): SupabaseClient | null {
@@ -21,14 +20,14 @@ function getAdmin(): SupabaseClient | null {
   return _admin
 }
 
-export async function POST(req: NextRequest) {
-  // Verificar cron secret si está configurado
+export async function GET(req: NextRequest) {
   const cronSecret = process.env.CRON_SECRET
-  if (cronSecret) {
-    const auth = req.headers.get('authorization') ?? ''
-    if (auth !== `Bearer ${cronSecret}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+  if (!cronSecret) {
+    console.error('[auto-release] falta CRON_SECRET: no se ejecuta')
+    return NextResponse.json({ error: 'CRON_SECRET no configurado' }, { status: 500 })
+  }
+  if (req.headers.get('authorization') !== `Bearer ${cronSecret}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const admin = getAdmin()
@@ -57,26 +56,29 @@ export async function POST(req: NextRequest) {
 
   const ids = listos.map(p => p.id as string)
 
-  // Liberar pedidos
-  const { error: eU } = await admin
+  // Liberar pedidos. El filtro por estado evita pisar una disputa abierta
+  // entre la consulta y la actualización.
+  const { data: actualizados, error: eU } = await admin
     .from('pedidos')
     .update({ estado: 'liberado', escrow_liberado: true })
     .in('id', ids)
+    .eq('estado', 'entregado')
+    .select('id')
   if (eU) {
     console.error('[auto-release] update liberado falló:', eU.message, 'ids:', ids)
     return NextResponse.json({ error: eU.message }, { status: 500 })
   }
+  const liberados = (actualizados ?? []).map(p => p.id as string)
 
-  // Liberar comisiones (soft fail)
-  void admin
+  // Liberar comisiones (soft fail). Con await: en serverless la función puede
+  // congelarse al responder y una promesa suelta no llega a ejecutarse.
+  const { error: eC } = await admin
     .from('comisiones_merkao')
     .update({ estado: 'liberado' })
-    .in('pedido_id', ids)
+    .in('pedido_id', liberados)
     .eq('estado', 'pendiente')
-    .then(({ error: eC }) => {
-      if (eC) console.error('[auto-release] comisiones falló (pedidos ok):', eC.message)
-    })
+  if (eC) console.error('[auto-release] comisiones falló (pedidos ok):', eC.message)
 
-  console.info(`[auto-release] Liberados ${ids.length} pedidos:`, ids)
-  return NextResponse.json({ liberados: ids.length, ids })
+  console.info(`[auto-release] Liberados ${liberados.length} pedidos:`, liberados)
+  return NextResponse.json({ liberados: liberados.length, ids: liberados })
 }
