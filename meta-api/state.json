@@ -1,33 +1,9 @@
 {
-  "lastIndex": 2,
-  "lastPostedDate": "2026-11-26",
-  "totalPosts": 170,
+  "lastIndex": 3,
+  "lastPostedDate": "2026-11-27",
+  "totalPosts": 171,
   "postedProductIds": [],
   "history": [
-    {
-      "fecha": "2026-10-08T19:11:03.453Z",
-      "fechaPeru": "2026-10-08",
-      "variantIndex": 2,
-      "variantId": 3,
-      "enfoque": "Artesana / productora regional",
-      "endpoint": "photos",
-      "fbPostId": "1177766395421729_122151010989345830",
-      "fbPhotoId": "122151010965345830",
-      "url": "https://www.facebook.com/1177766395421729/posts/122151010989345830",
-      "image": {
-        "source": "unsplash",
-        "query": "weaving peru",
-        "theme": "artesania",
-        "photo_id": "VxOU4DwL1Tk",
-        "photo_url": "https://images.unsplash.com/photo-1566793772361-1d5d9cefbd12?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHwxOXx8d2VhdmluZyUyMHBlcnV8ZW58MXwwfHx8MTc5MTQ4NjY1OXww&ixlib=rb-4.1.0&q=80&w=1080",
-        "photographer": "Deb Dowd",
-        "photographer_url": "https://unsplash.com/@fin777",
-        "alt": "three smiling women"
-      },
-      "ig": {
-        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Thursday, 08-Oct-26 12:11:03 PDT."
-      }
-    },
     {
       "fecha": "2026-10-09T18:41:47.837Z",
       "fechaPeru": "2026-10-09",
@@ -1202,6 +1178,30 @@
       },
       "ig": {
         "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Thursday, 26-Nov-26 14:09:54 PST."
+      }
+    },
+    {
+      "fecha": "2026-11-27T21:50:34.332Z",
+      "fechaPeru": "2026-11-27",
+      "variantIndex": 3,
+      "variantId": 4,
+      "enfoque": "Vende en la campaña",
+      "endpoint": "photos",
+      "fbPostId": "1177766395421729_122161034277345830",
+      "fbPhotoId": "122161034253345830",
+      "url": "https://www.facebook.com/1177766395421729/posts/122161034277345830",
+      "image": {
+        "source": "unsplash",
+        "query": "paisaje peru",
+        "theme": "general",
+        "photo_id": "FqlHXqzBIOI",
+        "photo_url": "https://images.unsplash.com/photo-1725413532203-e396d5852d14?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NzE4MTh8MHwxfHNlYXJjaHw3fHxwYWlzYWplJTIwcGVydXxlbnwxfDB8fHwxNzk1ODE2MjI4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+        "photographer": "Josep Garip",
+        "photographer_url": "https://unsplash.com/@josep_garip",
+        "alt": "A scenic view of a valley with a mountain in the background"
+      },
+      "ig": {
+        "error": "container 400: Error validating access token: Session has expired on Thursday, 13-Aug-26 08:01:54 PDT. The current time is Friday, 27-Nov-26 13:50:34 PST."
       }
     }
   ]
