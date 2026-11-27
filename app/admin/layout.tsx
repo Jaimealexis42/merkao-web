@@ -12,6 +12,7 @@ const NAV: NavItem[] = [
   { href: '/admin/comisiones',   label: 'Comisiones' },
   { href: '/admin/liberaciones', label: 'Liberaciones' },
   { href: '/admin/soporte',      label: 'Soporte' },
+  { href: '/admin/reclamos',     label: 'Reclamos' },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

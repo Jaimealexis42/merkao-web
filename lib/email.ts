@@ -23,6 +23,7 @@ export type EmailMessage = {
   subject: string
   html: string
   text: string
+  headers?: Record<string, string>
 }
 
 export type SendResult =
@@ -65,6 +66,7 @@ export async function sendEmail(msg: EmailMessage): Promise<SendResult> {
       subject: msg.subject,
       html: msg.html,
       text: msg.text,
+      headers: msg.headers,
     })
     return { ok: true, provider: 'gmail-smtp', id: info.messageId }
   } catch (e) {

@@ -11,6 +11,9 @@ const ADMIN_EMAIL_LIST = ['alexisaranap21@gmail.com'] as const
 //   - Coincide con GMAIL_USER (remitente SMTP) para que reply-to sea consistente.
 export const ADMIN_NOTIFY_EMAIL = 'merkao.org@gmail.com'
 
+// Destinatario del resumen diario (/api/cron/resumen).
+export const ADMIN_DIGEST_EMAIL: string = ADMIN_EMAIL_LIST[0]
+
 const ADMIN_EMAILS: ReadonlySet<string> = new Set(
   ADMIN_EMAIL_LIST.map((e) => e.toLowerCase()),
 )

@@ -3,6 +3,14 @@
     {
       "path": "/api/escrow/auto-release",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/resumen",
+      "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/cron/recordatorios",
+      "schedule": "0 15 * * *"
     }
   ]
 }
